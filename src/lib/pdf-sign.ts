@@ -46,7 +46,7 @@ export async function signPdf(originalBytes: Uint8Array, signatureImageBytes: Ui
   }
 
   pdf.setSubject(`Firmado por ${meta.name} (${meta.cuil})`);
-  pdf.setProducer("Checkin System");
+  pdf.setProducer("Emmalva");
   pdf.setKeywords(["signed", hash]);
 
   const out = await pdf.save();

@@ -100,7 +100,7 @@ export function AppShell({
             </div>
             <div className="mt-3 flex items-center justify-between border-t border-white/5 pt-3">
               <VersionBadge />
-              <span className="mono text-[10px] uppercase tracking-[0.22em] text-muted-foreground/70">protofire suite</span>
+              <span className="mono text-[10px] uppercase tracking-[0.22em] text-muted-foreground/70">Emmalva</span>
             </div>
           </div>
         </aside>

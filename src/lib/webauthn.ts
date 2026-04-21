@@ -1,7 +1,7 @@
 import "server-only";
 import crypto from "node:crypto";
 
-export const rpName = process.env.WEBAUTHN_RP_NAME ?? "Checkin System";
+export const rpName = process.env.WEBAUTHN_RP_NAME ?? "Emmalva";
 export const rpID = process.env.WEBAUTHN_RP_ID ?? (process.env.VERCEL_URL ? new URL(`https://${process.env.VERCEL_URL}`).hostname : "localhost");
 export const origin = process.env.AUTH_URL ?? (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000");
 

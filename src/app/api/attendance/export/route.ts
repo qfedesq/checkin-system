@@ -23,7 +23,7 @@ export async function GET(req: NextRequest) {
   });
 
   const wb = new ExcelJS.Workbook();
-  wb.creator = "Checkin System";
+  wb.creator = "Emmalva";
   const ws = wb.addWorksheet("Jornadas");
 
   ws.columns = [
@@ -40,7 +40,7 @@ export async function GET(req: NextRequest) {
     { header: "Coord out", key: "outCoord", width: 22 },
   ];
   ws.getRow(1).font = { bold: true };
-  ws.getRow(1).fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFF54703" } };
+  ws.getRow(1).fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF29ABE2" } };
   ws.getRow(1).font = { bold: true, color: { argb: "FFFFFFFF" } };
 
   for (const r of rows) {

@@ -3,7 +3,7 @@ import "./globals.css";
 import { AppSessionProvider } from "@/components/providers/SessionProvider";
 
 export const metadata: Metadata = {
-  title: "Checkin System",
+  title: "Emmalva",
   description: "Plataforma de gestión de empleados, vacaciones, documentación y check-in.",
 };
 

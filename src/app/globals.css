@@ -1,6 +1,8 @@
-@import "@fontsource/space-grotesk/400.css";
-@import "@fontsource/space-grotesk/500.css";
-@import "@fontsource/space-grotesk/700.css";
+@import "@fontsource/nunito/400.css";
+@import "@fontsource/nunito/500.css";
+@import "@fontsource/nunito/600.css";
+@import "@fontsource/nunito/700.css";
+@import "@fontsource/nunito/800.css";
 @import "@fontsource/ibm-plex-mono/400.css";
 @import "@fontsource/ibm-plex-mono/500.css";
 
@@ -10,27 +12,28 @@
 
 @layer base {
   :root {
-    --background: 228 33% 8%;
-    --foreground: 210 31% 96%;
-    --card: 228 27% 11%;
-    --card-foreground: 210 31% 96%;
-    --popover: 228 27% 11%;
-    --popover-foreground: 210 31% 96%;
-    --primary: 19 95% 53%;
-    --primary-foreground: 40 100% 97%;
-    --secondary: 226 18% 18%;
-    --secondary-foreground: 210 31% 96%;
-    --muted: 226 17% 15%;
-    --muted-foreground: 217 14% 69%;
-    --accent: 45 94% 55%;
-    --accent-foreground: 228 33% 8%;
+    --background: 210 33% 8%;
+    --foreground: 210 25% 96%;
+    --card: 210 27% 11%;
+    --card-foreground: 210 25% 96%;
+    --popover: 210 27% 11%;
+    --popover-foreground: 210 25% 96%;
+    --primary: 197 77% 53%;
+    --primary-foreground: 0 0% 100%;
+    --primary-dark: 200 62% 36%;
+    --secondary: 210 18% 18%;
+    --secondary-foreground: 210 25% 96%;
+    --muted: 210 17% 15%;
+    --muted-foreground: 210 14% 69%;
+    --accent: 195 65% 45%;
+    --accent-foreground: 0 0% 100%;
     --destructive: 1 79% 64%;
     --destructive-foreground: 0 0% 100%;
     --success: 142 72% 45%;
     --success-foreground: 0 0% 100%;
-    --border: 226 18% 22%;
-    --input: 226 18% 22%;
-    --ring: 19 95% 53%;
+    --border: 210 18% 22%;
+    --input: 210 18% 22%;
+    --ring: 197 77% 53%;
     --radius: 1.125rem;
   }
 
@@ -41,13 +44,13 @@
   body {
     @apply min-h-screen bg-background text-foreground antialiased;
     background-image:
-      radial-gradient(circle at 0% 0%, rgba(245, 71, 3, 0.08), transparent 20%),
-      radial-gradient(circle at 100% 0%, rgba(76, 97, 255, 0.08), transparent 22%),
-      linear-gradient(180deg, rgba(8, 12, 22, 1) 0%, rgba(9, 14, 26, 1) 52%, rgba(7, 11, 21, 1) 100%);
-    font-family: "Space Grotesk", sans-serif;
+      radial-gradient(circle at 0% 0%, rgba(41, 171, 226, 0.10), transparent 22%),
+      radial-gradient(circle at 100% 0%, rgba(41, 171, 226, 0.06), transparent 24%),
+      linear-gradient(180deg, rgba(10, 16, 28, 1) 0%, rgba(12, 19, 32, 1) 52%, rgba(9, 15, 27, 1) 100%);
+    font-family: "Nunito", sans-serif;
   }
 
-  h1, h2, h3, h4, h5, h6 { letter-spacing: -0.03em; }
+  h1, h2, h3, h4, h5, h6 { letter-spacing: -0.01em; font-weight: 700; }
 }
 
 @layer components {
@@ -76,7 +79,7 @@
   }
 
   .surface-card-hover { @apply transition duration-200; }
-  .surface-card-hover:hover { border-color: rgba(255, 255, 255, 0.12); background-color: rgba(255, 255, 255, 0.03); }
+  .surface-card-hover:hover { border-color: rgba(41, 171, 226, 0.25); background-color: rgba(255, 255, 255, 0.03); }
 
   .surface-control {
     @apply h-11 w-full rounded-xl border px-4 text-sm text-foreground outline-none transition placeholder:text-muted-foreground;
@@ -85,7 +88,7 @@
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
   }
 
-  .surface-control:focus-visible { @apply border-primary/30 ring-2 ring-primary/20; }
+  .surface-control:focus-visible { @apply border-primary/40 ring-2 ring-primary/25; }
 
   .surface-select {
     @apply surface-control appearance-none pr-10;
@@ -102,30 +105,33 @@
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
   }
 
-  .surface-textarea:focus-visible { @apply border-primary/30 ring-2 ring-primary/20; }
+  .surface-textarea:focus-visible { @apply border-primary/40 ring-2 ring-primary/25; }
 
   .rail-icon-button {
     @apply inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-transparent text-muted-foreground transition;
   }
   .rail-icon-button:hover { @apply border-white/10 bg-white/[0.04] text-foreground; }
   .rail-icon-button-active {
-    @apply bg-primary/10 text-primary shadow-[inset_0_1px_0_rgba(255,255,255,0.03)];
-    border-color: rgba(245, 71, 3, 0.18);
+    @apply bg-primary/15 text-primary shadow-[inset_0_1px_0_rgba(255,255,255,0.03)];
+    border-color: rgba(41, 171, 226, 0.25);
   }
 
   .btn {
-    @apply inline-flex h-10 items-center justify-center gap-2 rounded-xl border px-4 text-sm font-medium transition;
+    @apply inline-flex h-10 items-center justify-center gap-2 rounded-xl border px-4 text-sm font-semibold transition;
     border-color: rgba(255, 255, 255, 0.08);
   }
   .btn-primary {
-    @apply btn bg-primary text-primary-foreground border-transparent hover:brightness-110;
+    @apply btn text-primary-foreground border-transparent;
+    background: linear-gradient(180deg, hsl(var(--primary)), hsl(var(--primary-dark)));
+    box-shadow: 0 6px 18px rgba(41, 171, 226, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.15);
   }
+  .btn-primary:hover { filter: brightness(1.08); }
   .btn-ghost { @apply btn text-muted-foreground hover:text-foreground hover:bg-white/[0.04]; }
   .btn-danger { @apply btn bg-destructive/15 text-destructive border-destructive/30 hover:bg-destructive/20; }
   .btn-success { @apply btn bg-[hsl(var(--success))]/15 text-[hsl(var(--success))] border-[hsl(var(--success))]/30 hover:bg-[hsl(var(--success))]/25; }
 
   .badge {
-    @apply inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-[11px] font-medium uppercase tracking-wider;
+    @apply inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wider;
     border-color: rgba(255, 255, 255, 0.08);
     background-color: rgba(255, 255, 255, 0.04);
   }
@@ -134,13 +140,13 @@
   .badge-danger { @apply badge border-destructive/30 bg-destructive/10 text-destructive; }
   .badge-success { @apply badge border-[hsl(var(--success))]/30 bg-[hsl(var(--success))]/10 text-[hsl(var(--success))]; }
 
-  .prose-doc h1 { @apply text-3xl font-semibold mt-6 mb-4; }
-  .prose-doc h2 { @apply text-2xl font-semibold mt-8 mb-3 text-primary; }
-  .prose-doc h3 { @apply text-lg font-semibold mt-6 mb-2; }
+  .prose-doc h1 { @apply text-3xl font-bold mt-6 mb-4; }
+  .prose-doc h2 { @apply text-2xl font-bold mt-8 mb-3 text-primary; }
+  .prose-doc h3 { @apply text-lg font-bold mt-6 mb-2; }
   .prose-doc p { @apply text-sm text-muted-foreground leading-relaxed mb-3; }
   .prose-doc ul { @apply list-disc pl-6 text-sm text-muted-foreground mb-3 space-y-1; }
   .prose-doc ol { @apply list-decimal pl-6 text-sm text-muted-foreground mb-3 space-y-1; }
   .prose-doc code { @apply font-mono text-[12px] bg-white/[0.04] border border-white/10 rounded px-1.5 py-0.5; }
-  .prose-doc strong { @apply text-foreground; }
+  .prose-doc strong { @apply text-foreground font-semibold; }
   .prose-doc a { @apply text-primary underline underline-offset-4; }
 }

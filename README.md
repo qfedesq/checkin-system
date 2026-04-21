@@ -1,13 +1,14 @@
-# Checkin System
+# Emmalva
 
 Plataforma de gestión de empleados, vacaciones, documentación y check-in/out con biometría.
 Construida con **Next.js 15** + **Prisma** + **Auth.js** + **WebAuthn**, desplegada en **Vercel** sobre **Neon Postgres**.
-Look & feel heredado del **Protofire Suite**.
+
+Identidad visual acorde al [Manual de Marca Emmalva](public/emmalva-horizontal.svg): isotipo cian (#29ABE2) y tipografía **Nunito** (alternativa libre a Gotham Rounded del manual).
 
 ## Stack
 
 - Next.js 15 (App Router) · React 19 · TypeScript
-- Tailwind CSS (tokens HSL del Protofire Suite) · Space Grotesk + IBM Plex Mono
+- Tailwind CSS · Nunito + IBM Plex Mono
 - Prisma ORM · Postgres (Neon)
 - Auth.js v5 beta (Credentials) + `@simplewebauthn` (biometría + device binding)
 - Vercel Blob (uploads) · Vercel Cron (alertas de vencimiento)

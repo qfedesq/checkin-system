@@ -53,11 +53,11 @@ const config: Config = {
       backgroundImage: {
         grid: "linear-gradient(to right, rgba(148, 163, 184, 0.08) 1px, transparent 1px), linear-gradient(to bottom, rgba(148, 163, 184, 0.08) 1px, transparent 1px)",
         "aurora-primary":
-          "radial-gradient(circle at top left, rgba(245, 71, 3, 0.18), transparent 34%), radial-gradient(circle at top right, rgba(14, 165, 233, 0.12), transparent 38%), linear-gradient(180deg, rgba(8, 12, 22, 1), rgba(9, 14, 26, 1))",
+          "radial-gradient(circle at top left, rgba(41, 171, 226, 0.22), transparent 34%), radial-gradient(circle at top right, rgba(41, 171, 226, 0.12), transparent 38%), linear-gradient(180deg, rgba(10, 16, 28, 1), rgba(12, 19, 32, 1))",
       },
       boxShadow: {
         panel: "0 30px 80px rgba(2, 8, 23, 0.45)",
-        glow: "0 0 0 1px rgba(245, 71, 3, 0.18), 0 20px 50px rgba(2, 8, 23, 0.35)",
+        glow: "0 0 0 1px rgba(41, 171, 226, 0.22), 0 20px 50px rgba(2, 8, 23, 0.35)",
       },
     },
   },

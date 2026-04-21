@@ -2,6 +2,16 @@
 
 Cada release sube la versión en `+0.01`. El número visible abajo a la izquierda en la app coincide con este archivo.
 
+## v0.02 — 2026-04-21
+
+**Rebrand a Emmalva.**
+
+- Nueva identidad visual: isotipo cian (#29ABE2) + tipografía Nunito (alternativa libre a Gotham Rounded del manual de marca).
+- Paleta primaria cambia de naranja a cian Emmalva en toda la app (botones, badges, focos, panels, aurora del fondo).
+- Se reemplaza "Checkin System" por "Emmalva" en login, metadata, emails, PDF de firma, export de Excel y manual.
+- Logo horizontal y vertical disponibles en `/public/emmalva-*.svg` y `.png` (tomados del Manual de Marca).
+- Nuevo admin inicial: `emmalvasas@gmail.com` (Maximiliano Klein).
+
 ## v0.01 — 2026-04-21
 
 **Primera versión del MVP.** Todo construido sobre el look & feel del Protofire Suite.
