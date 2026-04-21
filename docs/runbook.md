@@ -21,7 +21,30 @@ El empleado perdió el teléfono o cambió de laptop.
 curl -H "Authorization: Bearer $CRON_SECRET" https://checkin-system.vercel.app/api/cron/expiry-check
 ```
 
-Verificar logs en Vercel. Si los emails no salen, revisá `RESEND_API_KEY` y dominio verificado en Resend.
+Verificar logs en Vercel. Si los emails no salen, revisá `GMAIL_USER` + `GMAIL_APP_PASSWORD` (driver primario) o `RESEND_API_KEY` (fallback).
+
+## Configurar envío de emails (Gmail SMTP)
+
+Los emails salen desde la cuenta del administrador (`emmalvasas@gmail.com`). Google requiere un **App Password** — 2FA obligatorio.
+
+1. Entrar a https://myaccount.google.com con `emmalvasas@gmail.com`.
+2. Seguridad → Verificación en dos pasos (activar si no lo está).
+3. Contraseñas de aplicaciones → crear una nueva con nombre "Emmalva Workforce" — te devuelve una cadena de 16 caracteres, sin espacios.
+4. En Vercel del proyecto `checkin-system`:
+   - `GMAIL_USER=emmalvasas@gmail.com` (production, preview, development)
+   - `GMAIL_APP_PASSWORD=<esos 16 caracteres>` (production, preview, development)
+   - `MAIL_FROM_NAME=Emmalva` (opcional — queda así si no se setea)
+5. Redeploy o esperar al próximo push.
+
+**Límite Gmail free**: 500 emails/día por cuenta. Para workspace (dominio corporativo) son 2.000/día. Si se supera, Google bloquea la cuenta por 24 hs.
+
+## Alternativa: Resend
+
+Para volúmenes mayores o para no depender de una cuenta Gmail, usar Resend:
+
+1. Crear cuenta en https://resend.com y verificar un dominio propio (DNS: SPF + DKIM).
+2. Setear en Vercel: `RESEND_API_KEY=re_...`, `RESEND_FROM="Emmalva <no-reply@tudominio.com>"`.
+3. Si tanto `GMAIL_*` como `RESEND_*` están seteados, gana Gmail SMTP. Para forzar Resend, borrar `GMAIL_APP_PASSWORD`.
 
 ## Restaurar DB
 

@@ -2,6 +2,20 @@
 
 Cada release sube la versión en `+0.01`. El número visible abajo a la izquierda en la app coincide con este archivo.
 
+## v0.06 — 2026-04-21
+
+**Emails reales desde el admin + notificaciones in-app.**
+
+- **Envío de emails por Gmail SMTP**: `src/lib/email.ts` ahora tiene nodemailer como driver primario (Gmail SMTP via App Password), con fallback a Resend si no hay credenciales Gmail. Los emails salen literalmente `Emmalva <emmalvasas@gmail.com>` desde la cuenta de Maximiliano Klein, con `reply_to` a la misma.
+- **Cron de vencimientos funcional end-to-end**: el cron diario sigue disparando la alerta 30 días antes, ahora los emails efectivamente llegan a los empleados en vez de loguearse.
+- **Emails al admin** en tres eventos: nuevo empleado registrado, nueva solicitud de vacaciones/franco, documento cargado. Cada email tiene botón "Revisar" que lleva directo al tab correspondiente.
+- **Badges in-app** en la nav del admin:
+  - Desktop: contador al lado del item (Usuarios, Vacaciones / Francos, Documentación).
+  - Mobile: badge en bottom nav y contador grande en el botón del menú (top bar).
+- Las cuentas se calculan en cada navegación (Server Component en `admin/layout.tsx`), así que siempre son tiempo-real.
+
+**Requiere configurar en Vercel**: `GMAIL_USER=emmalvasas@gmail.com` y `GMAIL_APP_PASSWORD=<app password de Maximiliano>`. Sin estos, email.ts hace fallback a Resend y, si no hay key ahí, loguea a consola. Ver `docs/runbook.md` para la guía de cómo generar el App Password.
+
 ## v0.05 — 2026-04-21
 
 **Alta de usuarios por el admin.**

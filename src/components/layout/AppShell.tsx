@@ -65,16 +65,20 @@ const ADMIN_MOBILE_PRIMARY: NavItem[] = [
 export function AppShell({
   role,
   userName,
+  adminBadges,
   children,
 }: {
   role: "ADMIN" | "EMPLOYEE";
   userName?: string | null;
+  adminBadges?: Record<string, number>;
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
   const nav = role === "ADMIN" ? ADMIN_NAV : EMPLOYEE_NAV;
   const mobilePrimary = role === "ADMIN" ? ADMIN_MOBILE_PRIMARY : EMPLOYEE_MOBILE_PRIMARY;
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const badgeFor = (href: string) => adminBadges?.[href] ?? 0;
+  const totalPending = adminBadges ? Object.values(adminBadges).reduce((a, b) => a + b, 0) : 0;
 
   useEffect(() => { setDrawerOpen(false); }, [pathname]);
 
@@ -95,8 +99,11 @@ export function AppShell({
           </Link>
           <div className="flex items-center gap-1">
             <ThemeToggle />
-            <button className="rail-icon-button" onClick={() => setDrawerOpen(true)} aria-label="Abrir menú">
+            <button className="rail-icon-button relative" onClick={() => setDrawerOpen(true)} aria-label="Abrir menú">
               <Menu className="h-5 w-5" />
+              {totalPending > 0 && (
+                <span className="absolute -right-0.5 -top-0.5 grid h-5 min-w-[20px] place-items-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground">{totalPending > 99 ? "99+" : totalPending}</span>
+              )}
             </button>
           </div>
         </div>
@@ -112,6 +119,7 @@ export function AppShell({
             <ul className="space-y-1">
               {nav.map((item) => {
                 const Icon = item.icon;
+                const count = badgeFor(item.href);
                 return (
                   <li key={item.href}>
                     <Link
@@ -122,7 +130,10 @@ export function AppShell({
                       )}
                     >
                       <Icon className="h-4 w-4" />
-                      {item.label}
+                      <span className="flex-1">{item.label}</span>
+                      {count > 0 && (
+                        <span className="grid h-5 min-w-[20px] place-items-center rounded-full bg-primary px-1.5 text-[10px] font-bold text-primary-foreground">{count > 99 ? "99+" : count}</span>
+                      )}
                     </Link>
                   </li>
                 );
@@ -162,16 +173,22 @@ export function AppShell({
           {mobilePrimary.map((item) => {
             const Icon = item.icon;
             const active = isActive(item.href);
+            const count = badgeFor(item.href);
             return (
               <li key={item.href}>
                 <Link
                   href={item.href}
                   className={cn(
-                    "flex flex-col items-center justify-center gap-1 py-2.5 text-[10px] font-semibold uppercase tracking-wide transition",
+                    "flex flex-col items-center justify-center gap-1 py-2.5 text-[10px] font-semibold uppercase tracking-wide transition relative",
                     active ? "text-primary" : "text-muted-foreground active:text-foreground",
                   )}
                 >
-                  <Icon className="h-5 w-5" />
+                  <span className="relative">
+                    <Icon className="h-5 w-5" />
+                    {count > 0 && (
+                      <span className="absolute -right-2 -top-1 grid h-4 min-w-[16px] place-items-center rounded-full bg-primary px-1 text-[9px] font-bold text-primary-foreground">{count > 9 ? "9+" : count}</span>
+                    )}
+                  </span>
                   {item.label}
                 </Link>
               </li>
@@ -205,6 +222,7 @@ export function AppShell({
                 {nav.map((item) => {
                   const Icon = item.icon;
                   const active = isActive(item.href);
+                  const count = badgeFor(item.href);
                   return (
                     <li key={item.href}>
                       <Link
@@ -215,7 +233,10 @@ export function AppShell({
                         )}
                       >
                         <Icon className="h-5 w-5" />
-                        {item.label}
+                        <span className="flex-1">{item.label}</span>
+                        {count > 0 && (
+                          <span className="grid h-5 min-w-[20px] place-items-center rounded-full bg-primary px-1.5 text-[10px] font-bold text-primary-foreground">{count > 99 ? "99+" : count}</span>
+                        )}
                       </Link>
                     </li>
                   );

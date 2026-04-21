@@ -1,6 +1,6 @@
 {
   "name": "checkin-system",
-  "version": "0.05",
+  "version": "0.06",
   "private": true,
   "packageManager": "pnpm@10.32.1",
   "scripts": {
@@ -32,6 +32,7 @@
     "lucide-react": "^0.511.0",
     "next": "^15.2.0",
     "next-auth": "5.0.0-beta.25",
+    "nodemailer": "^6.9.16",
     "pdf-lib": "^1.17.1",
     "react": "^19.0.0",
     "react-day-picker": "^9.5.0",
@@ -47,6 +48,7 @@
     "@types/bcryptjs": "^2.4.6",
     "@types/mdx": "^2.0.13",
     "@types/node": "^22.13.11",
+    "@types/nodemailer": "^6.4.17",
     "@types/react": "^19.0.10",
     "@types/react-dom": "^19.0.4",
     "autoprefixer": "^10.4.20",

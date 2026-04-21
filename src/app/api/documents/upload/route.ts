@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { uploadBlob } from "@/lib/blob";
 import { recordAudit } from "@/lib/audit";
+import { notifyAdmins } from "@/lib/notify";
 
 const ALLOWED = ["application/pdf", "image/png", "image/jpeg"];
 
@@ -34,5 +35,13 @@ export async function POST(req: NextRequest) {
   });
 
   await recordAudit({ actorId: session.user.id, action: "document.upload", subjectId: doc.id, metadata: { type } });
+
+  const label = type === "DRIVER_LICENSE" ? "Carnet de conducir" : type === "HEALTH_CARD" ? "Libreta sanitaria" : "Documento";
+  notifyAdmins("document.uploaded", {
+    actorEmail: session.user.email,
+    actorName: session.user.name,
+    detail: label,
+  }).catch((e) => console.error("[notify] doc", e));
+
   return NextResponse.json({ ok: true, id: doc.id });
 }

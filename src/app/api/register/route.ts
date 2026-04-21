@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { recordAudit } from "@/lib/audit";
+import { notifyAdmins } from "@/lib/notify";
 
 const body = z.object({
   email: z.string().email(),
@@ -23,5 +24,6 @@ export async function POST(req: NextRequest) {
   });
 
   await recordAudit({ action: "user.register", subjectId: user.id });
+  notifyAdmins("user.registered", { actorEmail: user.email }).catch((e) => console.error("[notify] register", e));
   return NextResponse.json({ ok: true });
 }
