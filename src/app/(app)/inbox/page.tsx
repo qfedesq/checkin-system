@@ -20,7 +20,7 @@ export default async function InboxPage() {
     <>
       <PageHeader eyebrow="recibidos" title="Documentos para vos" description="Hacé click para descargar. Al abrirlo, se firma automáticamente con tu firma digital." />
       <section className="panel p-0 overflow-hidden">
-        <table className="w-full text-sm">
+        <div className="overflow-x-auto"><table className="w-full min-w-[620px] text-sm">
           <thead>
             <tr className="border-b border-border/60 text-left mono text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
               <th className="px-5 py-3">Documento</th>
@@ -55,7 +55,7 @@ export default async function InboxPage() {
               <tr><td colSpan={5} className="px-5 py-10 text-center text-muted-foreground">No tenés documentos para abrir.</td></tr>
             )}
           </tbody>
-        </table>
+        </table></div>
       </section>
     </>
   );

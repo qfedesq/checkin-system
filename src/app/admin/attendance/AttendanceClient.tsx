@@ -70,7 +70,7 @@ export function AttendanceClient({ initial, employees, rows }: {
       </section>
 
       <section className="panel mt-6 p-0 overflow-hidden">
-        <table className="w-full text-sm">
+        <div className="overflow-x-auto"><table className="w-full min-w-[900px] text-sm">
           <thead>
             <tr className="border-b border-border/60 text-left mono text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
               <th className="px-5 py-3">Empleado</th>
@@ -99,7 +99,7 @@ export function AttendanceClient({ initial, employees, rows }: {
             ))}
             {rows.length === 0 && <tr><td colSpan={7} className="px-5 py-10 text-center text-muted-foreground">Sin registros en ese rango.</td></tr>}
           </tbody>
-        </table>
+        </table></div>
       </section>
     </>
   );

@@ -45,7 +45,7 @@ export function UsersTable({ users }: { users: Row[] }) {
 
   return (
     <div className="panel p-0 overflow-hidden">
-      <table className="w-full text-sm">
+      <div className="overflow-x-auto"><table className="w-full min-w-[760px] text-sm">
         <thead>
           <tr className="border-b border-border/60 text-left mono text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
             <th className="px-5 py-3">Empleado</th>
@@ -133,7 +133,7 @@ export function UsersTable({ users }: { users: Row[] }) {
             </tr>
           )}
         </tbody>
-      </table>
+      </table></div>
 
       {openApprove && <ApproveDialog user={openApprove} onClose={() => setOpenApprove(null)} />}
       {toast && (

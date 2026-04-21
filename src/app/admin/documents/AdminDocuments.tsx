@@ -27,7 +27,7 @@ export function AdminDocuments({ docs }: { docs: Row[] }) {
 
   return (
     <div className="panel p-0 overflow-hidden">
-      <table className="w-full text-sm">
+      <div className="overflow-x-auto"><table className="w-full min-w-[680px] text-sm">
         <thead>
           <tr className="border-b border-border/60 text-left mono text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
             <th className="px-5 py-3">Empleado</th>
@@ -71,7 +71,7 @@ export function AdminDocuments({ docs }: { docs: Row[] }) {
           ))}
           {docs.length === 0 && <tr><td colSpan={5} className="px-5 py-8 text-center text-muted-foreground">Sin documentos.</td></tr>}
         </tbody>
-      </table>
+      </table></div>
 
       {rejectTarget && (
         <div className="fixed inset-0 z-50 grid place-items-center bg-black/60 p-4" onClick={() => setRejectTarget(null)}>

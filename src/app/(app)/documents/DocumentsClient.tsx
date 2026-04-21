@@ -82,7 +82,7 @@ export function DocumentsClient({ documents }: { documents: Doc[] }) {
       </section>
 
       <section className="panel mt-6 p-0 overflow-hidden">
-        <table className="w-full text-sm">
+        <div className="overflow-x-auto"><table className="w-full min-w-[620px] text-sm">
           <thead>
             <tr className="border-b border-border/60 text-left mono text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
               <th className="px-5 py-3">Tipo</th>
@@ -130,7 +130,7 @@ export function DocumentsClient({ documents }: { documents: Doc[] }) {
               <tr><td colSpan={5} className="px-5 py-8 text-center text-muted-foreground">Sin documentos cargados.</td></tr>
             )}
           </tbody>
-        </table>
+        </table></div>
       </section>
     </>
   );

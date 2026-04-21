@@ -2,6 +2,17 @@
 
 Cada release sube la versión en `+0.01`. El número visible abajo a la izquierda en la app coincide con este archivo.
 
+## v0.04 — 2026-04-21
+
+**Optimización mobile.**
+
+- **Navegación mobile**: en pantallas menores a 768px aparece una top bar con logo + tema + menú, y una bottom nav con los 4 tabs principales + "Más". El resto de las secciones vive en un drawer que se abre desde "Más" o el botón de menú. En desktop sigue viéndose el sidebar completo.
+- **Tablas responsive**: todas las tablas (usuarios, solicitudes, documentos, jornadas, entregas, recibidos) ahora scrollan horizontalmente en mobile sin romper el layout del panel.
+- **Calendario responsive**: react-day-picker toma el 100% del ancho con celdas más grandes táctiles (mínimo 36px de alto).
+- **PWA**: manifest con nombre, icono y colores. Podés "Agregar a inicio" desde iOS/Android y la app abre en modo standalone.
+- **Viewport + safe areas**: meta viewport correcto con `viewport-fit=cover`, `theme-color` según modo claro/oscuro, padding con `env(safe-area-inset-*)` en top bar, bottom nav y drawer para respetar el notch y la barra inferior.
+- **AuthShell responsive**: padding reducido en pantallas chicas y respeto de safe areas.
+
 ## v0.03 — 2026-04-21
 
 **Modo claro / oscuro + tipografía Gotham Rounded.**

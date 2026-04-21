@@ -21,7 +21,7 @@ export function AdminLeavesTable({ leaves }: { leaves: Row[] }) {
   return (
     <div className="panel p-0 overflow-hidden">
       {err && <div className="px-5 py-3 text-sm text-destructive bg-destructive/10 border-b border-destructive/20">{err}</div>}
-      <table className="w-full text-sm">
+      <div className="overflow-x-auto"><table className="w-full min-w-[760px] text-sm">
         <thead>
           <tr className="border-b border-border/60 text-left mono text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
             <th className="px-5 py-3">Empleado</th>
@@ -61,7 +61,7 @@ export function AdminLeavesTable({ leaves }: { leaves: Row[] }) {
           ))}
           {leaves.length === 0 && <tr><td colSpan={7} className="px-5 py-8 text-center text-muted-foreground">Sin solicitudes.</td></tr>}
         </tbody>
-      </table>
+      </table></div>
     </div>
   );
 }

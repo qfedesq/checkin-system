@@ -1,0 +1,12 @@
+{
+  "name": "Emmalva",
+  "short_name": "Emmalva",
+  "description": "Plataforma de gestión de empleados, vacaciones, documentación y check-in.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a101c",
+  "theme_color": "#29ABE2",
+  "icons": [
+    { "src": "/emmalva-vertical.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
