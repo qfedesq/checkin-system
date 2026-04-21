@@ -2,6 +2,15 @@
 
 Cada release sube la versión en `+0.01`. El número visible abajo a la izquierda en la app coincide con este archivo.
 
+## v0.05 — 2026-04-21
+
+**Alta de usuarios por el admin.**
+
+- Nuevo botón **"Nuevo usuario"** en `/admin/users`. Permite crear un usuario (Empleado o Administrador) sin esperar que se autoregistre, opcionalmente con nombre, apellido, legajo y fecha de ingreso pre-cargados.
+- La cuenta se crea **activa** y con contraseña temporal generada automáticamente. Al cerrarse el diálogo, el admin ve la contraseña en un toast y queda copiada al portapapeles para enviarla al usuario.
+- El flag `mustChangePassword` queda en true → la primera vez que el usuario ingresa, el sistema lo fuerza a elegir una contraseña propia (igual que el reset).
+- El admin también puede crear otros administradores desde este flujo.
+
 ## v0.04 — 2026-04-21
 
 **Optimización mobile.**

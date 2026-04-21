@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { CheckCircle2, KeyRound, Smartphone, XCircle } from "lucide-react";
+import { CheckCircle2, KeyRound, Smartphone, XCircle, UserPlus } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 
 type Row = {
@@ -21,6 +21,7 @@ type Row = {
 
 export function UsersTable({ users }: { users: Row[] }) {
   const [openApprove, setOpenApprove] = useState<Row | null>(null);
+  const [openCreate, setOpenCreate] = useState(false);
   const [busy, setBusy] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
   const router = useRouter();
@@ -44,6 +45,13 @@ export function UsersTable({ users }: { users: Row[] }) {
   }
 
   return (
+    <>
+    <div className="mb-4 flex items-center justify-between gap-3">
+      <p className="text-sm text-muted-foreground">{users.length} usuario{users.length === 1 ? "" : "s"} en el sistema.</p>
+      <button className="btn-primary" onClick={() => setOpenCreate(true)}>
+        <UserPlus className="h-4 w-4" /> Nuevo usuario
+      </button>
+    </div>
     <div className="panel p-0 overflow-hidden">
       <div className="overflow-x-auto"><table className="w-full min-w-[760px] text-sm">
         <thead>
@@ -137,10 +145,107 @@ export function UsersTable({ users }: { users: Row[] }) {
 
       {openApprove && <ApproveDialog user={openApprove} onClose={() => setOpenApprove(null)} />}
       {toast && (
-        <div className="fixed bottom-6 right-6 rounded-xl border border-primary/30 bg-primary/10 px-4 py-3 text-sm text-primary shadow-glow">
+        <div className="fixed bottom-24 left-4 right-4 md:bottom-6 md:left-auto md:right-6 md:max-w-md rounded-xl border border-primary/30 bg-primary/10 px-4 py-3 text-sm text-primary shadow-glow z-50">
           {toast}
         </div>
       )}
+    </div>
+    {openCreate && (
+      <CreateUserDialog
+        onClose={() => setOpenCreate(false)}
+        onCreated={(tempPassword, email) => {
+          setOpenCreate(false);
+          navigator.clipboard.writeText(tempPassword).catch(() => {});
+          setToast(`Usuario ${email} creado. Contraseña temporal: ${tempPassword} (copiada al portapapeles)`);
+          setTimeout(() => setToast(null), 15000);
+          router.refresh();
+        }}
+      />
+    )}
+    </>
+  );
+}
+
+function CreateUserDialog({ onClose, onCreated }: { onClose: () => void; onCreated: (tempPassword: string, email: string) => void }) {
+  const [email, setEmail] = useState("");
+  const [role, setRole] = useState<"EMPLOYEE" | "ADMIN">("EMPLOYEE");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [legajo, setLegajo] = useState("");
+  const [hireDate, setHireDate] = useState<string>(new Date().toISOString().slice(0, 10));
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    setBusy(true);
+    setErr(null);
+    const res = await fetch("/api/admin/users", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        email: email.trim().toLowerCase(),
+        role,
+        firstName: firstName.trim() || undefined,
+        lastName: lastName.trim() || undefined,
+        legajo: legajo.trim() || undefined,
+        hireDate: role === "EMPLOYEE" && hireDate ? hireDate : undefined,
+      }),
+    });
+    const data = await res.json();
+    setBusy(false);
+    if (!res.ok) return setErr(data.error ?? "No pudimos crear el usuario");
+    onCreated(data.tempPassword, email.trim().toLowerCase());
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 grid place-items-center bg-black/60 p-4" onClick={onClose}>
+      <form onSubmit={submit} className="panel w-full max-w-md p-6 max-h-[calc(100vh-2rem)] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+        <h3 className="text-lg font-bold">Nuevo usuario</h3>
+        <p className="mt-1 text-sm text-muted-foreground">La cuenta queda activa de entrada. Vas a recibir una contraseña temporal para pasarle al usuario; el sistema lo fuerza a cambiarla en el primer login.</p>
+        <div className="mt-4 space-y-3">
+          <div>
+            <label className="eyebrow">Email</label>
+            <input type="email" required className="surface-control mt-1" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="off" />
+          </div>
+          <div>
+            <label className="eyebrow">Rol</label>
+            <select className="surface-select mt-1" value={role} onChange={(e) => setRole(e.target.value as "EMPLOYEE" | "ADMIN")}>
+              <option value="EMPLOYEE">Empleado</option>
+              <option value="ADMIN">Administrador</option>
+            </select>
+          </div>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <div>
+              <label className="eyebrow">Nombre (opcional)</label>
+              <input className="surface-control mt-1" value={firstName} onChange={(e) => setFirstName(e.target.value)} />
+            </div>
+            <div>
+              <label className="eyebrow">Apellido (opcional)</label>
+              <input className="surface-control mt-1" value={lastName} onChange={(e) => setLastName(e.target.value)} />
+            </div>
+          </div>
+          {role === "EMPLOYEE" && (
+            <>
+              <div>
+                <label className="eyebrow">Legajo (opcional)</label>
+                <input className="surface-control mt-1" value={legajo} onChange={(e) => setLegajo(e.target.value)} placeholder="Ej: L-00421" />
+              </div>
+              <div>
+                <label className="eyebrow">Fecha de ingreso (opcional)</label>
+                <input type="date" className="surface-control mt-1" value={hireDate} onChange={(e) => setHireDate(e.target.value)} />
+              </div>
+            </>
+          )}
+          {err && <div className="rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-2 text-sm text-destructive">{err}</div>}
+          <div className="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-end">
+            <button type="button" className="btn-ghost" onClick={onClose}>Cancelar</button>
+            <button type="submit" className="btn-primary" disabled={busy || !email}>
+              {busy ? "Creando…" : "Crear usuario"}
+            </button>
+          </div>
+        </div>
+      </form>
     </div>
   );
 }
