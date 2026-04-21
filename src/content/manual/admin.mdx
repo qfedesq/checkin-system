@@ -1,0 +1,38 @@
+# Guía del administrador
+
+## Aprobar un nuevo empleado
+
+1. Entrá a **Usuarios**. Los pendientes aparecen arriba.
+2. Click en **Aprobar** → indicás **legajo** y **fecha de ingreso** → el sistema activa la cuenta.
+3. Avisale al empleado que ya puede completar su perfil y registrar su dispositivo.
+
+## Resetear contraseña
+
+En la fila del empleado, click en el ícono de llave. El sistema genera una contraseña temporal de 12 caracteres, te la muestra una vez (y la copia al portapapeles). Pasásela por un canal seguro. La primera vez que entre, el sistema lo fuerza a elegir una nueva.
+
+## Resetear dispositivo
+
+Si el empleado cambió de teléfono o se le bloqueó el anterior, click en el ícono de celular. Se elimina su credencial WebAuthn y la próxima vez que ingrese va a poder registrar un dispositivo nuevo.
+
+## Deshabilitar / Reactivar
+
+Usá el ícono de X para deshabilitar. El empleado no puede ingresar hasta que lo reactives.
+
+## Validar solicitudes
+
+- **Vacaciones / Francos**: entrá a `/admin/leaves`. Al aprobar un franco, ese día queda bloqueado para cualquier otro empleado.
+- **Documentación**: entrá a `/admin/documents`. Podés rechazar con un motivo que el empleado ve en su pantalla.
+
+## Enviar recibos o documentos internos
+
+En `/admin/deliveries`:
+
+1. Elegí el destinatario y el tipo (recibo de sueldo, documento interno, otro).
+2. Poné un título descriptivo (ej: "Recibo · Abril 2026").
+3. Subí el PDF.
+
+Cuando el empleado lo abra, el sistema lo firma automáticamente con la firma digital que él cargó, su nombre, CUIL, timestamp y un hash SHA-256 del original. Vas a ver cuándo lo abrió.
+
+## Exportar jornadas a Excel
+
+En `/admin/attendance` filtrá por rango de fechas y/o empleado. Click en **Excel** y bajás el archivo con legajo, apellido, nombre, fecha, check-in, check-out, duración (en minutos y hh:mm) y coordenadas.

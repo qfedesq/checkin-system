@@ -1,0 +1,206 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  EMPLOYEE
+  ADMIN
+}
+
+enum AccountStatus {
+  PENDING_APPROVAL
+  ACTIVE
+  DISABLED
+}
+
+enum Category {
+  DRIVER
+  HELPER
+}
+
+enum LeaveType {
+  VACATION
+  DAY_OFF
+}
+
+enum LeaveStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum DocType {
+  DRIVER_LICENSE
+  HEALTH_CARD
+  OTHER
+}
+
+enum DocStatus {
+  PENDING_REVIEW
+  APPROVED
+  REJECTED
+}
+
+enum DeliveredDocType {
+  PAYSLIP
+  INTERNAL_DOC
+  OTHER
+}
+
+model User {
+  id                  String               @id @default(cuid())
+  email               String               @unique
+  passwordHash        String
+  role                Role                 @default(EMPLOYEE)
+  status              AccountStatus        @default(PENDING_APPROVAL)
+  mustChangePassword  Boolean              @default(false)
+  deviceId            String?              @unique
+  createdAt           DateTime             @default(now())
+  approvedAt          DateTime?
+  approvedById        String?
+  webauthnCredentials WebAuthnCredential[]
+  profile             EmployeeProfile?
+  leaves              LeaveRequest[]
+  documents           DocumentUpload[]
+  deliveriesReceived  DeliveredDocument[]  @relation("DeliveryRecipient")
+  deliveriesSent      DeliveredDocument[]  @relation("DeliverySender")
+  attendances         Attendance[]
+  auditLogs           AuditLog[]           @relation("AuditActor")
+}
+
+model WebAuthnCredential {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  credentialId Bytes    @unique
+  publicKey    Bytes
+  counter      BigInt
+  deviceName   String?
+  transports   String[]
+  createdAt    DateTime @default(now())
+}
+
+model EmployeeProfile {
+  userId                    String    @id
+  user                      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  legajo                    String?   @unique
+  lastName                  String
+  firstName                 String
+  dob                       DateTime
+  cuil                      String    @unique
+  hireDate                  DateTime?
+  category                  Category
+  phone                     String
+  professionalLicenseExpiry DateTime?
+  healthCardExpiry          DateTime
+  shirtSize                 String
+  hoodieSize                String
+  jacketSize                String
+  pantsSize                 String
+  shoeSize                  String
+  address                   String
+  addressNumber             String
+  neighborhood              String
+  city                      String
+  postalCode                String
+  signatureBlobUrl          String?
+  emergencyContact          String
+  emergencyPhone            String
+  notifiedLicenseExpiryAt   DateTime?
+  notifiedHealthExpiryAt    DateTime?
+  updatedAt                 DateTime  @updatedAt
+}
+
+model LeaveRequest {
+  id           String      @id @default(cuid())
+  userId       String
+  user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type         LeaveType
+  startDate    DateTime
+  endDate      DateTime
+  days         Int
+  status       LeaveStatus @default(PENDING)
+  reviewedById String?
+  reviewedAt   DateTime?
+  note         String?
+  createdAt    DateTime    @default(now())
+
+  @@index([startDate, endDate])
+  @@index([userId])
+}
+
+model DocumentUpload {
+  id           String    @id @default(cuid())
+  userId       String
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type         DocType
+  blobUrl      String
+  mimeType     String
+  expiresAt    DateTime?
+  status       DocStatus @default(PENDING_REVIEW)
+  notifiedAt   DateTime?
+  reviewedById String?
+  reviewedAt   DateTime?
+  note         String?
+  createdAt    DateTime  @default(now())
+
+  @@index([userId])
+}
+
+model DeliveredDocument {
+  id              String           @id @default(cuid())
+  recipientId     String
+  recipient       User             @relation("DeliveryRecipient", fields: [recipientId], references: [id], onDelete: Cascade)
+  createdById     String
+  creator         User             @relation("DeliverySender", fields: [createdById], references: [id], onDelete: Cascade)
+  type            DeliveredDocType
+  title           String
+  originalBlobUrl String
+  signedBlobUrl   String?
+  originalHash    String?
+  openedAt        DateTime?
+  createdAt       DateTime         @default(now())
+
+  @@index([recipientId])
+}
+
+model Attendance {
+  id          String    @id @default(cuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  checkInAt   DateTime
+  checkInLat  Float
+  checkInLng  Float
+  checkOutAt  DateTime?
+  checkOutLat Float?
+  checkOutLng Float?
+  durationMin Int?
+
+  @@index([userId, checkInAt])
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  actorId   String?
+  actor     User?    @relation("AuditActor", fields: [actorId], references: [id], onDelete: SetNull)
+  action    String
+  subjectId String?
+  metadata  Json?
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+}
+
+model WebAuthnChallenge {
+  id        String   @id @default(cuid())
+  userId    String?
+  challenge String   @unique
+  kind      String
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+}

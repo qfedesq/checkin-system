@@ -1,0 +1,146 @@
+@import "@fontsource/space-grotesk/400.css";
+@import "@fontsource/space-grotesk/500.css";
+@import "@fontsource/space-grotesk/700.css";
+@import "@fontsource/ibm-plex-mono/400.css";
+@import "@fontsource/ibm-plex-mono/500.css";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 228 33% 8%;
+    --foreground: 210 31% 96%;
+    --card: 228 27% 11%;
+    --card-foreground: 210 31% 96%;
+    --popover: 228 27% 11%;
+    --popover-foreground: 210 31% 96%;
+    --primary: 19 95% 53%;
+    --primary-foreground: 40 100% 97%;
+    --secondary: 226 18% 18%;
+    --secondary-foreground: 210 31% 96%;
+    --muted: 226 17% 15%;
+    --muted-foreground: 217 14% 69%;
+    --accent: 45 94% 55%;
+    --accent-foreground: 228 33% 8%;
+    --destructive: 1 79% 64%;
+    --destructive-foreground: 0 0% 100%;
+    --success: 142 72% 45%;
+    --success-foreground: 0 0% 100%;
+    --border: 226 18% 22%;
+    --input: 226 18% 22%;
+    --ring: 19 95% 53%;
+    --radius: 1.125rem;
+  }
+
+  * { @apply border-border; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    @apply min-h-screen bg-background text-foreground antialiased;
+    background-image:
+      radial-gradient(circle at 0% 0%, rgba(245, 71, 3, 0.08), transparent 20%),
+      radial-gradient(circle at 100% 0%, rgba(76, 97, 255, 0.08), transparent 22%),
+      linear-gradient(180deg, rgba(8, 12, 22, 1) 0%, rgba(9, 14, 26, 1) 52%, rgba(7, 11, 21, 1) 100%);
+    font-family: "Space Grotesk", sans-serif;
+  }
+
+  h1, h2, h3, h4, h5, h6 { letter-spacing: -0.03em; }
+}
+
+@layer components {
+  .panel {
+    @apply rounded-[24px] border bg-card shadow-panel backdrop-blur-xl;
+    border-color: rgba(255, 255, 255, 0.08);
+    background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.028), rgba(255, 255, 255, 0.01));
+    box-shadow: 0 18px 48px rgba(2, 6, 23, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  }
+
+  .panel-muted {
+    @apply rounded-[20px] border backdrop-blur-lg;
+    border-color: rgba(255, 255, 255, 0.08);
+    background-color: rgba(255, 255, 255, 0.02);
+    box-shadow: 0 12px 36px rgba(2, 6, 23, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  }
+
+  .eyebrow { @apply font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground; }
+  .mono { font-family: "IBM Plex Mono", monospace; }
+
+  .surface-card {
+    @apply rounded-[20px] border;
+    border-color: rgba(255, 255, 255, 0.08);
+    background-color: rgba(255, 255, 255, 0.022);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03), 0 8px 20px rgba(2, 6, 23, 0.08);
+  }
+
+  .surface-card-hover { @apply transition duration-200; }
+  .surface-card-hover:hover { border-color: rgba(255, 255, 255, 0.12); background-color: rgba(255, 255, 255, 0.03); }
+
+  .surface-control {
+    @apply h-11 w-full rounded-xl border px-4 text-sm text-foreground outline-none transition placeholder:text-muted-foreground;
+    border-color: rgba(255, 255, 255, 0.08);
+    background-color: rgba(255, 255, 255, 0.02);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  }
+
+  .surface-control:focus-visible { @apply border-primary/30 ring-2 ring-primary/20; }
+
+  .surface-select {
+    @apply surface-control appearance-none pr-10;
+    background-image:
+      linear-gradient(45deg, transparent 50%, rgba(255, 255, 255, 0.48) 50%),
+      linear-gradient(135deg, rgba(255, 255, 255, 0.48) 50%, transparent 50%);
+    background-position: calc(100% - 20px) calc(50% - 2px), calc(100% - 15px) calc(50% - 2px);
+    background-size: 5px 5px, 5px 5px;
+    background-repeat: no-repeat;
+  }
+
+  .surface-textarea {
+    @apply min-h-24 w-full rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm text-foreground outline-none transition placeholder:text-muted-foreground;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  }
+
+  .surface-textarea:focus-visible { @apply border-primary/30 ring-2 ring-primary/20; }
+
+  .rail-icon-button {
+    @apply inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-transparent text-muted-foreground transition;
+  }
+  .rail-icon-button:hover { @apply border-white/10 bg-white/[0.04] text-foreground; }
+  .rail-icon-button-active {
+    @apply bg-primary/10 text-primary shadow-[inset_0_1px_0_rgba(255,255,255,0.03)];
+    border-color: rgba(245, 71, 3, 0.18);
+  }
+
+  .btn {
+    @apply inline-flex h-10 items-center justify-center gap-2 rounded-xl border px-4 text-sm font-medium transition;
+    border-color: rgba(255, 255, 255, 0.08);
+  }
+  .btn-primary {
+    @apply btn bg-primary text-primary-foreground border-transparent hover:brightness-110;
+  }
+  .btn-ghost { @apply btn text-muted-foreground hover:text-foreground hover:bg-white/[0.04]; }
+  .btn-danger { @apply btn bg-destructive/15 text-destructive border-destructive/30 hover:bg-destructive/20; }
+  .btn-success { @apply btn bg-[hsl(var(--success))]/15 text-[hsl(var(--success))] border-[hsl(var(--success))]/30 hover:bg-[hsl(var(--success))]/25; }
+
+  .badge {
+    @apply inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-[11px] font-medium uppercase tracking-wider;
+    border-color: rgba(255, 255, 255, 0.08);
+    background-color: rgba(255, 255, 255, 0.04);
+  }
+  .badge-primary { @apply badge border-primary/30 bg-primary/10 text-primary; }
+  .badge-accent { @apply badge border-accent/30 bg-accent/10 text-accent; }
+  .badge-danger { @apply badge border-destructive/30 bg-destructive/10 text-destructive; }
+  .badge-success { @apply badge border-[hsl(var(--success))]/30 bg-[hsl(var(--success))]/10 text-[hsl(var(--success))]; }
+
+  .prose-doc h1 { @apply text-3xl font-semibold mt-6 mb-4; }
+  .prose-doc h2 { @apply text-2xl font-semibold mt-8 mb-3 text-primary; }
+  .prose-doc h3 { @apply text-lg font-semibold mt-6 mb-2; }
+  .prose-doc p { @apply text-sm text-muted-foreground leading-relaxed mb-3; }
+  .prose-doc ul { @apply list-disc pl-6 text-sm text-muted-foreground mb-3 space-y-1; }
+  .prose-doc ol { @apply list-decimal pl-6 text-sm text-muted-foreground mb-3 space-y-1; }
+  .prose-doc code { @apply font-mono text-[12px] bg-white/[0.04] border border-white/10 rounded px-1.5 py-0.5; }
+  .prose-doc strong { @apply text-foreground; }
+  .prose-doc a { @apply text-primary underline underline-offset-4; }
+}
