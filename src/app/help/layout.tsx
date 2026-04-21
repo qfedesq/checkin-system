@@ -20,7 +20,7 @@ export default async function HelpLayout({ children }: { children: React.ReactNo
         <ul className="space-y-1 text-sm">
           {SECTIONS.map((s) => (
             <li key={s.slug}>
-              <Link href={`/help/${s.slug}`} className="block rounded-lg px-3 py-2 text-muted-foreground hover:bg-white/[0.04] hover:text-foreground">
+              <Link href={`/help/${s.slug}`} className="block rounded-lg px-3 py-2 text-muted-foreground hover:bg-secondary hover:text-foreground">
                 {s.label}
               </Link>
             </li>

@@ -14,12 +14,6 @@ importers:
       '@fontsource/ibm-plex-mono':
         specifier: ^5.1.1
         version: 5.2.7
-      '@fontsource/nunito':
-        specifier: ^5.1.1
-        version: 5.2.7
-      '@fontsource/space-grotesk':
-        specifier: ^5.1.1
-        version: 5.2.10
       '@next/mdx':
         specifier: ^15.2.0
         version: 15.5.15(@mdx-js/loader@3.1.1)(@mdx-js/react@3.1.1(@types/react@19.2.14)(react@19.2.5))
@@ -390,12 +384,6 @@ packages:
 
   '@fontsource/ibm-plex-mono@5.2.7':
     resolution: {integrity: sha512-MKAb8qV+CaiMQn2B0dIi1OV3565NYzp3WN5b4oT6LTkk+F0jR6j0ZN+5BKJiIhffDC3rtBULsYZE65+0018z9w==}
-
-  '@fontsource/nunito@5.2.7':
-    resolution: {integrity: sha512-pmtBq0H9ex9nk+RtJYEJOD9pag393iHETnl/PVKleF4i06cd0ttngK5ZCTgYb5eOqR3Xdlrjtev8m7bmgYprew==}
-
-  '@fontsource/space-grotesk@5.2.10':
-    resolution: {integrity: sha512-XNXEbT74OIITPqw2H6HXwPDp85fy43uxfBwFR5PU+9sLnjuLj12KlhVM9nZVN6q6dlKjkuN8JisW/OBxwxgUew==}
 
   '@hexagon/base64@1.1.28':
     resolution: {integrity: sha512-lhqDEAvWixy3bZ+UOYbPwUbBkwBq5C1LAJ/xPC8Oi+lL54oyakv/npbA0aU2hgCsx/1NUd4IBvV03+aUBWxerw==}
@@ -3347,10 +3335,6 @@ snapshots:
   '@fastify/busboy@2.1.1': {}
 
   '@fontsource/ibm-plex-mono@5.2.7': {}
-
-  '@fontsource/nunito@5.2.7': {}
-
-  '@fontsource/space-grotesk@5.2.10': {}
 
   '@hexagon/base64@1.1.28': {}
 

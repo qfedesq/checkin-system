@@ -2,6 +2,15 @@
 
 Cada release sube la versión en `+0.01`. El número visible abajo a la izquierda en la app coincide con este archivo.
 
+## v0.03 — 2026-04-21
+
+**Modo claro / oscuro + tipografía Gotham Rounded.**
+
+- **Light y Dark mode**: por defecto la app sigue la preferencia del sistema (`prefers-color-scheme`). El ícono sol/luna en el rail lateral (o junto al logo en login y manual) permite cambiarlo manualmente; la preferencia queda guardada en `localStorage`.
+- Un script inline aplica el tema antes de que React hidrate, así no hay "flash" al cargar.
+- Todos los paneles, tablas, inputs, botones y badges se adaptan automáticamente al tema via tokens CSS.
+- **Gotham Rounded** (Light, Book, Medium, Bold) self-hosted en `/public/fonts/gotham-rounded/`, reemplazando a Nunito. Coincide con la fuente indicada en el Manual de Marca Emmalva.
+
 ## v0.02 — 2026-04-21
 
 **Rebrand a Emmalva.**

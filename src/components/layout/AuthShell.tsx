@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Logo } from "@/components/brand/Logo";
 import { VersionBadge } from "@/components/ui/VersionBadge";
+import { ThemeToggle } from "@/components/ui/ThemeToggle";
 
 export function AuthShell({ title, subtitle, children, footer }: {
   title: string;
@@ -13,7 +14,10 @@ export function AuthShell({ title, subtitle, children, footer }: {
       <div className="mx-auto flex min-h-screen max-w-lg flex-col justify-center px-6 py-12">
         <div className="mb-6 flex items-center justify-between">
           <Logo />
-          <VersionBadge />
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            <VersionBadge />
+          </div>
         </div>
         <div className="panel p-8">
           <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>

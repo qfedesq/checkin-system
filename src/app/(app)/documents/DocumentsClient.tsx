@@ -84,7 +84,7 @@ export function DocumentsClient({ documents }: { documents: Doc[] }) {
       <section className="panel mt-6 p-0 overflow-hidden">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-white/5 text-left mono text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
+            <tr className="border-b border-border/60 text-left mono text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
               <th className="px-5 py-3">Tipo</th>
               <th className="px-3 py-3">Vencimiento</th>
               <th className="px-3 py-3">Estado</th>
@@ -96,7 +96,7 @@ export function DocumentsClient({ documents }: { documents: Doc[] }) {
             {documents.map((d) => {
               const days = daysUntil(d.expiresAt);
               return (
-                <tr key={d.id} className="border-b border-white/5 last:border-0">
+                <tr key={d.id} className="border-b border-border/60 last:border-0">
                   <td className="px-5 py-3">
                     <div className="flex items-center gap-2">
                       <FileText className="h-4 w-4 text-muted-foreground" />

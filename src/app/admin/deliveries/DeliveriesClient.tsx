@@ -71,7 +71,7 @@ export function DeliveriesClient({ employees, rows }: { employees: { id: string;
       <section className="panel mt-6 p-0 overflow-hidden">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-white/5 text-left mono text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
+            <tr className="border-b border-border/60 text-left mono text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
               <th className="px-5 py-3">Título</th>
               <th className="px-3 py-3">Tipo</th>
               <th className="px-3 py-3">Destinatario</th>
@@ -81,7 +81,7 @@ export function DeliveriesClient({ employees, rows }: { employees: { id: string;
           </thead>
           <tbody>
             {rows.map((r) => (
-              <tr key={r.id} className="border-b border-white/5 last:border-0">
+              <tr key={r.id} className="border-b border-border/60 last:border-0">
                 <td className="px-5 py-3">{r.title}</td>
                 <td className="px-3 py-3">{TYPE_LABEL[r.type]}</td>
                 <td className="px-3 py-3">{r.recipient}</td>

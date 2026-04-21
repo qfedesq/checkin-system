@@ -47,7 +47,7 @@ export function UsersTable({ users }: { users: Row[] }) {
     <div className="panel p-0 overflow-hidden">
       <table className="w-full text-sm">
         <thead>
-          <tr className="border-b border-white/5 text-left mono text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
+          <tr className="border-b border-border/60 text-left mono text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
             <th className="px-5 py-3">Empleado</th>
             <th className="px-3 py-3">Legajo</th>
             <th className="px-3 py-3">Estado</th>
@@ -58,7 +58,7 @@ export function UsersTable({ users }: { users: Row[] }) {
         </thead>
         <tbody>
           {users.map((u) => (
-            <tr key={u.id} className="border-b border-white/5 last:border-0">
+            <tr key={u.id} className="border-b border-border/60 last:border-0">
               <td className="px-5 py-3">
                 <div className="font-medium">{u.firstName || u.lastName ? `${u.firstName} ${u.lastName}` : "—"}</div>
                 <div className="text-xs text-muted-foreground">{u.email}</div>

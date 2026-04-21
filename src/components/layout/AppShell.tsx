@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
 import { VersionBadge } from "@/components/ui/VersionBadge";
+import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { cn } from "@/lib/utils";
 
 type NavItem = { href: string; icon: React.ComponentType<{ className?: string }>; label: string };
@@ -73,7 +74,7 @@ export function AppShell({
                       href={item.href}
                       className={cn(
                         "flex items-center gap-3 rounded-xl px-3 py-2 text-sm text-muted-foreground transition",
-                        active ? "bg-primary/10 text-primary border border-primary/20" : "hover:bg-white/[0.04] hover:text-foreground",
+                        active ? "bg-primary/10 text-primary border border-primary/20" : "hover:bg-secondary hover:text-foreground",
                       )}
                     >
                       <Icon className="h-4 w-4" />
@@ -92,13 +93,16 @@ export function AppShell({
                   {role === "ADMIN" ? "administrador" : "empleado"}
                 </div>
               </div>
-              <form action="/api/auth/signout" method="post">
-                <button className="rail-icon-button" title="Cerrar sesión">
-                  <LogOut className="h-4 w-4" />
-                </button>
-              </form>
+              <div className="flex items-center gap-1">
+                <ThemeToggle />
+                <form action="/api/auth/signout" method="post">
+                  <button className="rail-icon-button" title="Cerrar sesión">
+                    <LogOut className="h-4 w-4" />
+                  </button>
+                </form>
+              </div>
             </div>
-            <div className="mt-3 flex items-center justify-between border-t border-white/5 pt-3">
+            <div className="mt-3 flex items-center justify-between border-t border-border/60 pt-3">
               <VersionBadge />
               <span className="mono text-[10px] uppercase tracking-[0.22em] text-muted-foreground/70">Emmalva</span>
             </div>

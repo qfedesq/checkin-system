@@ -72,7 +72,7 @@ export function AttendanceClient({ initial, employees, rows }: {
       <section className="panel mt-6 p-0 overflow-hidden">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-white/5 text-left mono text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
+            <tr className="border-b border-border/60 text-left mono text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
               <th className="px-5 py-3">Empleado</th>
               <th className="px-3 py-3">Fecha</th>
               <th className="px-3 py-3">Check-in</th>
@@ -84,7 +84,7 @@ export function AttendanceClient({ initial, employees, rows }: {
           </thead>
           <tbody>
             {rows.map((r) => (
-              <tr key={r.id} className="border-b border-white/5 last:border-0">
+              <tr key={r.id} className="border-b border-border/60 last:border-0">
                 <td className="px-5 py-3">
                   <div className="font-medium">{r.employee}</div>
                   <div className="mono text-xs text-muted-foreground">{r.legajo}</div>
