@@ -1,6 +1,6 @@
 {
   "name": "checkin-system",
-  "version": "0.06",
+  "version": "0.07",
   "private": true,
   "packageManager": "pnpm@10.32.1",
   "scripts": {

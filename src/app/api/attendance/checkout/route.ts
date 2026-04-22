@@ -28,5 +28,6 @@ export async function POST(req: NextRequest) {
     },
   });
   await recordAudit({ actorId: session.user.id, action: "attendance.checkout", subjectId: updated.id, metadata: { durationMin } });
-  return NextResponse.json({ ok: true, durationMin });
+  // La duración queda en DB (visible sólo al admin); al empleado sólo le confirmamos el cierre.
+  return NextResponse.json({ ok: true });
 }

@@ -2,6 +2,15 @@
 
 Cada release sube la versión en `+0.01`. El número visible abajo a la izquierda en la app coincide con este archivo.
 
+## v0.07 — 2026-04-21
+
+**Fix: la duración de la jornada es visible sólo al administrador.**
+
+- Dashboard del empleado: la tarjeta "Última jornada" ya no muestra la duración en hh:mm, sólo el estado (abierta/cerrada).
+- Pantalla de check-in: mientras la jornada está en curso ya no corre un contador grande con hh:mm; en su lugar aparece el check verde + "Desde [fecha y hora de inicio]".
+- `POST /api/attendance/checkout` ya no devuelve `durationMin` en el response — queda guardada en DB para que el admin la vea en `/admin/attendance` y en el export a Excel.
+- La duración sigue calculándose y guardándose en `Attendance.durationMin` igual que antes.
+
 ## v0.06 — 2026-04-21
 
 **Emails reales desde el admin + notificaciones in-app.**

@@ -2,7 +2,7 @@ import Link from "next/link";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { PageHeader } from "@/components/ui/PageHeader";
-import { daysUntil, formatDate, formatDateTime, minutesToHhmm } from "@/lib/utils";
+import { daysUntil, formatDate, formatDateTime } from "@/lib/utils";
 import { Calendar, FileText, Inbox, MapPin } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -62,7 +62,7 @@ export default async function EmployeeDashboard() {
             <>
               <div className="mt-1 text-lg font-semibold">{formatDate(lastAttendance.checkInAt)}</div>
               <div className="text-xs text-muted-foreground">
-                {lastAttendance.checkOutAt ? `Duración ${minutesToHhmm(lastAttendance.durationMin)}` : "Jornada abierta"}
+                {lastAttendance.checkOutAt ? "Jornada cerrada" : "Jornada abierta"}
               </div>
             </>
           ) : (

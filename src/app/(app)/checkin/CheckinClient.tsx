@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { startAuthentication } from "@simplewebauthn/browser";
 import { useSession } from "next-auth/react";
 import { MapPin, Fingerprint, CheckCircle2 } from "lucide-react";
-import { formatDateTime, minutesToHhmm } from "@/lib/utils";
+import { formatDateTime } from "@/lib/utils";
 
 type Open = { id: string; checkInAt: string; lat: number; lng: number } | null;
 
@@ -15,8 +15,6 @@ export function CheckinClient({ open }: { open: Open }) {
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [ok, setOk] = useState<string | null>(null);
-
-  const durationIfOpen = open ? Math.round((Date.now() - new Date(open.checkInAt).getTime()) / 60000) : 0;
 
   async function doAction(kind: "checkin" | "checkout") {
     setBusy(true); setErr(null); setOk(null);
@@ -66,8 +64,9 @@ export function CheckinClient({ open }: { open: Open }) {
         {open ? (
           <>
             <div className="eyebrow mb-4">Jornada en curso</div>
-            <div className="text-5xl font-semibold mono tracking-tight">{minutesToHhmm(durationIfOpen)}</div>
-            <p className="mt-3 text-sm text-muted-foreground">Desde {formatDateTime(open.checkInAt)}</p>
+            <CheckCircle2 className="mx-auto h-14 w-14 text-[hsl(var(--success))]" />
+            <p className="mt-3 text-sm font-semibold">Check-in registrado</p>
+            <p className="mt-1 text-xs text-muted-foreground">Desde {formatDateTime(open.checkInAt)}</p>
             <button onClick={() => doAction("checkout")} disabled={busy} className="btn-primary mx-auto mt-6">
               <Fingerprint className="h-4 w-4" />
               {busy ? "Registrando…" : "Hacer check-out"}
