@@ -3,6 +3,7 @@ import { requireAdmin } from "@/lib/admin-guard";
 import { prisma } from "@/lib/prisma";
 import { uploadBlob } from "@/lib/blob";
 import { recordAudit } from "@/lib/audit";
+import { notifyUser } from "@/lib/notify";
 
 export async function POST(req: NextRequest) {
   const { session, error } = await requireAdmin();
@@ -33,5 +34,9 @@ export async function POST(req: NextRequest) {
   });
 
   await recordAudit({ actorId: session.user.id, action: "delivery.create", subjectId: d.id, metadata: { recipientId, type } });
+
+  const kindLabel = type === "PAYSLIP" ? "recibo de sueldo" : "documento";
+  notifyUser(recipientId, "delivery.new", { body: `Tenés un nuevo <strong>${kindLabel}</strong> disponible: “${title}”. Al abrirlo se firma automáticamente con tu firma digital.` }).catch((e) => console.error("[notify] delivery.new", e));
+
   return NextResponse.json({ ok: true, id: d.id });
 }

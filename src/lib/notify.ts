@@ -1,6 +1,7 @@
 import "server-only";
 import { prisma } from "./prisma";
 import { sendEmail, adminAlertHtml } from "./email";
+import { sendPushToUser } from "./push";
 
 function appUrl(path = "") {
   const base = process.env.AUTH_URL ?? (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000");
@@ -53,4 +54,46 @@ export async function notifyAdmins(kind: "user.registered" | "leave.created" | "
   const html = adminAlertHtml(p.title, p.body, appUrl(p.path), p.label);
 
   await Promise.all(to.map((addr) => sendEmail(addr, p.subject, html)));
+}
+
+export type EmployeeEvent =
+  | "leave.approved"
+  | "leave.rejected"
+  | "profile.change.approved"
+  | "profile.change.rejected"
+  | "delivery.new"
+  | "expiry.reminder"
+  | "attendance.checkout.reminder"
+  | "device.approved"
+  | "device.rejected"
+  | "account.disabled.expiry";
+
+const EMPLOYEE_PRESETS: Record<EmployeeEvent, { subject: string; title: string; path: string; label: string }> = {
+  "leave.approved": { subject: "Solicitud aprobada", title: "Tu solicitud fue aprobada", path: "/calendar", label: "Ver calendario" },
+  "leave.rejected": { subject: "Solicitud rechazada", title: "Tu solicitud fue rechazada", path: "/calendar", label: "Ver calendario" },
+  "profile.change.approved": { subject: "Cambios de perfil aprobados", title: "Tus cambios de perfil fueron aprobados", path: "/profile", label: "Ver perfil" },
+  "profile.change.rejected": { subject: "Cambios de perfil rechazados", title: "Tus cambios de perfil fueron rechazados", path: "/profile", label: "Ver perfil" },
+  "delivery.new": { subject: "Nuevo documento disponible", title: "Tenés un documento nuevo", path: "/inbox", label: "Abrir documento" },
+  "expiry.reminder": { subject: "Recordatorio de vencimiento", title: "Documentación por vencer", path: "/documents", label: "Actualizar documentación" },
+  "attendance.checkout.reminder": { subject: "¿Seguís prestando servicio?", title: "¿Seguís prestando servicio?", path: "/checkin", label: "Hacer check-out" },
+  "device.approved": { subject: "Dispositivo aprobado", title: "Tu dispositivo fue aprobado", path: "/checkin", label: "Hacer check-in" },
+  "device.rejected": { subject: "Dispositivo rechazado", title: "Tu dispositivo fue rechazado", path: "/login", label: "Ingresar" },
+  "account.disabled.expiry": { subject: "Cuenta bloqueada por vencimiento", title: "Tu cuenta fue bloqueada", path: "/login", label: "Ingresar" },
+};
+
+/** Notifica a un empleado por email + push. El fallo de un canal nunca bloquea al otro. */
+export async function notifyUser(userId: string, event: EmployeeEvent, payload: { body: string; detail?: string }) {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { email: true, profile: { select: { firstName: true } } },
+  });
+  if (!user) return;
+
+  const p = EMPLOYEE_PRESETS[event];
+  const html = adminAlertHtml(p.title, payload.body, appUrl(p.path), p.label);
+
+  await Promise.allSettled([
+    sendEmail(user.email, p.subject, html),
+    sendPushToUser(userId, { title: p.title, body: payload.body.replace(/<[^>]+>/g, ""), url: appUrl(p.path) }),
+  ]);
 }

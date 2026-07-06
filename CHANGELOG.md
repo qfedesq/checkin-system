@@ -2,6 +2,18 @@
 
 Cada release sube la versión en `+0.01`. El número visible abajo a la izquierda en la app coincide con este archivo.
 
+## v0.09 — 2026-07-06
+
+**Notificaciones push + avisos al empleado.**
+
+- **Web Push (PWA)**: la app ahora puede enviar notificaciones al teléfono aunque esté cerrada. Al entrar, un banner ofrece "Activá las notificaciones"; en iOS requiere tener la app agregada a inicio (iOS 16.4+). El email sigue saliendo siempre como canal de respaldo.
+- **El empleado ahora recibe aviso (email + push) cuando:**
+  - el admin **aprueba o rechaza** su solicitud de vacaciones/franco;
+  - el admin le sube un **documento nuevo** (recibo de sueldo o notificación) a Recibidos.
+- Infraestructura: service worker `sw.js`, suscripciones guardadas por usuario (`PushSubscription`), envío vía `web-push` con claves VAPID, y `notifyUser()` unificando email + push para los próximos eventos (vencimientos, recordatorio de check-out, dispositivos).
+
+**Requiere configurar en Vercel**: `NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` y `VAPID_SUBJECT` (ver runbook). También correr `pnpm db:push` para crear la tabla de suscripciones.
+
 ## v0.08 — 2026-07-06
 
 **Alineación con el pedido del cliente: alta simplificada y calendario domingo-primero.**

@@ -23,6 +23,7 @@ import {
 import { Logo, LogoIcon } from "@/components/brand/Logo";
 import { VersionBadge } from "@/components/ui/VersionBadge";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
+import { PushProvider } from "@/components/providers/PushProvider";
 import { cn } from "@/lib/utils";
 
 type NavItem = { href: string; icon: React.ComponentType<{ className?: string }>; label: string };
@@ -90,6 +91,7 @@ export function AppShell({
 
   return (
     <div className="min-h-screen">
+      <PushProvider />
       {/* Mobile top bar */}
       <header className="md:hidden sticky top-0 z-30 border-b border-border/60 bg-background/85 backdrop-blur">
         <div className="flex items-center justify-between px-4 py-3" style={{ paddingTop: "calc(env(safe-area-inset-top) + 0.75rem)" }}>
