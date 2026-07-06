@@ -42,6 +42,7 @@ const ADMIN_NAV: NavItem[] = [
   { href: "/admin", icon: LayoutDashboard, label: "Panel" },
   { href: "/admin/employees", icon: UserCircle, label: "Empleados" },
   { href: "/admin/users", icon: Users, label: "Usuarios" },
+  { href: "/admin/profile-changes", icon: FileText, label: "Cambios de perfil" },
   { href: "/admin/leaves", icon: Calendar, label: "Vacaciones / Francos" },
   { href: "/admin/documents", icon: ShieldCheck, label: "Documentación" },
   { href: "/admin/deliveries", icon: Send, label: "Entregas" },

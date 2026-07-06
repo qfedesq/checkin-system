@@ -2,6 +2,19 @@
 
 Cada release sube la versión en `+0.01`. El número visible abajo a la izquierda en la app coincide con este archivo.
 
+## v0.11 — 2026-07-06
+
+**Cambios de perfil con aprobación del administrador.**
+
+- El empleado ya no edita su perfil directo: al guardar, los cambios quedan **pendientes de aprobación** y el admin los revisa en la nueva sección **Cambios de perfil** (diff campo por campo: actual → propuesto).
+- Al aprobar o rechazar, el empleado recibe **notificación por email + push** (con motivo opcional en el rechazo).
+- **Campos bloqueados para el empleado** (sólo los edita el admin desde la ficha): legajo, apellidos, nombres, fecha de nacimiento, DNI, CUIL, fecha de ingreso, categoría, email, foto de cara y firma digital.
+- Una sola solicitud pendiente por empleado; el form muestra un banner y bloquea reenvíos hasta que el admin resuelva.
+- La **carga inicial** del perfil (empleado nuevo sin datos) sigue siendo directa para no trabar el onboarding; el admin la revisa desde la ficha.
+- Badge con pendientes en la nav del admin.
+
+**Requiere `pnpm db:push`** (tabla `ProfileChangeRequest`).
+
 ## v0.10 — 2026-07-06
 
 **Sección Empleados: ficha completa editable por el administrador.**

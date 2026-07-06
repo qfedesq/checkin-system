@@ -72,6 +72,28 @@ model User {
   attendances         Attendance[]
   auditLogs           AuditLog[]           @relation("AuditActor")
   pushSubscriptions   PushSubscription[]
+  profileChangeRequests ProfileChangeRequest[]
+}
+
+enum ChangeRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model ProfileChangeRequest {
+  id           String              @id @default(cuid())
+  userId       String
+  user         User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  changes      Json
+  status       ChangeRequestStatus @default(PENDING)
+  reviewedById String?
+  reviewedAt   DateTime?
+  note         String?
+  createdAt    DateTime            @default(now())
+
+  @@index([userId, status])
+  @@index([status, createdAt])
 }
 
 model PushSubscription {

@@ -16,7 +16,7 @@ async function adminEmails(): Promise<string[]> {
   return admins.map((a) => a.email);
 }
 
-export async function notifyAdmins(kind: "user.registered" | "leave.created" | "document.uploaded", payload: {
+export async function notifyAdmins(kind: "user.registered" | "leave.created" | "document.uploaded" | "profile.change.requested", payload: {
   actorName?: string | null;
   actorEmail: string;
   detail?: string;
@@ -47,6 +47,13 @@ export async function notifyAdmins(kind: "user.registered" | "leave.created" | "
       body: `<strong>${actor}</strong> subió: ${payload.detail ?? "un documento"}`,
       path: "/admin/documents",
       label: "Revisar documento",
+    },
+    "profile.change.requested": {
+      subject: `Cambios de perfil pendientes · ${actor}`,
+      title: "Cambios de perfil para revisar",
+      body: `<strong>${actor}</strong> propuso cambios en su perfil: ${payload.detail ?? ""}`,
+      path: "/admin/profile-changes",
+      label: "Revisar cambios",
     },
   };
 

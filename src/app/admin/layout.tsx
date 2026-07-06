@@ -8,10 +8,11 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   if (!session?.user) redirect("/login");
   if (session.user.role !== "ADMIN") redirect("/dashboard");
 
-  const [pendingUsers, pendingLeaves, pendingDocs] = await Promise.all([
+  const [pendingUsers, pendingLeaves, pendingDocs, pendingProfileChanges] = await Promise.all([
     prisma.user.count({ where: { status: "PENDING_APPROVAL" } }),
     prisma.leaveRequest.count({ where: { status: "PENDING" } }),
     prisma.documentUpload.count({ where: { status: "PENDING_REVIEW" } }),
+    prisma.profileChangeRequest.count({ where: { status: "PENDING" } }),
   ]);
 
   return (
@@ -22,6 +23,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         "/admin/users": pendingUsers,
         "/admin/leaves": pendingLeaves,
         "/admin/documents": pendingDocs,
+        "/admin/profile-changes": pendingProfileChanges,
       }}
     >
       {children}

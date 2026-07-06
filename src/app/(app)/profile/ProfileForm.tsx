@@ -55,7 +55,7 @@ const EMPTY: Initial = {
   signatureBlobUrl: "",
 };
 
-export function ProfileForm({ initial, email }: { initial: Initial | null; email: string }) {
+export function ProfileForm({ initial, email, pendingFields }: { initial: Initial | null; email: string; pendingFields?: string[] }) {
   const router = useRouter();
   const [data, setData] = useState<Initial>(initial ?? EMPTY);
   const [busy, setBusy] = useState(false);
@@ -63,6 +63,10 @@ export function ProfileForm({ initial, email }: { initial: Initial | null; email
   const fileRef = useRef<HTMLInputElement>(null);
 
   const isDriver = data.category === "DRIVER";
+  // Con perfil ya creado, los datos de identidad los edita sólo el admin
+  // y el resto de los cambios pasan por su aprobación.
+  const locked = initial !== null;
+  const hasPending = (pendingFields?.length ?? 0) > 0;
 
   function set<K extends keyof Initial>(key: K, v: Initial[K]) {
     setData((d) => ({ ...d, [key]: v }));
@@ -97,12 +101,23 @@ export function ProfileForm({ initial, email }: { initial: Initial | null; email
       setMsg({ kind: "err", text: body.error ?? "No pudimos guardar los datos." });
       return;
     }
-    setMsg({ kind: "ok", text: "Datos guardados" });
+    if (body.pendingApproval) {
+      setMsg({ kind: "ok", text: "Cambios enviados: quedan pendientes de aprobación del administrador. Te va a llegar una notificación cuando los revise." });
+    } else if (body.unchanged) {
+      setMsg({ kind: "ok", text: "No hay cambios para guardar" });
+    } else {
+      setMsg({ kind: "ok", text: "Datos guardados" });
+    }
     router.refresh();
   }
 
   return (
     <form onSubmit={onSubmit} className="space-y-6">
+      {hasPending && (
+        <div className="rounded-xl border border-[hsl(19_95%_53%)]/30 bg-[hsl(19_95%_53%)]/10 px-4 py-3 text-sm">
+          Tenés <strong>cambios pendientes de aprobación</strong> del administrador. Hasta que los revise, no podés enviar nuevos cambios.
+        </div>
+      )}
       <section className="panel p-6">
         <h2 className="text-lg font-semibold">Identificación</h2>
         <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -110,13 +125,13 @@ export function ProfileForm({ initial, email }: { initial: Initial | null; email
           <Field label="Legajo (asignado por admin)">
             <input disabled className="surface-control" value={data.legajo || "—"} />
           </Field>
-          <Field label="Apellido"><input className="surface-control" required value={data.lastName} onChange={(e) => set("lastName", e.target.value)} /></Field>
-          <Field label="Nombre"><input className="surface-control" required value={data.firstName} onChange={(e) => set("firstName", e.target.value)} /></Field>
-          <Field label="Fecha de nacimiento"><input type="date" className="surface-control" required value={data.dob} onChange={(e) => set("dob", e.target.value)} /></Field>
-          <Field label="CUIL"><input className="surface-control" required value={data.cuil} onChange={(e) => set("cuil", e.target.value)} placeholder="20-12345678-9" /></Field>
+          <Field label={locked ? "Apellido (lo edita el admin)" : "Apellido"}><input className="surface-control" required disabled={locked} value={data.lastName} onChange={(e) => set("lastName", e.target.value)} /></Field>
+          <Field label={locked ? "Nombre (lo edita el admin)" : "Nombre"}><input className="surface-control" required disabled={locked} value={data.firstName} onChange={(e) => set("firstName", e.target.value)} /></Field>
+          <Field label={locked ? "Fecha de nacimiento (la edita el admin)" : "Fecha de nacimiento"}><input type="date" className="surface-control" required disabled={locked} value={data.dob} onChange={(e) => set("dob", e.target.value)} /></Field>
+          <Field label={locked ? "CUIL (lo edita el admin)" : "CUIL"}><input className="surface-control" required disabled={locked} value={data.cuil} onChange={(e) => set("cuil", e.target.value)} placeholder="20-12345678-9" /></Field>
           <Field label="Fecha de ingreso (asignada por admin)"><input disabled className="surface-control" value={data.hireDate || "—"} /></Field>
-          <Field label="Categoría">
-            <select className="surface-select" value={data.category} onChange={(e) => set("category", e.target.value as "DRIVER" | "HELPER")}>
+          <Field label={locked ? "Categoría (la edita el admin)" : "Categoría"}>
+            <select className="surface-select" disabled={locked} value={data.category} onChange={(e) => set("category", e.target.value as "DRIVER" | "HELPER")}>
               <option value="HELPER">Ayudante</option>
               <option value="DRIVER">Chofer</option>
             </select>
@@ -167,7 +182,11 @@ export function ProfileForm({ initial, email }: { initial: Initial | null; email
 
       <section className="panel p-6">
         <h2 className="text-lg font-semibold">Firma digital</h2>
-        <p className="mt-1 text-sm text-muted-foreground">Subí una imagen PNG o JPG de tu firma sobre fondo blanco. Se usará automáticamente cuando abras recibos y documentos internos.</p>
+        <p className="mt-1 text-sm text-muted-foreground">
+          {locked
+            ? "Tu firma se usa automáticamente cuando abrís recibos y documentos internos. Si necesitás cambiarla, pedíselo al administrador."
+            : "Subí una imagen PNG o JPG de tu firma sobre fondo blanco. Se usará automáticamente cuando abras recibos y documentos internos."}
+        </p>
         <div className="mt-4 flex items-center gap-6">
           <div className="surface-card flex h-24 w-48 items-center justify-center overflow-hidden p-2">
             {data.signatureBlobUrl ? (
@@ -176,18 +195,20 @@ export function ProfileForm({ initial, email }: { initial: Initial | null; email
               <span className="text-xs text-muted-foreground">sin firma</span>
             )}
           </div>
-          <div>
-            <input
-              ref={fileRef}
-              type="file"
-              accept="image/png,image/jpeg"
-              className="hidden"
-              onChange={(e) => e.target.files?.[0] && onSignatureChange(e.target.files[0])}
-            />
-            <button type="button" onClick={() => fileRef.current?.click()} className="btn-ghost">
-              {data.signatureBlobUrl ? "Cambiar firma" : "Subir firma"}
-            </button>
-          </div>
+          {!locked && (
+            <div>
+              <input
+                ref={fileRef}
+                type="file"
+                accept="image/png,image/jpeg"
+                className="hidden"
+                onChange={(e) => e.target.files?.[0] && onSignatureChange(e.target.files[0])}
+              />
+              <button type="button" onClick={() => fileRef.current?.click()} className="btn-ghost">
+                {data.signatureBlobUrl ? "Cambiar firma" : "Subir firma"}
+              </button>
+            </div>
+          )}
         </div>
       </section>
 
@@ -196,7 +217,9 @@ export function ProfileForm({ initial, email }: { initial: Initial | null; email
       )}
 
       <div className="flex justify-end gap-2">
-        <button type="submit" className="btn-primary" disabled={busy}>{busy ? "Guardando…" : "Guardar cambios"}</button>
+        <button type="submit" className="btn-primary" disabled={busy || hasPending}>
+          {busy ? "Enviando…" : locked ? "Enviar cambios para aprobación" : "Guardar datos"}
+        </button>
       </div>
     </form>
   );

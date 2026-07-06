@@ -8,7 +8,10 @@ export const dynamic = "force-dynamic";
 export default async function ProfilePage() {
   const session = await auth();
   if (!session?.user) return null;
-  const profile = await prisma.employeeProfile.findUnique({ where: { userId: session.user.id } });
+  const [profile, pendingRequest] = await Promise.all([
+    prisma.employeeProfile.findUnique({ where: { userId: session.user.id } }),
+    prisma.profileChangeRequest.findFirst({ where: { userId: session.user.id, status: "PENDING" } }),
+  ]);
 
   const initial = profile
     ? {
@@ -40,8 +43,12 @@ export default async function ProfilePage() {
 
   return (
     <>
-      <PageHeader eyebrow="mi perfil" title="Datos personales" description="Completá tus datos para operar en la plataforma. Legajo y fecha de ingreso los asigna el administrador." />
-      <ProfileForm initial={initial} email={session.user.email} />
+      <PageHeader eyebrow="mi perfil" title="Datos personales" description="Completá tus datos para operar en la plataforma. Los cambios los aprueba el administrador; los datos de identidad sólo los edita él." />
+      <ProfileForm
+        initial={initial}
+        email={session.user.email}
+        pendingFields={pendingRequest ? Object.keys(pendingRequest.changes as Record<string, unknown>) : []}
+      />
     </>
   );
 }
