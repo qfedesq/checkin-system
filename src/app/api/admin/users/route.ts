@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import crypto from "node:crypto";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
@@ -15,13 +14,8 @@ const body = z.object({
   lastName: z.string().optional(),
 });
 
-function genTempPassword() {
-  const alphabet = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
-  const bytes = crypto.randomBytes(12);
-  let out = "";
-  for (const b of bytes) out += alphabet[b % alphabet.length];
-  return out.slice(0, 12);
-}
+// Clave temporaria fija pedida por el cliente; mustChangePassword fuerza el cambio en el primer login.
+const TEMP_PASSWORD = "Emmalva01";
 
 export async function POST(req: NextRequest) {
   const { session, error } = await requireAdmin();
@@ -42,7 +36,7 @@ export async function POST(req: NextRequest) {
   const hireDate = parsed.data.hireDate ? new Date(parsed.data.hireDate) : null;
   if (hireDate && Number.isNaN(hireDate.getTime())) return NextResponse.json({ error: "Fecha inválida" }, { status: 400 });
 
-  const tempPassword = genTempPassword();
+  const tempPassword = TEMP_PASSWORD;
   const passwordHash = await bcrypt.hash(tempPassword, 12);
 
   const user = await prisma.user.create({

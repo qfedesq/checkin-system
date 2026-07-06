@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AuthShell } from "@/components/layout/AuthShell";
 import { LoginForm } from "./LoginForm";
@@ -13,14 +12,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
     <AuthShell
       title="Iniciar sesión"
       subtitle="Ingresá con tu email y contraseña. Después te pediremos tu biometría."
-      footer={
-        <>
-          ¿Todavía no tenés cuenta?{" "}
-          <Link href="/register" className="text-primary underline underline-offset-4">
-            Crear una
-          </Link>
-        </>
-      }
+      footer={<>¿Todavía no tenés cuenta? Pedile al administrador que la cree.</>}
     >
       <LoginForm from={sp.from} error={sp.error} />
     </AuthShell>

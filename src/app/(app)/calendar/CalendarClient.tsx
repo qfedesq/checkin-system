@@ -74,7 +74,7 @@ export function CalendarClient() {
 
         <DayPicker
           mode="single"
-          weekStartsOn={1}
+          weekStartsOn={0}
           selected={selected}
           onSelect={setSelected}
           disabled={disabledDays as never}

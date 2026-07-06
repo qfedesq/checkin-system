@@ -2,6 +2,15 @@
 
 Cada release sube la versión en `+0.01`. El número visible abajo a la izquierda en la app coincide con este archivo.
 
+## v0.08 — 2026-07-06
+
+**Alineación con el pedido del cliente: alta simplificada y calendario domingo-primero.**
+
+- **Clave temporaria fija "Emmalva01"**: al crear un usuario o resetear su contraseña, el admin ya no recibe una clave aleatoria — siempre es `Emmalva01` (pedido del cliente). El usuario sigue obligado a cambiarla en el primer ingreso (`mustChangePassword`).
+- **Registro autoservicio deshabilitado**: `/register` redirige a `/login` y `POST /api/register` responde 410. Las cuentas se crean únicamente desde `/admin/users`.
+- **Calendario con semana comenzando domingo** en la vista del empleado (las vacaciones siguen iniciando lunes, como pide el cliente).
+- **Sección Horas**: atajos "Este mes" / "Mes anterior" para completar el rango de fechas de una, junto al filtro por empleado ya existente.
+
 ## v0.07 — 2026-04-21
 
 **Fix: la duración de la jornada es visible sólo al administrador.**

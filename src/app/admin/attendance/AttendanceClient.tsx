@@ -27,6 +27,15 @@ export function AttendanceClient({ initial, employees, rows }: {
   const [to, setTo] = useState(initial.to);
   const [userId, setUserId] = useState(initial.userId);
 
+  function setMonth(offset: number) {
+    const now = new Date();
+    const first = new Date(now.getFullYear(), now.getMonth() + offset, 1);
+    const last = new Date(now.getFullYear(), now.getMonth() + offset + 1, 0);
+    const iso = (d: Date) => d.toISOString().slice(0, 10);
+    setFrom(iso(first));
+    setTo(iso(last));
+  }
+
   function applyFilter() {
     const sp = new URLSearchParams();
     if (from) sp.set("from", from);
@@ -66,6 +75,11 @@ export function AttendanceClient({ initial, employees, rows }: {
             <button className="btn-primary" onClick={applyFilter}>Filtrar</button>
             <button className="btn-ghost" onClick={exportExcel}><Download className="h-4 w-4" /> Excel</button>
           </div>
+        </div>
+        <div className="mt-3 flex items-center gap-2 text-sm">
+          <span className="eyebrow">Rápido</span>
+          <button className="btn-ghost" onClick={() => setMonth(0)}>Este mes</button>
+          <button className="btn-ghost" onClick={() => setMonth(-1)}>Mes anterior</button>
         </div>
       </section>
 

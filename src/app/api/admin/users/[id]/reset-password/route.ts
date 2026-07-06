@@ -1,24 +1,18 @@
 import { NextResponse } from "next/server";
-import crypto from "node:crypto";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/admin-guard";
 import { recordAudit } from "@/lib/audit";
 
-function genTempPassword() {
-  const alphabet = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
-  const bytes = crypto.randomBytes(12);
-  let out = "";
-  for (const b of bytes) out += alphabet[b % alphabet.length];
-  return out.slice(0, 12);
-}
+// Clave temporaria fija pedida por el cliente; mustChangePassword fuerza el cambio en el primer login.
+const TEMP_PASSWORD = "Emmalva01";
 
 export async function POST(_req: Request, ctx: { params: Promise<{ id: string }> }) {
   const { session, error } = await requireAdmin();
   if (error) return error;
 
   const { id } = await ctx.params;
-  const tempPassword = genTempPassword();
+  const tempPassword = TEMP_PASSWORD;
   const passwordHash = await bcrypt.hash(tempPassword, 12);
 
   await prisma.user.update({

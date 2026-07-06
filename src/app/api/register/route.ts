@@ -1,29 +1,10 @@
-import { NextRequest, NextResponse } from "next/server";
-import bcrypt from "bcryptjs";
-import { z } from "zod";
-import { prisma } from "@/lib/prisma";
-import { recordAudit } from "@/lib/audit";
-import { notifyAdmins } from "@/lib/notify";
+import { NextResponse } from "next/server";
 
-const body = z.object({
-  email: z.string().email(),
-  password: z.string().min(8),
-});
-
-export async function POST(req: NextRequest) {
-  const parsed = body.safeParse(await req.json().catch(() => ({})));
-  if (!parsed.success) return NextResponse.json({ error: "Datos inválidos" }, { status: 400 });
-
-  const email = parsed.data.email.toLowerCase();
-  const existing = await prisma.user.findUnique({ where: { email } });
-  if (existing) return NextResponse.json({ error: "Ese email ya está registrado" }, { status: 409 });
-
-  const passwordHash = await bcrypt.hash(parsed.data.password, 12);
-  const user = await prisma.user.create({
-    data: { email, passwordHash, role: "EMPLOYEE", status: "PENDING_APPROVAL" },
-  });
-
-  await recordAudit({ action: "user.register", subjectId: user.id });
-  notifyAdmins("user.registered", { actorEmail: user.email }).catch((e) => console.error("[notify] register", e));
-  return NextResponse.json({ ok: true });
+// El registro autoservicio quedó deshabilitado: las cuentas las crea el administrador
+// desde /admin/users con la clave temporaria.
+export async function POST() {
+  return NextResponse.json(
+    { error: "El registro está deshabilitado. Pedile al administrador que cree tu cuenta." },
+    { status: 410 },
+  );
 }
