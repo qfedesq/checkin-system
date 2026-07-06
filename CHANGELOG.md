@@ -2,6 +2,13 @@
 
 Cada release sube la versión en `+0.01`. El número visible abajo a la izquierda en la app coincide con este archivo.
 
+## v0.17 — 2026-07-06
+
+**Recibidos con filtros + cierre del paquete de mejoras.**
+
+- **Recibidos**: tabs para separar **Recibos** y **Notificaciones**, y filtro por **período mensual**. Los documentos internos pasan a llamarse "Notificación" (llamados de atención / suspensiones), alineado con el pedido del cliente.
+- Cierre del paquete v0.08 → v0.17: alta con clave fija, push, ficha de empleados, aprobación de cambios de perfil, dashboard con gráficos, reglas de calendario, recordatorio de check-out, bloqueo automático por vencimiento y aprobación de dispositivos.
+
 ## v0.16 — 2026-07-06
 
 **Aprobación de dispositivos por el administrador.**

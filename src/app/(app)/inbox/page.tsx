@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { PageHeader } from "@/components/ui/PageHeader";
@@ -6,19 +7,62 @@ import { Download, FileText } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
-const TYPE_LABEL = { PAYSLIP: "Recibo de sueldo", INTERNAL_DOC: "Documento interno", OTHER: "Otro" } as const;
+const TYPE_LABEL = { PAYSLIP: "Recibo de sueldo", INTERNAL_DOC: "Notificación", OTHER: "Otro" } as const;
 
-export default async function InboxPage() {
+const TABS = [
+  { key: "", label: "Todos" },
+  { key: "PAYSLIP", label: "Recibos" },
+  { key: "INTERNAL_DOC", label: "Notificaciones" },
+] as const;
+
+export default async function InboxPage({ searchParams }: { searchParams: Promise<{ type?: string; month?: string }> }) {
   const session = await auth();
   if (!session?.user) return null;
+  const sp = await searchParams;
+  const type = sp.type === "PAYSLIP" || sp.type === "INTERNAL_DOC" ? sp.type : "";
+  const month = /^\d{4}-\d{2}$/.test(sp.month ?? "") ? sp.month! : "";
+
+  let monthFilter = {};
+  if (month) {
+    const [y, m] = month.split("-").map(Number);
+    monthFilter = { createdAt: { gte: new Date(y, m - 1, 1), lt: new Date(y, m, 1) } };
+  }
+
   const deliveries = await prisma.deliveredDocument.findMany({
-    where: { recipientId: session.user.id },
+    where: {
+      recipientId: session.user.id,
+      ...(type ? { type } : {}),
+      ...monthFilter,
+    },
     orderBy: { createdAt: "desc" },
   });
+
+  const qs = (t: string, m: string) => {
+    const p = new URLSearchParams();
+    if (t) p.set("type", t);
+    if (m) p.set("month", m);
+    const s = p.toString();
+    return s ? `?${s}` : "";
+  };
 
   return (
     <>
       <PageHeader eyebrow="recibidos" title="Documentos para vos" description="Hacé click para descargar. Al abrirlo, se firma automáticamente con tu firma digital." />
+
+      <div className="mb-4 flex flex-wrap items-center gap-2">
+        {TABS.map((t) => (
+          <Link key={t.key} href={`/inbox${qs(t.key, month)}`} className={type === t.key ? "btn-primary" : "btn-ghost"}>
+            {t.label}
+          </Link>
+        ))}
+        <form action="/inbox" method="get" className="ml-auto flex items-center gap-2">
+          {type && <input type="hidden" name="type" value={type} />}
+          <input type="month" name="month" defaultValue={month} className="surface-control" />
+          <button className="btn-ghost" type="submit">Filtrar</button>
+          {month && <Link href={`/inbox${qs(type, "")}`} className="btn-ghost text-xs">Limpiar</Link>}
+        </form>
+      </div>
+
       <section className="panel p-0 overflow-hidden">
         <div className="overflow-x-auto"><table className="w-full min-w-[620px] text-sm">
           <thead>
@@ -52,7 +96,9 @@ export default async function InboxPage() {
               </tr>
             ))}
             {deliveries.length === 0 && (
-              <tr><td colSpan={5} className="px-5 py-10 text-center text-muted-foreground">No tenés documentos para abrir.</td></tr>
+              <tr><td colSpan={5} className="px-5 py-10 text-center text-muted-foreground">
+                {type || month ? "No hay documentos con ese filtro." : "No tenés documentos para abrir."}
+              </td></tr>
             )}
           </tbody>
         </table></div>
