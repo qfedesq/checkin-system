@@ -9,6 +9,9 @@ import { formatDate } from "@/lib/utils";
 type Availability = {
   myLeaves: { id: string; type: "VACATION" | "DAY_OFF"; startDate: string; endDate: string; status: "PENDING" | "APPROVED" | "REJECTED"; days: number }[];
   takenDayOffs: { date: string; byMe: boolean }[];
+  categoryTakenRanges: { from: string; to: string }[];
+  vacation: { weeksPerYear: number; totalDays: number; usedDays: number; leftDays: number };
+  myDayOffMonths: string[];
 };
 
 export function CalendarClient() {
@@ -32,12 +35,26 @@ export function CalendarClient() {
   const disabledDays = useMemo(() => {
     if (!data) return [];
     if (tab === "VACATION") {
-      return [{ before: new Date() }, (d: Date) => d.getDay() !== 1];
+      // Sólo lunes, futuro, y sin cupo tomado por otro de mi categoría en la semana solicitada
+      const categoryRanges = data.categoryTakenRanges.map((r) => ({ from: new Date(r.from), to: new Date(r.to) }));
+      return [
+        { before: new Date() },
+        (d: Date) => {
+          if (d.getDay() !== 1) return true;
+          const end = new Date(d);
+          end.setDate(end.getDate() + duration - 1);
+          return categoryRanges.some((r) => d <= r.to && r.from <= end);
+        },
+      ];
     }
-    // Franco: deshabilitar fechas con franco aprobado por otros
+    // Franco: deshabilitar fechas con franco aprobado por otros y meses donde ya tengo uno
     const takenByOthers = data.takenDayOffs.filter((t) => !t.byMe).map((t) => new Date(t.date));
-    return [{ before: new Date() }, ...takenByOthers];
-  }, [tab, data]);
+    return [
+      { before: new Date() },
+      (d: Date) => data.myDayOffMonths.includes(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`),
+      ...takenByOthers,
+    ];
+  }, [tab, data, duration]);
 
   const mineByRange = useMemo(() => {
     if (!data) return [];
@@ -71,6 +88,20 @@ export function CalendarClient() {
           <button className={tab === "VACATION" ? "btn-primary" : "btn-ghost"} onClick={() => setTab("VACATION")}>Vacaciones</button>
           <button className={tab === "DAY_OFF" ? "btn-primary" : "btn-ghost"} onClick={() => setTab("DAY_OFF")}>Franco</button>
         </div>
+
+        {data && tab === "VACATION" && (
+          <div className="mb-4 rounded-xl border border-border/60 bg-secondary/40 px-4 py-3 text-sm">
+            Saldo anual: <strong>{data.vacation.leftDays}</strong> de {data.vacation.totalDays} días disponibles
+            {data.vacation.usedDays > 0 ? ` (${data.vacation.usedDays} ya pedidos)` : ""}.
+            <span className="text-muted-foreground"> Las semanas con otro {""}
+              compañero de tu categoría de vacaciones aparecen deshabilitadas.</span>
+          </div>
+        )}
+        {data && tab === "DAY_OFF" && (
+          <div className="mb-4 rounded-xl border border-border/60 bg-secondary/40 px-4 py-3 text-sm">
+            Podés pedir <strong>un franco por mes</strong>. Los meses donde ya tenés uno aparecen deshabilitados.
+          </div>
+        )}
 
         <DayPicker
           mode="single"

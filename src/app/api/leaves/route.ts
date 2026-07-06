@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { parseLocalDate, validateVacationRange } from "@/lib/leaves";
+import { parseLocalDate, validateVacationRange, yearBounds, monthBounds, vacationBalance } from "@/lib/leaves";
 import { recordAudit } from "@/lib/audit";
 import { notifyAdmins } from "@/lib/notify";
 import { formatDate } from "@/lib/utils";
@@ -40,6 +40,37 @@ export async function POST(req: NextRequest) {
       },
     });
     if (overlap) return NextResponse.json({ error: "Ya tenés una solicitud para ese período" }, { status: 409 });
+
+    const profile = await prisma.employeeProfile.findUnique({ where: { userId: session.user.id } });
+    if (!profile) return NextResponse.json({ error: "Completá tu perfil antes de pedir vacaciones" }, { status: 400 });
+
+    // Saldo anual: semanas asignadas × 7 − días ya pedidos en el año
+    const { start: yStart, end: yEnd } = yearBounds(startDate);
+    const yearLeaves = await prisma.leaveRequest.findMany({
+      where: { userId: session.user.id, type: "VACATION", status: { in: ["PENDING", "APPROVED"] }, startDate: { gte: yStart, lte: yEnd } },
+      select: { days: true },
+    });
+    const used = yearLeaves.reduce((a, l) => a + l.days, 0);
+    const balance = vacationBalance(profile.vacationWeeksPerYear, used);
+    if (daysInt > balance.leftDays) {
+      return NextResponse.json({ error: `No te alcanza el saldo anual de vacaciones: te quedan ${balance.leftDays} día(s) de ${balance.totalDays}` }, { status: 409 });
+    }
+
+    // Cupo semanal: máximo un chofer y un ayudante de vacaciones por semana
+    const categoryOverlap = await prisma.leaveRequest.findFirst({
+      where: {
+        type: "VACATION",
+        status: "APPROVED",
+        userId: { not: session.user.id },
+        startDate: { lte: endDate },
+        endDate: { gte: startDate },
+        user: { profile: { category: profile.category } },
+      },
+    });
+    if (categoryOverlap) {
+      const label = profile.category === "DRIVER" ? "chofer" : "ayudante";
+      return NextResponse.json({ error: `Ya hay un ${label} de vacaciones en ese período (máximo uno por semana)` }, { status: 409 });
+    }
   } else {
     const local = parseLocalDate(parsed.data.startDate);
     if (!local) return NextResponse.json({ error: "Fecha inválida" }, { status: 400 });
@@ -57,6 +88,13 @@ export async function POST(req: NextRequest) {
       where: { userId: session.user.id, type: "DAY_OFF", startDate: local, status: { in: ["PENDING", "APPROVED"] } },
     });
     if (mine) return NextResponse.json({ error: "Ya pediste franco ese día" }, { status: 409 });
+
+    // Máximo un franco por mes por empleado
+    const { start: mStart, end: mEnd } = monthBounds(local);
+    const monthly = await prisma.leaveRequest.findFirst({
+      where: { userId: session.user.id, type: "DAY_OFF", status: { in: ["PENDING", "APPROVED"] }, startDate: { gte: mStart, lte: mEnd } },
+    });
+    if (monthly) return NextResponse.json({ error: "Ya tenés un franco pedido este mes (máximo uno por mes)" }, { status: 409 });
   }
 
   const leave = await prisma.leaveRequest.create({

@@ -38,3 +38,21 @@ export function rangesOverlap(aStart: Date, aEnd: Date, bStart: Date, bEnd: Date
 export function sameDay(a: Date, b: Date): boolean {
   return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
 }
+
+export function sameMonth(a: Date, b: Date): boolean {
+  return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth();
+}
+
+export function yearBounds(date: Date): { start: Date; end: Date } {
+  return { start: new Date(date.getFullYear(), 0, 1), end: new Date(date.getFullYear(), 11, 31, 23, 59, 59) };
+}
+
+export function monthBounds(date: Date): { start: Date; end: Date } {
+  return { start: new Date(date.getFullYear(), date.getMonth(), 1), end: new Date(date.getFullYear(), date.getMonth() + 1, 0, 23, 59, 59) };
+}
+
+/** Saldo anual de vacaciones: semanas asignadas × 7 − días ya pedidos (pendientes + aprobados) en el año. */
+export function vacationBalance(weeksPerYear: number, usedDays: number): { totalDays: number; usedDays: number; leftDays: number } {
+  const totalDays = weeksPerYear * 7;
+  return { totalDays, usedDays, leftDays: Math.max(0, totalDays - usedDays) };
+}

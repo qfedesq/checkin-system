@@ -2,6 +2,15 @@
 
 Cada release sube la versión en `+0.01`. El número visible abajo a la izquierda en la app coincide con este archivo.
 
+## v0.13 — 2026-07-06
+
+**Reglas nuevas de vacaciones y francos.**
+
+- **Saldo anual de vacaciones**: cada empleado tiene "semanas de vacaciones por año" (lo asigna el admin en la ficha, default 2). El sistema valida que lo solicitado no exceda el saldo y lo muestra en el calendario.
+- **Cupo por categoría**: máximo **un chofer y un ayudante** de vacaciones por semana. Las semanas ya tomadas por un compañero de la misma categoría aparecen deshabilitadas.
+- **Franco mensual**: máximo **un franco por mes** por empleado (además de la regla existente de un solo empleado con franco por día). Los meses ya usados aparecen deshabilitados.
+- Paneles informativos en el calendario del empleado con el saldo y las reglas.
+
 ## v0.12 — 2026-07-06
 
 **Dashboard del administrador con gráficos.**
