@@ -226,6 +226,7 @@ model Attendance {
   checkOutLat Float?
   checkOutLng Float?
   durationMin Int?
+  checkoutReminderSentAt DateTime?
 
   @@index([userId, checkInAt])
 }

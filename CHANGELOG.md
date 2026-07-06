@@ -2,6 +2,15 @@
 
 Cada release sube la versión en `+0.01`. El número visible abajo a la izquierda en la app coincide con este archivo.
 
+## v0.14 — 2026-07-06
+
+**Recordatorio de check-out a las 7 h 45 m.**
+
+- Cron cada 15 minutos (`/api/cron/checkout-reminder`): si pasaron 7 h 45 m del check-in y la jornada sigue abierta, el empleado recibe **email + push** preguntando si sigue prestando servicio, con recordatorio de hacer check-out.
+- Un solo aviso por jornada (`checkoutReminderSentAt`).
+
+**Atención (deploy)**: los crons cada 15 minutos requieren **Vercel Pro**. En plan Hobby, configurar un scheduler externo gratuito (ej. cron-job.org) que llame `GET /api/cron/checkout-reminder?key=<CRON_SECRET>` cada 15 minutos — el endpoint es el mismo. También correr `pnpm db:push`.
+
 ## v0.13 — 2026-07-06
 
 **Reglas nuevas de vacaciones y francos.**

@@ -59,6 +59,10 @@ Las notificaciones al empleado salen por **email + push**. El push usa claves VA
 4. **iOS**: el push sólo funciona si el empleado agregó la app a inicio (PWA instalada, iOS 16.4+). En Android y desktop funciona directo en el browser.
 5. Las suscripciones viven en la tabla `PushSubscription`; las vencidas (404/410) se limpian solas al intentar enviar.
 
+## Cron de recordatorio de check-out
+
+`GET /api/cron/checkout-reminder` corre cada 15 minutos (vercel.json). **Vercel Hobby no soporta crons sub-diarios**: si el proyecto está en Hobby, crear un job en cron-job.org (u otro scheduler) que llame `https://<dominio>/api/cron/checkout-reminder?key=<CRON_SECRET>` cada 15 minutos.
+
 ## Restaurar DB
 
 Neon ofrece branches y point-in-time restore. Desde el dashboard de Neon, crear branch desde timestamp deseado y actualizar `DATABASE_URL` en Vercel.
