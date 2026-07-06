@@ -58,6 +58,7 @@ model User {
   passwordHash        String
   role                Role                 @default(EMPLOYEE)
   status              AccountStatus        @default(PENDING_APPROVAL)
+  disabledReason      DisableReason?
   mustChangePassword  Boolean              @default(false)
   deviceId            String?              @unique
   createdAt           DateTime             @default(now())
@@ -79,6 +80,12 @@ enum ChangeRequestStatus {
   PENDING
   APPROVED
   REJECTED
+}
+
+enum DisableReason {
+  MANUAL
+  EXPIRED_LICENSE
+  EXPIRED_HEALTH_CARD
 }
 
 model ProfileChangeRequest {

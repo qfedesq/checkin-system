@@ -2,6 +2,17 @@
 
 Cada release sube la versión en `+0.01`. El número visible abajo a la izquierda en la app coincide con este archivo.
 
+## v0.15 — 2026-07-06
+
+**Bloqueo automático por documentación vencida.**
+
+- Los recordatorios diarios de vencimiento (30 días antes, con días restantes) ahora también salen por **push**, además del email.
+- **Bloqueo automático**: al día siguiente del vencimiento del carnet profesional (choferes) o la libreta sanitaria, el cron bloquea la cuenta (`DISABLED` con motivo). El empleado recibe email + push explicando el motivo, y los administradores un aviso. **Sólo el admin puede desbloquear** (el desbloqueo limpia el motivo).
+- Los administradores y los perfiles sin fecha cargada quedan excluidos del bloqueo automático.
+- El bloqueo manual del admin queda registrado con motivo `MANUAL` para distinguirlo.
+
+**Requiere `pnpm db:push`** (campo `disabledReason`).
+
 ## v0.14 — 2026-07-06
 
 **Recordatorio de check-out a las 7 h 45 m.**
