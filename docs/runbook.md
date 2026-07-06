@@ -18,7 +18,7 @@ El empleado perdió el teléfono o cambió de laptop.
 ## Revivir el cron de vencimientos
 
 ```
-curl -H "Authorization: Bearer $CRON_SECRET" https://checkin-system.vercel.app/api/cron/expiry-check
+curl -H "Authorization: Bearer $CRON_SECRET" https://checkin-system-beta.vercel.app/api/cron/expiry-check
 ```
 
 Verificar logs en Vercel. Si los emails no salen, revisá `GMAIL_USER` + `GMAIL_APP_PASSWORD` (driver primario) o `RESEND_API_KEY` (fallback).

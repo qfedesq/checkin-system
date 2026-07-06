@@ -2,6 +2,13 @@
 
 Cada release sube la versión en `+0.01`. El número visible abajo a la izquierda en la app coincide con este archivo.
 
+## v0.18 — 2026-07-06
+
+**Fix: los crons ahora corren de verdad.**
+
+- El middleware redirigía `/api/cron/*` a `/login` (sin sesión), así que los crons de vencimientos y de recordatorio de check-out nunca llegaban a ejecutarse — probablemente desde v0.01. Ahora `/api/cron` está exento del middleware y se autentica con su propio `CRON_SECRET`.
+- Runbook: corregida la URL de producción (`checkin-system-beta.vercel.app`).
+
 ## v0.17 — 2026-07-06
 
 **Recibidos con filtros + cierre del paquete de mejoras.**

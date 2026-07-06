@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 
-const PUBLIC_PATHS = ["/login", "/forgot-password", "/api/auth"];
+// /api/cron se autentica solo (CRON_SECRET) — el middleware no debe redirigirlo a /login
+const PUBLIC_PATHS = ["/login", "/forgot-password", "/api/auth", "/api/cron"];
 
 export default auth((req) => {
   const { pathname } = req.nextUrl;
