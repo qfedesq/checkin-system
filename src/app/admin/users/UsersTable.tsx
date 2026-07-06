@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { CheckCircle2, KeyRound, Smartphone, XCircle, UserPlus } from "lucide-react";
+import { CheckCircle2, KeyRound, Smartphone, XCircle, UserPlus, ShieldCheck, ShieldX } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 
 type Row = {
@@ -12,6 +12,7 @@ type Row = {
   status: "PENDING_APPROVAL" | "ACTIVE" | "DISABLED";
   mustChangePassword: boolean;
   hasDevice: boolean;
+  devicePending: boolean;
   createdAt: string;
   firstName: string;
   lastName: string;
@@ -80,7 +81,11 @@ export function UsersTable({ users }: { users: Row[] }) {
                 {u.mustChangePassword && <span className="badge-primary ml-1">pwd temp</span>}
               </td>
               <td className="px-3 py-3">
-                {u.hasDevice ? <span className="badge-primary">registrado</span> : <span className="badge">sin dispositivo</span>}
+                {u.hasDevice ? (
+                  u.devicePending ? <span className="badge-accent">pendiente de aprobación</span> : <span className="badge-primary">aprobado</span>
+                ) : (
+                  <span className="badge">sin dispositivo</span>
+                )}
               </td>
               <td className="px-3 py-3 text-xs text-muted-foreground">{formatDate(u.createdAt)}</td>
               <td className="px-5 py-3 text-right">
@@ -92,6 +97,24 @@ export function UsersTable({ users }: { users: Row[] }) {
                   )}
                   {u.status === "ACTIVE" && (
                     <>
+                      {u.devicePending && (
+                        <>
+                          <button
+                            className="btn-success"
+                            title="Aprobar dispositivo"
+                            onClick={() => post(`/api/admin/users/${u.id}/approve-device`)}
+                          >
+                            <ShieldCheck className="h-4 w-4" /> Aprobar disp.
+                          </button>
+                          <button
+                            className="btn-ghost"
+                            title="Rechazar dispositivo (borra la credencial)"
+                            onClick={() => post(`/api/admin/users/${u.id}/reject-device`)}
+                          >
+                            <ShieldX className="h-4 w-4" />
+                          </button>
+                        </>
+                      )}
                       <button
                         className="btn-ghost"
                         title="Resetear contraseña"

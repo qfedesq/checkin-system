@@ -16,7 +16,7 @@ async function adminEmails(): Promise<string[]> {
   return admins.map((a) => a.email);
 }
 
-export async function notifyAdmins(kind: "user.registered" | "leave.created" | "document.uploaded" | "profile.change.requested", payload: {
+export async function notifyAdmins(kind: "user.registered" | "leave.created" | "document.uploaded" | "profile.change.requested" | "device.pending", payload: {
   actorName?: string | null;
   actorEmail: string;
   detail?: string;
@@ -54,6 +54,13 @@ export async function notifyAdmins(kind: "user.registered" | "leave.created" | "
       body: `<strong>${actor}</strong> propuso cambios en su perfil: ${payload.detail ?? ""}`,
       path: "/admin/profile-changes",
       label: "Revisar cambios",
+    },
+    "device.pending": {
+      subject: `Dispositivo pendiente de aprobación · ${actor}`,
+      title: "Dispositivo nuevo para aprobar",
+      body: `<strong>${actor}</strong> registró su biometría en un dispositivo. Hasta que lo apruebes no va a poder fichar.`,
+      path: "/admin/users",
+      label: "Aprobar dispositivo",
     },
   };
 

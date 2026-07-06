@@ -63,6 +63,16 @@ Las notificaciones al empleado salen por **email + push**. El push usa claves VA
 
 `GET /api/cron/checkout-reminder` corre cada 15 minutos (vercel.json). **Vercel Hobby no soporta crons sub-diarios**: si el proyecto está en Hobby, crear un job en cron-job.org (u otro scheduler) que llame `https://<dominio>/api/cron/checkout-reminder?key=<CRON_SECRET>` cada 15 minutos.
 
+## Backfill de aprobación de dispositivos (v0.16)
+
+Al deployar v0.16 correr una única vez, con la DATABASE_URL de producción:
+
+```bash
+node scripts/backfill-device-approval.mjs
+```
+
+Aprueba retroactivamente los dispositivos ya registrados. Sin esto, todos los usuarios existentes quedan bloqueados para fichar.
+
 ## Restaurar DB
 
 Neon ofrece branches y point-in-time restore. Desde el dashboard de Neon, crear branch desde timestamp deseado y actualizar `DATABASE_URL` en Vercel.

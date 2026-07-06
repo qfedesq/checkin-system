@@ -4,6 +4,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { origin, rpID, deviceHashFromCredentialId } from "@/lib/webauthn";
 import { recordAudit } from "@/lib/audit";
+import { notifyAdmins } from "@/lib/notify";
 
 export async function POST(req: NextRequest) {
   const session = await auth();
@@ -37,6 +38,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Este dispositivo ya está asignado a otro usuario" }, { status: 409 });
   }
 
+  // Los dispositivos de empleados quedan pendientes de aprobación del admin;
+  // los de administradores se auto-aprueban.
+  const isAdmin = session.user.role === "ADMIN";
+
   await prisma.$transaction([
     prisma.webAuthnCredential.create({
       data: {
@@ -47,10 +52,16 @@ export async function POST(req: NextRequest) {
         transports: credential.transports ?? [],
       },
     }),
-    prisma.user.update({ where: { id: session.user.id }, data: { deviceId } }),
+    prisma.user.update({
+      where: { id: session.user.id },
+      data: { deviceId, deviceApprovedAt: isAdmin ? new Date() : null, deviceApprovedById: isAdmin ? session.user.id : null },
+    }),
     prisma.webAuthnChallenge.delete({ where: { id: challenge.id } }),
   ]);
 
   await recordAudit({ actorId: session.user.id, action: "webauthn.register", subjectId: session.user.id });
-  return NextResponse.json({ ok: true });
+  if (!isAdmin) {
+    notifyAdmins("device.pending", { actorEmail: session.user.email ?? "", actorName: session.user.name }).catch((e) => console.error("[notify] device.pending", e));
+  }
+  return NextResponse.json({ ok: true, pendingApproval: !isAdmin });
 }

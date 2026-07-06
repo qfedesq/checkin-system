@@ -12,6 +12,11 @@ export async function POST(req: NextRequest) {
   const parsed = schema.safeParse(await req.json().catch(() => ({})));
   if (!parsed.success) return NextResponse.json({ error: "Datos inválidos" }, { status: 400 });
 
+  const user = await prisma.user.findUnique({ where: { id: session.user.id }, select: { deviceId: true, deviceApprovedAt: true } });
+  if (user?.deviceId && !user.deviceApprovedAt) {
+    return NextResponse.json({ error: "Tu dispositivo está pendiente de aprobación del administrador" }, { status: 403 });
+  }
+
   const existing = await prisma.attendance.findFirst({ where: { userId: session.user.id, checkOutAt: null } });
   if (existing) return NextResponse.json({ error: "Ya tenés una jornada abierta" }, { status: 409 });
 

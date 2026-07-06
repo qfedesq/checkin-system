@@ -2,6 +2,17 @@
 
 Cada release sube la versión en `+0.01`. El número visible abajo a la izquierda en la app coincide con este archivo.
 
+## v0.16 — 2026-07-06
+
+**Aprobación de dispositivos por el administrador.**
+
+- Cuando un empleado registra su biometría (primer dispositivo o tras un reset), el dispositivo queda **pendiente de aprobación**: puede usar la app pero **no puede fichar** hasta que el admin lo apruebe. El admin recibe un email y ve el estado en **Usuarios** (aprobar / rechazar).
+- Al aprobar o rechazar, el empleado recibe **email + push**. Rechazar equivale a un reset: borra la credencial para que registre el dispositivo correcto.
+- Los dispositivos de administradores se auto-aprueban.
+- El check-out queda a propósito **sin bloquear**, para que una jornada abierta siempre pueda cerrarse.
+
+**Deploy (crítico)**: correr `pnpm db:push` y después `node scripts/backfill-device-approval.mjs` — aprueba retroactivamente los dispositivos ya registrados; sin esto, los usuarios existentes quedan sin poder fichar.
+
 ## v0.15 — 2026-07-06
 
 **Bloqueo automático por documentación vencida.**

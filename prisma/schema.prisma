@@ -61,6 +61,8 @@ model User {
   disabledReason      DisableReason?
   mustChangePassword  Boolean              @default(false)
   deviceId            String?              @unique
+  deviceApprovedAt    DateTime?
+  deviceApprovedById  String?
   createdAt           DateTime             @default(now())
   approvedAt          DateTime?
   approvedById        String?

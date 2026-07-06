@@ -17,6 +17,7 @@ export default async function AdminUsersPage() {
     status: u.status,
     mustChangePassword: u.mustChangePassword,
     hasDevice: Boolean(u.deviceId),
+    devicePending: Boolean(u.deviceId) && !u.deviceApprovedAt,
     createdAt: u.createdAt.toISOString(),
     firstName: u.profile?.firstName ?? "",
     lastName: u.profile?.lastName ?? "",
