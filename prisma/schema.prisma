@@ -126,6 +126,15 @@ model EmployeeProfile {
   signatureBlobUrl          String?
   emergencyContact          String
   emergencyPhone            String
+  dni                       String?   @unique
+  dniFrontBlobUrl           String?
+  dniBackBlobUrl            String?
+  licenseFrontBlobUrl       String?
+  licenseBackBlobUrl        String?
+  healthCardFrontBlobUrl    String?
+  healthCardBackBlobUrl     String?
+  faceImageBlobUrl          String?
+  vacationWeeksPerYear      Int       @default(2)
   notifiedLicenseExpiryAt   DateTime?
   notifiedHealthExpiryAt    DateTime?
   updatedAt                 DateTime  @updatedAt

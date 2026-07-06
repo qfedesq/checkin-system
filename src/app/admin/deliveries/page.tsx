@@ -4,7 +4,8 @@ import { DeliveriesClient } from "./DeliveriesClient";
 
 export const dynamic = "force-dynamic";
 
-export default async function AdminDeliveriesPage() {
+export default async function AdminDeliveriesPage({ searchParams }: { searchParams: Promise<{ recipientId?: string }> }) {
+  const { recipientId } = await searchParams;
   const [employees, recent] = await Promise.all([
     prisma.user.findMany({ where: { role: "EMPLOYEE", status: "ACTIVE" }, include: { profile: true }, orderBy: { email: "asc" } }),
     prisma.deliveredDocument.findMany({ orderBy: { createdAt: "desc" }, take: 50, include: { recipient: { include: { profile: true } } } }),
@@ -24,7 +25,7 @@ export default async function AdminDeliveriesPage() {
   return (
     <>
       <PageHeader eyebrow="admin · entregas" title="Enviar documentos" description="Subí recibos de sueldo, comunicados o documentos internos (PDF). Cuando el empleado los abra, se van a firmar automáticamente con su firma digital." />
-      <DeliveriesClient employees={employeeOpts} rows={rows} />
+      <DeliveriesClient employees={employeeOpts} rows={rows} initialRecipientId={recipientId} />
     </>
   );
 }

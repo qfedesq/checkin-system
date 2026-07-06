@@ -2,6 +2,17 @@
 
 Cada release sube la versión en `+0.01`. El número visible abajo a la izquierda en la app coincide con este archivo.
 
+## v0.10 — 2026-07-06
+
+**Sección Empleados: ficha completa editable por el administrador.**
+
+- Nueva sección **Empleados** en el panel admin: listado alfabético por apellido con búsqueda (apellido, nombre, legajo o email) y foto.
+- **Ficha de detalle** por empleado con todos los campos del legajo, editables por el admin (incluidos los que el empleado no puede tocar: legajo, nombres, fecha de nacimiento, CUIL, fecha de ingreso, categoría, email).
+- **Campos nuevos del legajo**: DNI, imágenes de ambos lados del DNI, del carnet profesional (choferes) y de la libreta sanitaria, foto de frente de cara y **semanas de vacaciones por año** (usadas por las reglas de calendario que vienen).
+- Desde la ficha: **resetear contraseña**, **bloquear/desbloquear**, **resetear dispositivo**, ver los documentos enviados al empleado (con estado de firma) y enviarle uno nuevo con el destinatario ya preseleccionado.
+
+**Requiere `pnpm db:push`** (campos nuevos en `EmployeeProfile`).
+
 ## v0.09 — 2026-07-06
 
 **Notificaciones push + avisos al empleado.**

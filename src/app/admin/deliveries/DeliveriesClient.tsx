@@ -8,9 +8,11 @@ type Row = { id: string; title: string; type: "PAYSLIP" | "INTERNAL_DOC" | "OTHE
 
 const TYPE_LABEL = { PAYSLIP: "Recibo de sueldo", INTERNAL_DOC: "Documento interno", OTHER: "Otro" };
 
-export function DeliveriesClient({ employees, rows }: { employees: { id: string; label: string }[]; rows: Row[] }) {
+export function DeliveriesClient({ employees, rows, initialRecipientId }: { employees: { id: string; label: string }[]; rows: Row[]; initialRecipientId?: string }) {
   const router = useRouter();
-  const [recipientId, setRecipientId] = useState(employees[0]?.id ?? "");
+  const [recipientId, setRecipientId] = useState(
+    initialRecipientId && employees.some((e) => e.id === initialRecipientId) ? initialRecipientId : employees[0]?.id ?? "",
+  );
   const [type, setType] = useState<Row["type"]>("PAYSLIP");
   const [title, setTitle] = useState("");
   const [busy, setBusy] = useState(false);
