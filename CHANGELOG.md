@@ -2,6 +2,15 @@
 
 Cada release sube la versión en `+0.01`. El número visible abajo a la izquierda en la app coincide con este archivo.
 
+## v0.12 — 2026-07-06
+
+**Dashboard del administrador con gráficos.**
+
+- **Tres gráficos torta del día**: empleados con check-in, con check-out y ausentes (activos sin fichar y sin vacaciones/franco aprobado hoy).
+- **Próximos 5 vencimientos** de carnet profesional y libreta sanitaria de toda la plantilla, con días restantes, alerta de vencidos y link directo a la ficha del empleado.
+- **Calendario del mes** con las vacaciones y francos aprobados (semana comenzando domingo), con el detalle de quién y cuándo.
+- Los KPIs pendientes y accesos rápidos siguen abajo; se suma el contador de cambios de perfil.
+
 ## v0.11 — 2026-07-06
 
 **Cambios de perfil con aprobación del administrador.**
