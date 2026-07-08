@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Upload } from "lucide-react";
+import { SignaturePad } from "./SignaturePad";
 
 type Initial = {
   legajo: string;
@@ -178,15 +179,15 @@ export function ProfileForm({ initial, email, pendingFields }: { initial: Initia
         <h2 className="text-lg font-semibold">Foto de perfil</h2>
         <p className="mt-1 text-sm text-muted-foreground">Subí una foto de frente de tu cara.</p>
         <div className="mt-4 w-40">
-          <ImageSlot label="Foto" kind="face" url={data.faceImageBlobUrl} onUploaded={(u) => set("faceImageBlobUrl", u)} onError={(t) => setMsg({ kind: "err", text: t })} />
+          <ImageSlot label="Foto" kind="face" url={data.faceImageBlobUrl} onUploaded={(u) => set("faceImageBlobUrl", u)} onError={(t) => setMsg({ kind: "err", text: t })} contain />
         </div>
       </section>
 
       <section className="panel p-6">
         <h2 className="text-lg font-semibold">Firma digital</h2>
-        <p className="mt-1 text-sm text-muted-foreground">Subí una imagen PNG o JPG de tu firma sobre fondo blanco. Se usa automáticamente cuando abrís recibos y documentos internos.</p>
-        <div className="mt-4 w-40">
-          <ImageSlot label="Firma" kind="signature" url={data.signatureBlobUrl} onUploaded={(u) => set("signatureBlobUrl", u)} onError={(t) => setMsg({ kind: "err", text: t })} contain />
+        <p className="mt-1 text-sm text-muted-foreground">Firmá en el recuadro con el dedo. Se usa automáticamente cuando abrís recibos y documentos internos.</p>
+        <div className="mt-4">
+          <SignaturePad url={data.signatureBlobUrl} onUploaded={(u) => set("signatureBlobUrl", u)} onError={(t) => setMsg({ kind: "err", text: t })} />
         </div>
       </section>
 

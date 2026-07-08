@@ -14,8 +14,10 @@ export default async function AdminHome() {
   const now = new Date();
   const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const todayEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
-  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-  const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+  // Ventana amplia para el calendario: mes anterior hasta +3 meses, así al navegar
+  // se ven las vacaciones y francos aprobados de otros meses (no sólo el actual).
+  const monthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  const monthEnd = new Date(now.getFullYear(), now.getMonth() + 4, 0, 23, 59, 59);
 
   const [pendingUsers, pendingLeaves, pendingDocs, pendingProfileChanges, openAttendance, activeEmployees, todayAttendances, todayLeaves, profiles, monthLeaves] = await Promise.all([
     prisma.user.count({ where: { status: "PENDING_APPROVAL" } }),

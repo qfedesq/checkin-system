@@ -2,6 +2,17 @@
 
 Cada release sube la versión en `+0.01`. El número visible abajo a la izquierda en la app coincide con este archivo.
 
+## v0.22 — 2026-07-07
+
+**Ajustes de feedback: firma dibujada, foto completa, vencimientos y calendario.**
+
+- **Firma digital**: ahora se **firma con el dedo en la pantalla** (ya no se sube una foto) y queda guardada como firma digital.
+- **Foto de frente**: se muestra completa (antes se veía recortada).
+- **Documentación del empleado**: se agregó el panel **"Vencimientos de tu perfil"** con la libreta sanitaria y el carnet (fecha + acceso a las imágenes) que el empleado ya cargó en su perfil.
+- **Calendario del panel admin**: ahora muestra las vacaciones y francos aprobados de **otros meses** al navegar (antes sólo el mes actual).
+- **Vacaciones**: si al empleado no le alcanza el saldo para 14 días, ya **no aparece la opción de 14 días**; si no tiene saldo, se avisa y no puede solicitar.
+- Recordatorio: los talles de calzado van de 36 a 48 (ya estaba así).
+
 ## v0.21 — 2026-07-07
 
 **Ícono correcto de la app + el empleado carga todos sus datos.**

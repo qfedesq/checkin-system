@@ -32,6 +32,14 @@ export function CalendarClient() {
       .then(setData);
   }, [msg]);
 
+  const leftDays = data?.vacation.leftDays ?? 0;
+  const canRequestVacation = leftDays >= 7;
+
+  // Si no le queda saldo para 14 días, forzamos la duración a 7.
+  useEffect(() => {
+    if (leftDays < 14 && duration === 14) setDuration(7);
+  }, [leftDays, duration]);
+
   const disabledDays = useMemo(() => {
     if (!data) return [];
     if (tab === "VACATION") {
@@ -90,11 +98,16 @@ export function CalendarClient() {
         </div>
 
         {data && tab === "VACATION" && (
-          <div className="mb-4 rounded-xl border border-border/60 bg-secondary/40 px-4 py-3 text-sm">
-            Saldo anual: <strong>{data.vacation.leftDays}</strong> de {data.vacation.totalDays} días disponibles
-            {data.vacation.usedDays > 0 ? ` (${data.vacation.usedDays} ya pedidos)` : ""}.
-            <span className="text-muted-foreground"> Las semanas con otro {""}
-              compañero de tu categoría de vacaciones aparecen deshabilitadas.</span>
+          <div className={`mb-4 rounded-xl border px-4 py-3 text-sm ${canRequestVacation ? "border-border/60 bg-secondary/40" : "border-destructive/30 bg-destructive/10 text-destructive"}`}>
+            {canRequestVacation ? (
+              <>
+                Saldo anual: <strong>{data.vacation.leftDays}</strong> de {data.vacation.totalDays} días disponibles
+                {data.vacation.usedDays > 0 ? ` (${data.vacation.usedDays} ya pedidos)` : ""}.
+                <span className="text-muted-foreground"> Las semanas con otro compañero de tu categoría de vacaciones aparecen deshabilitadas.</span>
+              </>
+            ) : (
+              <>No te queda saldo de vacaciones este año ({data.vacation.leftDays} de {data.vacation.totalDays} días). Consultá con el administrador.</>
+            )}
           </div>
         )}
         {data && tab === "DAY_OFF" && (
@@ -127,11 +140,13 @@ export function CalendarClient() {
           }}
         />
 
-        {tab === "VACATION" && (
+        {tab === "VACATION" && canRequestVacation && (
           <div className="mt-4 flex items-center gap-2">
             <span className="eyebrow">Duración</span>
             <button className={duration === 7 ? "btn-primary" : "btn-ghost"} onClick={() => setDuration(7)}>7 días</button>
-            <button className={duration === 14 ? "btn-primary" : "btn-ghost"} onClick={() => setDuration(14)}>14 días</button>
+            {leftDays >= 14 && (
+              <button className={duration === 14 ? "btn-primary" : "btn-ghost"} onClick={() => setDuration(14)}>14 días</button>
+            )}
           </div>
         )}
 
@@ -140,7 +155,7 @@ export function CalendarClient() {
         )}
 
         <div className="mt-5 flex justify-end">
-          <button className="btn-primary" onClick={submit} disabled={busy || !selected}>
+          <button className="btn-primary" onClick={submit} disabled={busy || !selected || (tab === "VACATION" && !canRequestVacation)}>
             {busy ? "Enviando…" : tab === "VACATION" ? "Solicitar vacaciones" : "Solicitar franco"}
           </button>
         </div>
