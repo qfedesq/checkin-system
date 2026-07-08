@@ -2,6 +2,14 @@
 
 Cada release sube la versión en `+0.01`. El número visible abajo a la izquierda en la app coincide con este archivo.
 
+## v0.19 — 2026-07-07
+
+**Correcciones sobre feedback de prueba.**
+
+- **Fechas del calendario corridas un día**: las vacaciones y francos se mostraban un día antes (una semana lunes→domingo se veía domingo→sábado, y algún franco figuraba en el mes anterior). Era un problema de zona horaria: las fechas se guardan a medianoche UTC y se renderizaban en hora local. Ahora todas las fechas-calendario (vacaciones, francos, vencimientos, nacimiento) se manejan y muestran de forma consistente, sin correrse. Los timestamps (check-in/out, envíos) se muestran siempre en hora de Argentina.
+- **Zoom en el celular al tocar un campo**: en iOS, al enfocar un input la pantalla hacía zoom y quedaba "muy ancha" (recortada). Se corrigió forzando 16px en los campos en mobile, que evita el zoom automático.
+- **Usuario nuevo va directo a completar su perfil**: al ingresar por primera vez, si todavía no cargó sus datos personales, la app lo lleva directo a **Mi perfil**. Esa primera carga se guarda directo (sin esperar aprobación); las ediciones posteriores sí pasan por el administrador.
+
 ## v0.18 — 2026-07-06
 
 **Fix: los crons ahora corren de verdad.**

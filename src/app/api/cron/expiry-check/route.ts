@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { sendEmail, expiryEmailHtml, adminAlertHtml } from "@/lib/email";
 import { sendPushToUser } from "@/lib/push";
 import { notifyUser } from "@/lib/notify";
-import { daysUntil, formatDate } from "@/lib/utils";
+import { daysUntil, formatCalendarDate } from "@/lib/utils";
 
 const PLACEHOLDER_YEAR = 2098; // libretas "2099-12-31" = sin dato, no cuentan
 
@@ -31,7 +31,7 @@ export async function GET(req: NextRequest) {
         const last = p.notifiedHealthExpiryAt?.toDateString();
         if (last !== now.toDateString()) {
           await sendEmail(p.user.email, "Tu libreta sanitaria vence pronto", expiryEmailHtml(name, "libreta sanitaria", p.healthCardExpiry, d));
-          await sendPushToUser(p.userId, { title: "Libreta sanitaria por vencer", body: `Vence el ${formatDate(p.healthCardExpiry)} (en ${d} día${d === 1 ? "" : "s"}). Renovala para no quedar bloqueado.`, url: "/documents" });
+          await sendPushToUser(p.userId, { title: "Libreta sanitaria por vencer", body: `Vence el ${formatCalendarDate(p.healthCardExpiry)} (en ${d} día${d === 1 ? "" : "s"}). Renovala para no quedar bloqueado.`, url: "/documents" });
           await prisma.employeeProfile.update({ where: { userId: p.userId }, data: { notifiedHealthExpiryAt: now } });
           results.profilesNotified++;
         }
@@ -44,7 +44,7 @@ export async function GET(req: NextRequest) {
         const last = p.notifiedLicenseExpiryAt?.toDateString();
         if (last !== now.toDateString()) {
           await sendEmail(p.user.email, "Tu carnet profesional vence pronto", expiryEmailHtml(name, "carnet profesional", p.professionalLicenseExpiry, d));
-          await sendPushToUser(p.userId, { title: "Carnet profesional por vencer", body: `Vence el ${formatDate(p.professionalLicenseExpiry)} (en ${d} día${d === 1 ? "" : "s"}). Renovalo para no quedar bloqueado.`, url: "/documents" });
+          await sendPushToUser(p.userId, { title: "Carnet profesional por vencer", body: `Vence el ${formatCalendarDate(p.professionalLicenseExpiry)} (en ${d} día${d === 1 ? "" : "s"}). Renovalo para no quedar bloqueado.`, url: "/documents" });
           await prisma.employeeProfile.update({ where: { userId: p.userId }, data: { notifiedLicenseExpiryAt: now } });
           results.profilesNotified++;
         }

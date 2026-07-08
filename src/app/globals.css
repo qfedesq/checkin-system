@@ -287,6 +287,10 @@
   @media (max-width: 640px) {
     .rdp-day_button { width: 100%; height: 2.25rem; font-size: 0.82rem; }
     .rdp-caption_label { font-size: 0.95rem; }
+    /* iOS hace zoom automático (y no lo restaura en el navegador in-app de WhatsApp)
+       al enfocar un input con font-size < 16px. Forzamos 16px en mobile para evitarlo. */
+    .surface-control, .surface-select, .surface-textarea,
+    input, select, textarea { font-size: 16px; }
   }
 
   /* safe area en modales full-height */

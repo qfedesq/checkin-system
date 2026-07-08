@@ -101,6 +101,13 @@ export function ProfileForm({ initial, email, pendingFields }: { initial: Initia
       setMsg({ kind: "err", text: body.error ?? "No pudimos guardar los datos." });
       return;
     }
+    if (body.completed || body.created) {
+      // Primera carga completa: cerramos el onboarding llevándolo al inicio.
+      setMsg({ kind: "ok", text: "¡Listo! Datos guardados." });
+      router.push("/dashboard");
+      router.refresh();
+      return;
+    }
     if (body.pendingApproval) {
       setMsg({ kind: "ok", text: "Cambios enviados: quedan pendientes de aprobación del administrador. Te va a llegar una notificación cuando los revise." });
     } else if (body.unchanged) {

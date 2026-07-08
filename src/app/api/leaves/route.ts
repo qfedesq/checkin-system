@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { parseLocalDate, validateVacationRange, yearBounds, monthBounds, vacationBalance } from "@/lib/leaves";
 import { recordAudit } from "@/lib/audit";
 import { notifyAdmins } from "@/lib/notify";
-import { formatDate } from "@/lib/utils";
+import { formatCalendarDate } from "@/lib/utils";
 
 const body = z.object({
   type: z.enum(["VACATION", "DAY_OFF"]),
@@ -103,7 +103,7 @@ export async function POST(req: NextRequest) {
 
   await recordAudit({ actorId: session.user.id, action: "leave.request", subjectId: leave.id, metadata: { type: parsed.data.type, days: daysInt } });
 
-  const label = parsed.data.type === "VACATION" ? `Vacaciones ${daysInt} días desde ${formatDate(startDate)}` : `Franco el ${formatDate(startDate)}`;
+  const label = parsed.data.type === "VACATION" ? `Vacaciones ${daysInt} días desde ${formatCalendarDate(startDate)}` : `Franco el ${formatCalendarDate(startDate)}`;
   notifyAdmins("leave.created", {
     actorEmail: session.user.email,
     actorName: session.user.name,

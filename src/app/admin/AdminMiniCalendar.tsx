@@ -2,6 +2,7 @@
 
 import { DayPicker } from "react-day-picker";
 import "react-day-picker/style.css";
+import { isoToCalendarDate } from "@/lib/utils";
 
 type Range = { from: string; to: string; label: string };
 
@@ -13,8 +14,8 @@ export function AdminMiniCalendar({ vacations, dayOffs }: { vacations: Range[]; 
         weekStartsOn={0}
         onSelect={() => {}}
         modifiers={{
-          vacations: vacations.map((v) => ({ from: new Date(v.from), to: new Date(v.to) })),
-          dayOffs: dayOffs.map((d) => new Date(d.from)),
+          vacations: vacations.map((v) => ({ from: isoToCalendarDate(v.from), to: isoToCalendarDate(v.to) })),
+          dayOffs: dayOffs.map((d) => isoToCalendarDate(d.from)),
         }}
         modifiersStyles={{
           vacations: { background: "hsl(142 72% 45% / 0.25)", color: "hsl(142 72% 55%)", borderRadius: 10 },

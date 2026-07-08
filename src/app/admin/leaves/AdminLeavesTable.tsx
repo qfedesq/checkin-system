@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { formatDate } from "@/lib/utils";
+import { formatCalendarDate } from "@/lib/utils";
 import { CheckCircle2, XCircle } from "lucide-react";
 
 type Row = { id: string; type: "VACATION" | "DAY_OFF"; startDate: string; endDate: string; days: number; status: "PENDING" | "APPROVED" | "REJECTED"; createdAt: string; employee: string; legajo: string | null };
@@ -41,8 +41,8 @@ export function AdminLeavesTable({ leaves }: { leaves: Row[] }) {
                 {l.legajo && <div className="mono text-xs text-muted-foreground">{l.legajo}</div>}
               </td>
               <td className="px-3 py-3">{l.type === "VACATION" ? "Vacaciones" : "Franco"}</td>
-              <td className="px-3 py-3">{formatDate(l.startDate)}</td>
-              <td className="px-3 py-3">{formatDate(l.endDate)}</td>
+              <td className="px-3 py-3">{formatCalendarDate(l.startDate)}</td>
+              <td className="px-3 py-3">{formatCalendarDate(l.endDate)}</td>
               <td className="px-3 py-3">{l.days}</td>
               <td className="px-3 py-3">
                 {l.status === "PENDING" && <span className="badge-accent">pendiente</span>}

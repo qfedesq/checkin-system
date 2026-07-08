@@ -2,7 +2,7 @@ import Link from "next/link";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { PageHeader } from "@/components/ui/PageHeader";
-import { daysUntil, formatDate, formatDateTime } from "@/lib/utils";
+import { daysUntil, formatDate, formatCalendarDate, formatDateTime } from "@/lib/utils";
 import { Calendar, FileText, Inbox, MapPin } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -83,10 +83,10 @@ export default async function EmployeeDashboard() {
           <FileText className="h-5 w-5 text-primary" />
           <div className="mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground mt-6">Próximo vencimiento</div>
           <div className="mt-1 text-sm">
-            {profile?.healthCardExpiry ? `Libreta sanitaria · ${formatDate(profile.healthCardExpiry)}` : "—"}
+            {profile?.healthCardExpiry ? `Libreta sanitaria · ${formatCalendarDate(profile.healthCardExpiry)}` : "—"}
           </div>
           {profile?.professionalLicenseExpiry && (
-            <div className="mt-1 text-xs text-muted-foreground">Carnet · {formatDate(profile.professionalLicenseExpiry)}</div>
+            <div className="mt-1 text-xs text-muted-foreground">Carnet · {formatCalendarDate(profile.professionalLicenseExpiry)}</div>
           )}
         </Link>
       </div>

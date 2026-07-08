@@ -3,7 +3,7 @@
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { FileText, Upload, ExternalLink } from "lucide-react";
-import { daysUntil, formatDate } from "@/lib/utils";
+import { daysUntil, formatDate, formatCalendarDate } from "@/lib/utils";
 
 type Doc = {
   id: string;
@@ -104,7 +104,7 @@ export function DocumentsClient({ documents }: { documents: Doc[] }) {
                     </div>
                   </td>
                   <td className="px-3 py-3">
-                    {formatDate(d.expiresAt)}
+                    {formatCalendarDate(d.expiresAt)}
                     {days !== null && days <= 30 && (
                       <span className={`ml-2 text-xs ${days <= 0 ? "text-destructive" : "text-primary"}`}>
                         {days <= 0 ? "vencido" : `en ${days}d`}

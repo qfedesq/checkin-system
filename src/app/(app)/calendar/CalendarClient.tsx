@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { DayPicker } from "react-day-picker";
 import "react-day-picker/style.css";
 import { useRouter } from "next/navigation";
-import { formatDate } from "@/lib/utils";
+import { formatCalendarDate, isoToCalendarDate, toCalendarISODate } from "@/lib/utils";
 
 type Availability = {
   myLeaves: { id: string; type: "VACATION" | "DAY_OFF"; startDate: string; endDate: string; status: "PENDING" | "APPROVED" | "REJECTED"; days: number }[];
@@ -36,7 +36,7 @@ export function CalendarClient() {
     if (!data) return [];
     if (tab === "VACATION") {
       // Sólo lunes, futuro, y sin cupo tomado por otro de mi categoría en la semana solicitada
-      const categoryRanges = data.categoryTakenRanges.map((r) => ({ from: new Date(r.from), to: new Date(r.to) }));
+      const categoryRanges = data.categoryTakenRanges.map((r) => ({ from: isoToCalendarDate(r.from), to: isoToCalendarDate(r.to) }));
       return [
         { before: new Date() },
         (d: Date) => {
@@ -48,7 +48,7 @@ export function CalendarClient() {
       ];
     }
     // Franco: deshabilitar fechas con franco aprobado por otros y meses donde ya tengo uno
-    const takenByOthers = data.takenDayOffs.filter((t) => !t.byMe).map((t) => new Date(t.date));
+    const takenByOthers = data.takenDayOffs.filter((t) => !t.byMe).map((t) => isoToCalendarDate(t.date));
     return [
       { before: new Date() },
       (d: Date) => data.myDayOffMonths.includes(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`),
@@ -58,14 +58,14 @@ export function CalendarClient() {
 
   const mineByRange = useMemo(() => {
     if (!data) return [];
-    return data.myLeaves.map((l) => ({ from: new Date(l.startDate), to: new Date(l.endDate), status: l.status }));
+    return data.myLeaves.map((l) => ({ from: isoToCalendarDate(l.startDate), to: isoToCalendarDate(l.endDate), status: l.status }));
   }, [data]);
 
   async function submit() {
     if (!selected) return setMsg({ kind: "err", text: "Elegí una fecha" });
     setBusy(true);
     setMsg(null);
-    const iso = selected.toISOString();
+    const iso = toCalendarISODate(selected);
     const body: { type: "VACATION" | "DAY_OFF"; startDate: string; days?: number } = { type: tab, startDate: iso };
     if (tab === "VACATION") body.days = duration;
     const res = await fetch("/api/leaves", {
@@ -112,7 +112,7 @@ export function CalendarClient() {
           modifiers={{
             mineApproved: mineByRange.filter((m) => m.status === "APPROVED").map((m) => ({ from: m.from, to: m.to })),
             minePending: mineByRange.filter((m) => m.status === "PENDING").map((m) => ({ from: m.from, to: m.to })),
-            takenByOthers: data?.takenDayOffs.filter((t) => !t.byMe).map((t) => new Date(t.date)) ?? [],
+            takenByOthers: data?.takenDayOffs.filter((t) => !t.byMe).map((t) => isoToCalendarDate(t.date)) ?? [],
           }}
           modifiersStyles={{
             mineApproved: { background: "hsl(142 72% 45% / 0.25)", color: "hsl(142 72% 65%)", borderRadius: 10 },
@@ -163,7 +163,7 @@ export function CalendarClient() {
                 <div>
                   <div className="text-sm font-medium">{l.type === "VACATION" ? `Vacaciones · ${l.days}d` : "Franco"}</div>
                   <div className="text-xs text-muted-foreground">
-                    {formatDate(l.startDate)}{l.days > 1 ? ` → ${formatDate(l.endDate)}` : ""}
+                    {formatCalendarDate(l.startDate)}{l.days > 1 ? ` → ${formatCalendarDate(l.endDate)}` : ""}
                   </div>
                 </div>
                 {l.status === "PENDING" && <span className="badge-accent">pendiente</span>}

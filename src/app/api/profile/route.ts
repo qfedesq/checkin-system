@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { recordAudit } from "@/lib/audit";
 import { notifyAdmins } from "@/lib/notify";
+import { isEmployeeProfileComplete } from "@/lib/profile";
 
 // Campos que el empleado puede proponer cambiar (el resto sólo los edita el admin
 // desde la ficha: legajo, nombres, dob, DNI, CUIL, ingreso, categoría, email, foto, firma).
@@ -123,6 +124,33 @@ export async function PUT(req: NextRequest) {
 
   if (existing.category === "DRIVER" && !d.professionalLicenseExpiry) {
     return NextResponse.json({ error: "Los choferes deben cargar vencimiento de carnet profesional" }, { status: 400 });
+  }
+
+  // Primera carga de un perfil placeholder (usuario nuevo): se escribe directo, sin aprobación.
+  // Recién cuando el perfil ya está completo, las ediciones pasan por el admin.
+  if (!isEmployeeProfileComplete(existing)) {
+    await prisma.employeeProfile.update({
+      where: { userId: session.user.id },
+      data: {
+        phone: d.phone,
+        professionalLicenseExpiry: asDate(d.professionalLicenseExpiry),
+        healthCardExpiry: asDate(d.healthCardExpiry) ?? existing.healthCardExpiry,
+        shirtSize: d.shirtSize,
+        hoodieSize: d.hoodieSize,
+        jacketSize: d.jacketSize,
+        pantsSize: d.pantsSize,
+        shoeSize: d.shoeSize,
+        address: d.address,
+        addressNumber: d.addressNumber,
+        neighborhood: d.neighborhood,
+        city: d.city,
+        postalCode: d.postalCode,
+        emergencyContact: d.emergencyContact,
+        emergencyPhone: d.emergencyPhone,
+      },
+    });
+    await recordAudit({ actorId: session.user.id, action: "profile.complete", subjectId: session.user.id });
+    return NextResponse.json({ ok: true, completed: true });
   }
 
   const changes: Record<string, { from: string; to: string }> = {};

@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { formatDate } from "@/lib/utils";
+import { formatCalendarDate } from "@/lib/utils";
 import { CheckCircle2, XCircle, ExternalLink } from "lucide-react";
 
 type Row = { id: string; type: "DRIVER_LICENSE" | "HEALTH_CARD" | "OTHER"; blobUrl: string; expiresAt: string | null; status: "PENDING_REVIEW" | "APPROVED" | "REJECTED"; note: string; createdAt: string; employee: string; email: string };
@@ -45,7 +45,7 @@ export function AdminDocuments({ docs }: { docs: Row[] }) {
                 <div className="text-xs text-muted-foreground">{d.email}</div>
               </td>
               <td className="px-3 py-3">{LABEL[d.type]}</td>
-              <td className="px-3 py-3">{formatDate(d.expiresAt)}</td>
+              <td className="px-3 py-3">{formatCalendarDate(d.expiresAt)}</td>
               <td className="px-3 py-3">
                 {d.status === "PENDING_REVIEW" && <span className="badge-accent">pendiente</span>}
                 {d.status === "APPROVED" && <span className="badge-success">aprobado</span>}

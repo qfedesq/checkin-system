@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { DonutChart } from "@/components/ui/DonutChart";
 import { AdminMiniCalendar } from "./AdminMiniCalendar";
-import { formatDate, daysUntil } from "@/lib/utils";
+import { formatCalendarDate, daysUntil } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -74,14 +74,14 @@ export default async function AdminHome() {
     .map((l) => ({
       from: l.startDate.toISOString(),
       to: l.endDate.toISOString(),
-      label: `${l.user.profile ? `${l.user.profile.lastName}, ${l.user.profile.firstName}` : l.user.email}: ${formatDate(l.startDate)} → ${formatDate(l.endDate)}`,
+      label: `${l.user.profile ? `${l.user.profile.lastName}, ${l.user.profile.firstName}` : l.user.email}: ${formatCalendarDate(l.startDate)} → ${formatCalendarDate(l.endDate)}`,
     }));
   const dayOffs = monthLeaves
     .filter((l) => l.type === "DAY_OFF")
     .map((l) => ({
       from: l.startDate.toISOString(),
       to: l.endDate.toISOString(),
-      label: `${l.user.profile ? `${l.user.profile.lastName}, ${l.user.profile.firstName}` : l.user.email}: franco el ${formatDate(l.startDate)}`,
+      label: `${l.user.profile ? `${l.user.profile.lastName}, ${l.user.profile.firstName}` : l.user.email}: franco el ${formatCalendarDate(l.startDate)}`,
     }));
 
   const kpis = [
@@ -158,7 +158,7 @@ export default async function AdminHome() {
                     <div className="text-xs text-muted-foreground">{e.label}</div>
                   </div>
                   <div className="shrink-0 text-right">
-                    <div className={`text-sm font-semibold ${urgent ? "text-destructive" : ""}`}>{formatDate(e.date)}</div>
+                    <div className={`text-sm font-semibold ${urgent ? "text-destructive" : ""}`}>{formatCalendarDate(e.date)}</div>
                     <div className={`text-xs ${urgent ? "text-destructive" : "text-muted-foreground"}`}>en {days} día{days === 1 ? "" : "s"}</div>
                   </div>
                 </li>
