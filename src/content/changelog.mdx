@@ -2,6 +2,15 @@
 
 Cada release sube la versión en `+0.01`. El número visible abajo a la izquierda en la app coincide con este archivo.
 
+## v0.23 — 2026-07-08
+
+**Documentación editable desde perfil y documentos + talles de pantalón.**
+
+- **Libreta y carnet editables desde dos lugares**: además de Mi perfil, ahora en **Documentación** el empleado carga/renueva la fecha de vencimiento y las **dos imágenes (frente y dorso)** de cada documento. Es el mismo dato en ambos lados.
+- El **carnet profesional** solo aparece para la categoría **chofer** (los ayudantes no lo ven).
+- La sección "Subir documento" pasó a llamarse **"Otros documentos"** (para adjuntar cualquier otro archivo); libreta y carnet se gestionan en el bloque de Vencimientos.
+- **Talles de pantalón**: ahora van de **36 a 56 de a 2** (36, 38, … 56), separados de los talles de remera/buzo/campera (XS a XXXL).
+
 ## v0.22 — 2026-07-07
 
 **Ajustes de feedback: firma dibujada, foto completa, vencimientos y calendario.**

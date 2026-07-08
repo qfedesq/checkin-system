@@ -8,6 +8,7 @@ import { formatDate } from "@/lib/utils";
 
 const CLOTHING_SIZES = ["XS", "S", "M", "L", "XL", "XXL", "XXXL"];
 const SHOE_SIZES = Array.from({ length: 48 - 36 + 1 }, (_, i) => String(36 + i));
+const PANTS_SIZES = Array.from({ length: (56 - 36) / 2 + 1 }, (_, i) => String(36 + i * 2)); // 36 a 56, de a 2
 
 function SizeOptions({ options }: { options: string[] }) {
   return (
@@ -177,7 +178,7 @@ export function EmployeeDetailClient({ initial }: {
             <Field label="Remera"><select className="surface-select" value={p.shirtSize} onChange={set("shirtSize")}><SizeOptions options={CLOTHING_SIZES} /></select></Field>
             <Field label="Buzo"><select className="surface-select" value={p.hoodieSize} onChange={set("hoodieSize")}><SizeOptions options={CLOTHING_SIZES} /></select></Field>
             <Field label="Campera"><select className="surface-select" value={p.jacketSize} onChange={set("jacketSize")}><SizeOptions options={CLOTHING_SIZES} /></select></Field>
-            <Field label="Pantalón"><select className="surface-select" value={p.pantsSize} onChange={set("pantsSize")}><SizeOptions options={CLOTHING_SIZES} /></select></Field>
+            <Field label="Pantalón"><select className="surface-select" value={p.pantsSize} onChange={set("pantsSize")}><SizeOptions options={PANTS_SIZES} /></select></Field>
             <Field label="Calzado"><select className="surface-select" value={p.shoeSize} onChange={set("shoeSize")}><SizeOptions options={SHOE_SIZES} /></select></Field>
           </div>
         </section>

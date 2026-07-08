@@ -47,6 +47,7 @@ const EMPTY: Initial = {
 
 const CLOTHING_SIZES = ["XS", "S", "M", "L", "XL", "XXL", "XXXL"];
 const SHOE_SIZES = Array.from({ length: 48 - 36 + 1 }, (_, i) => String(36 + i));
+const PANTS_SIZES = Array.from({ length: (56 - 36) / 2 + 1 }, (_, i) => String(36 + i * 2)); // 36 a 56, de a 2
 
 export function ProfileForm({ initial, email, pendingFields }: { initial: Initial | null; email: string; pendingFields?: string[] }) {
   const router = useRouter();
@@ -151,7 +152,7 @@ export function ProfileForm({ initial, email, pendingFields }: { initial: Initia
           <Field label="Remera"><SizeSelect options={CLOTHING_SIZES} value={data.shirtSize} onChange={(v) => set("shirtSize", v)} /></Field>
           <Field label="Buzo"><SizeSelect options={CLOTHING_SIZES} value={data.hoodieSize} onChange={(v) => set("hoodieSize", v)} /></Field>
           <Field label="Campera"><SizeSelect options={CLOTHING_SIZES} value={data.jacketSize} onChange={(v) => set("jacketSize", v)} /></Field>
-          <Field label="Pantalón"><SizeSelect options={CLOTHING_SIZES} value={data.pantsSize} onChange={(v) => set("pantsSize", v)} /></Field>
+          <Field label="Pantalón"><SizeSelect options={PANTS_SIZES} value={data.pantsSize} onChange={(v) => set("pantsSize", v)} /></Field>
           <Field label="Calzado"><SizeSelect options={SHOE_SIZES} value={data.shoeSize} onChange={(v) => set("shoeSize", v)} /></Field>
         </div>
       </section>

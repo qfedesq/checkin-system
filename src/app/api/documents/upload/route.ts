@@ -20,8 +20,8 @@ export async function POST(req: NextRequest) {
   if (!ALLOWED.includes(file.type)) return NextResponse.json({ error: "Formato no permitido" }, { status: 400 });
   if (file.size > 10 * 1024 * 1024) return NextResponse.json({ error: "Archivo demasiado grande (máx 10 MB)" }, { status: 400 });
   if (!["DRIVER_LICENSE", "HEALTH_CARD", "OTHER"].includes(type)) return NextResponse.json({ error: "Tipo inválido" }, { status: 400 });
-  const exp = new Date(expiresAt);
-  if (Number.isNaN(exp.getTime())) return NextResponse.json({ error: "Fecha inválida" }, { status: 400 });
+  const exp = expiresAt ? new Date(expiresAt) : null;
+  if (exp && Number.isNaN(exp.getTime())) return NextResponse.json({ error: "Fecha inválida" }, { status: 400 });
 
   const url = await uploadBlob(`docs/${session.user.id}`, file, file.name, file.type);
   const doc = await prisma.documentUpload.create({

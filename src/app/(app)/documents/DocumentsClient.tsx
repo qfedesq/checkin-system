@@ -23,7 +23,6 @@ const LABEL: Record<Doc["type"], string> = {
 };
 
 export function DocumentsClient({ documents }: { documents: Doc[] }) {
-  const [type, setType] = useState<Doc["type"]>("HEALTH_CARD");
   const [expires, setExpires] = useState("");
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
@@ -31,12 +30,11 @@ export function DocumentsClient({ documents }: { documents: Doc[] }) {
   const router = useRouter();
 
   async function onUpload(file: File) {
-    if (!expires) return setErr("Indicá la fecha de vencimiento");
     setBusy(true);
     setErr(null);
     const fd = new FormData();
     fd.append("file", file);
-    fd.append("type", type);
+    fd.append("type", "OTHER");
     fd.append("expiresAt", expires);
     const res = await fetch("/api/documents/upload", { method: "POST", body: fd });
     const body = await res.json();
@@ -50,18 +48,11 @@ export function DocumentsClient({ documents }: { documents: Doc[] }) {
   return (
     <>
       <section className="panel p-6">
-        <h2 className="text-lg font-semibold">Subir documento</h2>
-        <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-[1fr_1fr_auto]">
+        <h2 className="text-lg font-semibold">Otros documentos</h2>
+        <p className="mt-1 text-sm text-muted-foreground">Para libreta y carnet usá el bloque de arriba. Acá podés adjuntar cualquier otro documento.</p>
+        <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-[1fr_auto]">
           <label className="block">
-            <span className="eyebrow">Tipo</span>
-            <select className="surface-select mt-1" value={type} onChange={(e) => setType(e.target.value as Doc["type"])}>
-              <option value="HEALTH_CARD">Libreta sanitaria</option>
-              <option value="DRIVER_LICENSE">Carnet de conducir</option>
-              <option value="OTHER">Otro</option>
-            </select>
-          </label>
-          <label className="block">
-            <span className="eyebrow">Vencimiento</span>
+            <span className="eyebrow">Vencimiento (opcional)</span>
             <input type="date" className="surface-control mt-1" value={expires} onChange={(e) => setExpires(e.target.value)} />
           </label>
           <div className="flex items-end">
