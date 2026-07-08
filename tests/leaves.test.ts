@@ -11,8 +11,9 @@ test("validateVacationRange: lunes + 7 días", () => {
   const r = validateVacationRange("2026-04-20", 7);
   assert.equal(r.ok, true);
   if (r.ok) {
-    assert.equal(r.start.getDay(), 1);
-    assert.equal(r.end.getDate(), 26);
+    // leaves.ts maneja fechas-calendario en UTC (getUTCDay), así que el test debe leerlas en UTC.
+    assert.equal(r.start.getUTCDay(), 1);
+    assert.equal(r.end.getUTCDate(), 26);
   }
 });
 
