@@ -4,7 +4,7 @@ import { requireAdmin } from "@/lib/admin-guard";
 import { recordAudit } from "@/lib/audit";
 import { notifyUser } from "@/lib/notify";
 
-const DATE_FIELDS = ["professionalLicenseExpiry", "healthCardExpiry"];
+const DATE_FIELDS = ["dob", "professionalLicenseExpiry", "healthCardExpiry"];
 
 export async function POST(_req: Request, ctx: { params: Promise<{ id: string }> }) {
   const { session, error } = await requireAdmin();

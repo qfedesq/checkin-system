@@ -6,6 +6,18 @@ import Link from "next/link";
 import { KeyRound, Lock, LockOpen, Smartphone, Send, Upload } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 
+const CLOTHING_SIZES = ["XS", "S", "M", "L", "XL", "XXL", "XXXL"];
+const SHOE_SIZES = Array.from({ length: 48 - 36 + 1 }, (_, i) => String(36 + i));
+
+function SizeOptions({ options }: { options: string[] }) {
+  return (
+    <>
+      <option value="">—</option>
+      {options.map((o) => <option key={o} value={o}>{o}</option>)}
+    </>
+  );
+}
+
 type Profile = {
   legajo: string;
   lastName: string;
@@ -162,11 +174,11 @@ export function EmployeeDetailClient({ initial }: {
         <section className="panel p-6">
           <h2 className="text-lg font-semibold">Talles</h2>
           <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-5">
-            <Field label="Remera"><input className="surface-control" value={p.shirtSize} onChange={set("shirtSize")} /></Field>
-            <Field label="Buzo"><input className="surface-control" value={p.hoodieSize} onChange={set("hoodieSize")} /></Field>
-            <Field label="Campera"><input className="surface-control" value={p.jacketSize} onChange={set("jacketSize")} /></Field>
-            <Field label="Pantalón"><input className="surface-control" value={p.pantsSize} onChange={set("pantsSize")} /></Field>
-            <Field label="Calzado"><input className="surface-control" value={p.shoeSize} onChange={set("shoeSize")} /></Field>
+            <Field label="Remera"><select className="surface-select" value={p.shirtSize} onChange={set("shirtSize")}><SizeOptions options={CLOTHING_SIZES} /></select></Field>
+            <Field label="Buzo"><select className="surface-select" value={p.hoodieSize} onChange={set("hoodieSize")}><SizeOptions options={CLOTHING_SIZES} /></select></Field>
+            <Field label="Campera"><select className="surface-select" value={p.jacketSize} onChange={set("jacketSize")}><SizeOptions options={CLOTHING_SIZES} /></select></Field>
+            <Field label="Pantalón"><select className="surface-select" value={p.pantsSize} onChange={set("pantsSize")}><SizeOptions options={CLOTHING_SIZES} /></select></Field>
+            <Field label="Calzado"><select className="surface-select" value={p.shoeSize} onChange={set("shoeSize")}><SizeOptions options={SHOE_SIZES} /></select></Field>
           </div>
         </section>
 

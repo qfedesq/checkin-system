@@ -7,6 +7,8 @@ import { Check, X } from "lucide-react";
 import { formatDateTime } from "@/lib/utils";
 
 const FIELD_LABELS: Record<string, string> = {
+  dob: "Fecha de nacimiento",
+  category: "Categoría",
   phone: "Teléfono",
   professionalLicenseExpiry: "Venc. carnet profesional",
   healthCardExpiry: "Venc. libreta sanitaria",

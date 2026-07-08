@@ -1,7 +1,8 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { Upload } from "lucide-react";
 
 type Initial = {
   legajo: string;
@@ -27,63 +28,38 @@ type Initial = {
   emergencyContact: string;
   emergencyPhone: string;
   signatureBlobUrl: string;
+  healthCardFrontBlobUrl: string;
+  healthCardBackBlobUrl: string;
+  licenseFrontBlobUrl: string;
+  licenseBackBlobUrl: string;
 };
 
 const EMPTY: Initial = {
-  legajo: "",
-  hireDate: "",
-  lastName: "",
-  firstName: "",
-  dob: "",
-  cuil: "",
-  category: "HELPER",
-  phone: "",
-  professionalLicenseExpiry: "",
-  healthCardExpiry: "",
-  shirtSize: "",
-  hoodieSize: "",
-  jacketSize: "",
-  pantsSize: "",
-  shoeSize: "",
-  address: "",
-  addressNumber: "",
-  neighborhood: "",
-  city: "",
-  postalCode: "",
-  emergencyContact: "",
-  emergencyPhone: "",
-  signatureBlobUrl: "",
+  legajo: "", hireDate: "", lastName: "", firstName: "", dob: "", cuil: "", category: "HELPER",
+  phone: "", professionalLicenseExpiry: "", healthCardExpiry: "",
+  shirtSize: "", hoodieSize: "", jacketSize: "", pantsSize: "", shoeSize: "",
+  address: "", addressNumber: "", neighborhood: "", city: "", postalCode: "",
+  emergencyContact: "", emergencyPhone: "", signatureBlobUrl: "",
+  healthCardFrontBlobUrl: "", healthCardBackBlobUrl: "", licenseFrontBlobUrl: "", licenseBackBlobUrl: "",
 };
+
+const CLOTHING_SIZES = ["XS", "S", "M", "L", "XL", "XXL", "XXXL"];
+const SHOE_SIZES = Array.from({ length: 48 - 36 + 1 }, (_, i) => String(36 + i));
 
 export function ProfileForm({ initial, email, pendingFields }: { initial: Initial | null; email: string; pendingFields?: string[] }) {
   const router = useRouter();
   const [data, setData] = useState<Initial>(initial ?? EMPTY);
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<{ kind: "ok" | "err"; text: string } | null>(null);
-  const fileRef = useRef<HTMLInputElement>(null);
 
   const isDriver = data.category === "DRIVER";
-  // Con perfil ya creado, los datos de identidad los edita sólo el admin
-  // y el resto de los cambios pasan por su aprobación.
+  // Identidad que sólo edita el admin: apellido, nombre, CUIL (además de legajo/ingreso/email).
+  // Fecha de nacimiento, categoría y firma las carga el propio empleado.
   const locked = initial !== null;
   const hasPending = (pendingFields?.length ?? 0) > 0;
 
   function set<K extends keyof Initial>(key: K, v: Initial[K]) {
     setData((d) => ({ ...d, [key]: v }));
-  }
-
-  async function onSignatureChange(file: File) {
-    const fd = new FormData();
-    fd.append("file", file);
-    fd.append("kind", "signature");
-    const res = await fetch("/api/uploads/signature", { method: "POST", body: fd });
-    const data = await res.json();
-    if (!res.ok) {
-      setMsg({ kind: "err", text: data.error ?? "No pudimos subir la firma" });
-      return;
-    }
-    set("signatureBlobUrl", data.url);
-    setMsg({ kind: "ok", text: "Firma cargada" });
   }
 
   async function onSubmit(e: React.FormEvent) {
@@ -102,7 +78,6 @@ export function ProfileForm({ initial, email, pendingFields }: { initial: Initia
       return;
     }
     if (body.completed || body.created) {
-      // Primera carga completa: cerramos el onboarding llevándolo al inicio.
       setMsg({ kind: "ok", text: "¡Listo! Datos guardados." });
       router.push("/dashboard");
       router.refresh();
@@ -129,16 +104,14 @@ export function ProfileForm({ initial, email, pendingFields }: { initial: Initia
         <h2 className="text-lg font-semibold">Identificación</h2>
         <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
           <Field label="Email"><input disabled className="surface-control" value={email} /></Field>
-          <Field label="Legajo (asignado por admin)">
-            <input disabled className="surface-control" value={data.legajo || "—"} />
-          </Field>
+          <Field label="Legajo (asignado por admin)"><input disabled className="surface-control" value={data.legajo || "—"} /></Field>
           <Field label={locked ? "Apellido (lo edita el admin)" : "Apellido"}><input className="surface-control" required disabled={locked} value={data.lastName} onChange={(e) => set("lastName", e.target.value)} /></Field>
           <Field label={locked ? "Nombre (lo edita el admin)" : "Nombre"}><input className="surface-control" required disabled={locked} value={data.firstName} onChange={(e) => set("firstName", e.target.value)} /></Field>
-          <Field label={locked ? "Fecha de nacimiento (la edita el admin)" : "Fecha de nacimiento"}><input type="date" className="surface-control" required disabled={locked} value={data.dob} onChange={(e) => set("dob", e.target.value)} /></Field>
+          <Field label="Fecha de nacimiento"><input type="date" className="surface-control" required value={data.dob} onChange={(e) => set("dob", e.target.value)} /></Field>
           <Field label={locked ? "CUIL (lo edita el admin)" : "CUIL"}><input className="surface-control" required disabled={locked} value={data.cuil} onChange={(e) => set("cuil", e.target.value)} placeholder="20-12345678-9" /></Field>
           <Field label="Fecha de ingreso (asignada por admin)"><input disabled className="surface-control" value={data.hireDate || "—"} /></Field>
-          <Field label={locked ? "Categoría (la edita el admin)" : "Categoría"}>
-            <select className="surface-select" disabled={locked} value={data.category} onChange={(e) => set("category", e.target.value as "DRIVER" | "HELPER")}>
+          <Field label="Categoría">
+            <select className="surface-select" value={data.category} onChange={(e) => set("category", e.target.value as "DRIVER" | "HELPER")}>
               <option value="HELPER">Ayudante</option>
               <option value="DRIVER">Chofer</option>
             </select>
@@ -149,22 +122,35 @@ export function ProfileForm({ initial, email, pendingFields }: { initial: Initia
 
       <section className="panel p-6">
         <h2 className="text-lg font-semibold">Vencimientos</h2>
-        <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
+        <p className="mt-1 text-sm text-muted-foreground">Cargá la fecha de vencimiento y adjuntá una foto de cada lado del documento.</p>
+
+        <div className="mt-4">
           <Field label="Libreta sanitaria · vence"><input type="date" className="surface-control" required value={data.healthCardExpiry} onChange={(e) => set("healthCardExpiry", e.target.value)} /></Field>
-          {isDriver && (
-            <Field label="Carnet profesional · vence"><input type="date" className="surface-control" required={isDriver} value={data.professionalLicenseExpiry} onChange={(e) => set("professionalLicenseExpiry", e.target.value)} /></Field>
-          )}
+          <div className="mt-3 grid grid-cols-2 gap-4 sm:max-w-md">
+            <ImageSlot label="Libreta (frente)" kind="healthFront" url={data.healthCardFrontBlobUrl} onUploaded={(u) => set("healthCardFrontBlobUrl", u)} onError={(t) => setMsg({ kind: "err", text: t })} />
+            <ImageSlot label="Libreta (dorso)" kind="healthBack" url={data.healthCardBackBlobUrl} onUploaded={(u) => set("healthCardBackBlobUrl", u)} onError={(t) => setMsg({ kind: "err", text: t })} />
+          </div>
         </div>
+
+        {isDriver && (
+          <div className="mt-6">
+            <Field label="Carnet profesional · vence"><input type="date" className="surface-control" required value={data.professionalLicenseExpiry} onChange={(e) => set("professionalLicenseExpiry", e.target.value)} /></Field>
+            <div className="mt-3 grid grid-cols-2 gap-4 sm:max-w-md">
+              <ImageSlot label="Carnet (frente)" kind="licenseFront" url={data.licenseFrontBlobUrl} onUploaded={(u) => set("licenseFrontBlobUrl", u)} onError={(t) => setMsg({ kind: "err", text: t })} />
+              <ImageSlot label="Carnet (dorso)" kind="licenseBack" url={data.licenseBackBlobUrl} onUploaded={(u) => set("licenseBackBlobUrl", u)} onError={(t) => setMsg({ kind: "err", text: t })} />
+            </div>
+          </div>
+        )}
       </section>
 
       <section className="panel p-6">
         <h2 className="text-lg font-semibold">Indumentaria</h2>
         <div className="mt-4 grid grid-cols-2 gap-4 md:grid-cols-5">
-          <Field label="Remera"><input className="surface-control" value={data.shirtSize} onChange={(e) => set("shirtSize", e.target.value)} /></Field>
-          <Field label="Buzo"><input className="surface-control" value={data.hoodieSize} onChange={(e) => set("hoodieSize", e.target.value)} /></Field>
-          <Field label="Campera"><input className="surface-control" value={data.jacketSize} onChange={(e) => set("jacketSize", e.target.value)} /></Field>
-          <Field label="Pantalón"><input className="surface-control" value={data.pantsSize} onChange={(e) => set("pantsSize", e.target.value)} /></Field>
-          <Field label="Calzado"><input className="surface-control" value={data.shoeSize} onChange={(e) => set("shoeSize", e.target.value)} /></Field>
+          <Field label="Remera"><SizeSelect options={CLOTHING_SIZES} value={data.shirtSize} onChange={(v) => set("shirtSize", v)} /></Field>
+          <Field label="Buzo"><SizeSelect options={CLOTHING_SIZES} value={data.hoodieSize} onChange={(v) => set("hoodieSize", v)} /></Field>
+          <Field label="Campera"><SizeSelect options={CLOTHING_SIZES} value={data.jacketSize} onChange={(v) => set("jacketSize", v)} /></Field>
+          <Field label="Pantalón"><SizeSelect options={CLOTHING_SIZES} value={data.pantsSize} onChange={(v) => set("pantsSize", v)} /></Field>
+          <Field label="Calzado"><SizeSelect options={SHOE_SIZES} value={data.shoeSize} onChange={(v) => set("shoeSize", v)} /></Field>
         </div>
       </section>
 
@@ -189,33 +175,9 @@ export function ProfileForm({ initial, email, pendingFields }: { initial: Initia
 
       <section className="panel p-6">
         <h2 className="text-lg font-semibold">Firma digital</h2>
-        <p className="mt-1 text-sm text-muted-foreground">
-          {locked
-            ? "Tu firma se usa automáticamente cuando abrís recibos y documentos internos. Si necesitás cambiarla, pedíselo al administrador."
-            : "Subí una imagen PNG o JPG de tu firma sobre fondo blanco. Se usará automáticamente cuando abras recibos y documentos internos."}
-        </p>
-        <div className="mt-4 flex items-center gap-6">
-          <div className="surface-card flex h-24 w-48 items-center justify-center overflow-hidden p-2">
-            {data.signatureBlobUrl ? (
-              <img src={data.signatureBlobUrl} alt="firma" className="max-h-full max-w-full object-contain" />
-            ) : (
-              <span className="text-xs text-muted-foreground">sin firma</span>
-            )}
-          </div>
-          {!locked && (
-            <div>
-              <input
-                ref={fileRef}
-                type="file"
-                accept="image/png,image/jpeg"
-                className="hidden"
-                onChange={(e) => e.target.files?.[0] && onSignatureChange(e.target.files[0])}
-              />
-              <button type="button" onClick={() => fileRef.current?.click()} className="btn-ghost">
-                {data.signatureBlobUrl ? "Cambiar firma" : "Subir firma"}
-              </button>
-            </div>
-          )}
+        <p className="mt-1 text-sm text-muted-foreground">Subí una imagen PNG o JPG de tu firma sobre fondo blanco. Se usa automáticamente cuando abrís recibos y documentos internos.</p>
+        <div className="mt-4 w-40">
+          <ImageSlot label="Firma" kind="signature" url={data.signatureBlobUrl} onUploaded={(u) => set("signatureBlobUrl", u)} onError={(t) => setMsg({ kind: "err", text: t })} contain />
         </div>
       </section>
 
@@ -238,5 +200,67 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
       <span className="eyebrow">{label}</span>
       <div className="mt-1">{children}</div>
     </label>
+  );
+}
+
+function SizeSelect({ options, value, onChange }: { options: string[]; value: string; onChange: (v: string) => void }) {
+  return (
+    <select className="surface-select" value={value} onChange={(e) => onChange(e.target.value)}>
+      <option value="">—</option>
+      {options.map((o) => <option key={o} value={o}>{o}</option>)}
+    </select>
+  );
+}
+
+function ImageSlot({ label, kind, url, onUploaded, onError, contain }: {
+  label: string;
+  kind: string;
+  url: string;
+  onUploaded: (url: string) => void;
+  onError: (text: string) => void;
+  contain?: boolean;
+}) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [busy, setBusy] = useState(false);
+
+  async function upload(file: File) {
+    setBusy(true);
+    const form = new FormData();
+    form.set("file", file);
+    form.set("kind", kind);
+    const res = await fetch("/api/profile/uploads", { method: "POST", body: form });
+    const out = await res.json();
+    setBusy(false);
+    if (!res.ok) return onError(out.error ?? "No pudimos subir la imagen");
+    onUploaded(out.url);
+  }
+
+  return (
+    <div>
+      <span className="eyebrow">{label}</span>
+      <button
+        type="button"
+        className="mt-1 grid aspect-[4/3] w-full place-items-center overflow-hidden rounded-lg border border-dashed border-border/80 bg-secondary/40 transition hover:border-primary/50"
+        onClick={() => inputRef.current?.click()}
+        disabled={busy}
+      >
+        {url ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={url} alt={label} className={contain ? "h-full w-full object-contain p-1" : "h-full w-full object-cover"} />
+        ) : (
+          <span className="flex flex-col items-center gap-1 text-xs text-muted-foreground">
+            <Upload className="h-4 w-4" />
+            {busy ? "Subiendo…" : "Subir"}
+          </span>
+        )}
+      </button>
+      <input
+        ref={inputRef}
+        type="file"
+        accept="image/png,image/jpeg,image/webp"
+        className="hidden"
+        onChange={(e) => { const f = e.target.files?.[0]; if (f) upload(f); e.target.value = ""; }}
+      />
+    </div>
   );
 }

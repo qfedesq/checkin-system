@@ -2,6 +2,15 @@
 
 Cada release sube la versión en `+0.01`. El número visible abajo a la izquierda en la app coincide con este archivo.
 
+## v0.20 — 2026-07-07
+
+**Perfil del empleado: más campos a su cargo (feedback de prueba).**
+
+- **Fecha de nacimiento, categoría (chofer/ayudante) y firma digital** ahora las carga el propio empleado (antes eran solo del admin). Al elegir **Chofer** se habilita el vencimiento del carnet profesional y sus imágenes.
+- **Imágenes de documentos en Vencimientos**: al cargar la fecha, el empleado adjunta fotos de ambos lados de la **libreta sanitaria** y del **carnet** (si es chofer). Se guardan al instante.
+- **Talles como listas**: remera/buzo/campera/pantalón (XS a XXXL) y calzado (36 a 48), en vez de texto libre — también en la ficha del admin.
+- Los cambios del empleado siguen la misma regla: la primera carga se guarda directa; las ediciones posteriores pasan por aprobación del admin (la firma y las imágenes se guardan directo).
+
 ## v0.19 — 2026-07-07
 
 **Correcciones sobre feedback de prueba.**

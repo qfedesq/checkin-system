@@ -7,8 +7,11 @@ import { notifyAdmins } from "@/lib/notify";
 import { isEmployeeProfileComplete } from "@/lib/profile";
 
 // Campos que el empleado puede proponer cambiar (el resto sólo los edita el admin
-// desde la ficha: legajo, nombres, dob, DNI, CUIL, ingreso, categoría, email, foto, firma).
+// desde la ficha: legajo, apellidos, nombres, DNI, CUIL, fecha de ingreso, email, foto de cara).
+// La firma y las imágenes de documentos se suben directo por /api/profile/uploads.
 const EDITABLE_FIELDS = [
+  "dob",
+  "category",
   "phone",
   "professionalLicenseExpiry",
   "healthCardExpiry",
@@ -27,9 +30,11 @@ const EDITABLE_FIELDS = [
 ] as const;
 
 type EditableField = (typeof EDITABLE_FIELDS)[number];
-const DATE_FIELDS: EditableField[] = ["professionalLicenseExpiry", "healthCardExpiry"];
+const DATE_FIELDS: EditableField[] = ["dob", "professionalLicenseExpiry", "healthCardExpiry"];
 
 const editSchema = z.object({
+  dob: z.string(),
+  category: z.enum(["DRIVER", "HELPER"]),
   phone: z.string().min(1),
   professionalLicenseExpiry: z.string().optional().nullable(),
   healthCardExpiry: z.string(),
@@ -52,9 +57,7 @@ const editSchema = z.object({
 const createSchema = editSchema.extend({
   lastName: z.string().min(1),
   firstName: z.string().min(1),
-  dob: z.string(),
   cuil: z.string().min(1),
-  category: z.enum(["DRIVER", "HELPER"]),
   signatureBlobUrl: z.string().optional().nullable(),
 });
 
@@ -122,7 +125,7 @@ export async function PUT(req: NextRequest) {
   if (!parsed.success) return NextResponse.json({ error: "Datos inválidos", details: parsed.error.flatten() }, { status: 400 });
   const d = parsed.data;
 
-  if (existing.category === "DRIVER" && !d.professionalLicenseExpiry) {
+  if (d.category === "DRIVER" && !d.professionalLicenseExpiry) {
     return NextResponse.json({ error: "Los choferes deben cargar vencimiento de carnet profesional" }, { status: 400 });
   }
 
@@ -132,6 +135,8 @@ export async function PUT(req: NextRequest) {
     await prisma.employeeProfile.update({
       where: { userId: session.user.id },
       data: {
+        dob: asDate(d.dob) ?? existing.dob,
+        category: d.category,
         phone: d.phone,
         professionalLicenseExpiry: asDate(d.professionalLicenseExpiry),
         healthCardExpiry: asDate(d.healthCardExpiry) ?? existing.healthCardExpiry,

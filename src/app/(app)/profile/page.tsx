@@ -38,6 +38,10 @@ export default async function ProfilePage() {
         emergencyContact: profile.emergencyContact,
         emergencyPhone: profile.emergencyPhone,
         signatureBlobUrl: profile.signatureBlobUrl ?? "",
+        healthCardFrontBlobUrl: profile.healthCardFrontBlobUrl ?? "",
+        healthCardBackBlobUrl: profile.healthCardBackBlobUrl ?? "",
+        licenseFrontBlobUrl: profile.licenseFrontBlobUrl ?? "",
+        licenseBackBlobUrl: profile.licenseBackBlobUrl ?? "",
       }
     : null;
 
