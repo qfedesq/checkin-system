@@ -2,6 +2,13 @@
 
 Cada release sube la versión en `+0.01`. El número visible abajo a la izquierda en la app coincide con este archivo.
 
+## v0.24 — 2026-07-08
+
+**Fix: al enviar el perfil siempre aparece un aviso.**
+
+- Antes, si faltaba un dato obligatorio, el navegador bloqueaba el envío **en silencio** (el aviso quedaba en un campo fuera de pantalla) y parecía que el botón no hacía nada. Ahora, al tocar **"Enviar cambios para aprobación"** siempre aparece un mensaje: si faltan datos, dice **cuáles** (ej. "Faltan datos obligatorios: Dirección, Contacto de emergencia"); si está todo, confirma el envío o avisa que no hay cambios. El mensaje se trae a la vista automáticamente.
+- La **foto** y la **firma** ahora confirman "guardada" apenas se cargan (se guardan solas, sin depender del botón).
+
 ## v0.23 — 2026-07-08
 
 **Documentación editable desde perfil y documentos + talles de pantalón.**

@@ -1,9 +1,23 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Upload } from "lucide-react";
 import { SignaturePad } from "./SignaturePad";
+
+const REQUIRED: [keyof Initial, string][] = [
+  ["lastName", "Apellido"],
+  ["firstName", "Nombre"],
+  ["dob", "Fecha de nacimiento"],
+  ["phone", "Teléfono de contacto"],
+  ["healthCardExpiry", "Vencimiento de libreta sanitaria"],
+  ["address", "Dirección"],
+  ["addressNumber", "Numeración"],
+  ["city", "Localidad"],
+  ["postalCode", "Código postal"],
+  ["emergencyContact", "Contacto de emergencia"],
+  ["emergencyPhone", "Teléfono de emergencia"],
+];
 
 type Initial = {
   legajo: string;
@@ -60,6 +74,12 @@ export function ProfileForm({ initial, email, pendingFields }: { initial: Initia
   // y el email (login). Todo lo demás lo carga el propio empleado.
   const locked = initial !== null;
   const hasPending = (pendingFields?.length ?? 0) > 0;
+  const msgRef = useRef<HTMLDivElement>(null);
+
+  // Cada vez que hay un aviso, lo traemos a la vista para que el usuario lo vea.
+  useEffect(() => {
+    if (msg) msgRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, [msg]);
 
   function set<K extends keyof Initial>(key: K, v: Initial[K]) {
     setData((d) => ({ ...d, [key]: v }));
@@ -67,14 +87,30 @@ export function ProfileForm({ initial, email, pendingFields }: { initial: Initia
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
+
+    // Validación en JS (el form usa noValidate) para que SIEMPRE haya un aviso visible.
+    const req = isDriver ? [...REQUIRED, ["professionalLicenseExpiry", "Vencimiento de carnet"] as [keyof Initial, string]] : REQUIRED;
+    const missing = req.filter(([k]) => !String(data[k] ?? "").trim()).map(([, label]) => label);
+    if (missing.length > 0) {
+      setMsg({ kind: "err", text: `Faltan datos obligatorios: ${missing.join(", ")}.` });
+      return;
+    }
+
     setBusy(true);
     setMsg(null);
-    const res = await fetch("/api/profile", {
-      method: "PUT",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify(data),
-    });
-    const body = await res.json();
+    let res: Response;
+    try {
+      res = await fetch("/api/profile", {
+        method: "PUT",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(data),
+      });
+    } catch {
+      setBusy(false);
+      setMsg({ kind: "err", text: "No pudimos conectar. Revisá tu conexión e intentá de nuevo." });
+      return;
+    }
+    const body = await res.json().catch(() => ({}));
     setBusy(false);
     if (!res.ok) {
       setMsg({ kind: "err", text: body.error ?? "No pudimos guardar los datos." });
@@ -89,7 +125,7 @@ export function ProfileForm({ initial, email, pendingFields }: { initial: Initia
     if (body.pendingApproval) {
       setMsg({ kind: "ok", text: "Cambios enviados: quedan pendientes de aprobación del administrador. Te va a llegar una notificación cuando los revise." });
     } else if (body.unchanged) {
-      setMsg({ kind: "ok", text: "No hay cambios para guardar" });
+      setMsg({ kind: "ok", text: "No hay cambios de texto para enviar. La firma y las fotos se guardan solas al cargarlas." });
     } else {
       setMsg({ kind: "ok", text: "Datos guardados" });
     }
@@ -97,7 +133,7 @@ export function ProfileForm({ initial, email, pendingFields }: { initial: Initia
   }
 
   return (
-    <form onSubmit={onSubmit} className="space-y-6">
+    <form onSubmit={onSubmit} className="space-y-6" noValidate>
       {hasPending && (
         <div className="rounded-xl border border-[hsl(19_95%_53%)]/30 bg-[hsl(19_95%_53%)]/10 px-4 py-3 text-sm">
           Tenés <strong>cambios pendientes de aprobación</strong> del administrador. Hasta que los revise, no podés enviar nuevos cambios.
@@ -180,7 +216,7 @@ export function ProfileForm({ initial, email, pendingFields }: { initial: Initia
         <h2 className="text-lg font-semibold">Foto de perfil</h2>
         <p className="mt-1 text-sm text-muted-foreground">Subí una foto de frente de tu cara.</p>
         <div className="mt-4 w-40">
-          <ImageSlot label="Foto" kind="face" url={data.faceImageBlobUrl} onUploaded={(u) => set("faceImageBlobUrl", u)} onError={(t) => setMsg({ kind: "err", text: t })} contain />
+          <ImageSlot label="Foto" kind="face" url={data.faceImageBlobUrl} onUploaded={(u) => { set("faceImageBlobUrl", u); setMsg({ kind: "ok", text: "Foto guardada." }); }} onError={(t) => setMsg({ kind: "err", text: t })} contain />
         </div>
       </section>
 
@@ -188,12 +224,12 @@ export function ProfileForm({ initial, email, pendingFields }: { initial: Initia
         <h2 className="text-lg font-semibold">Firma digital</h2>
         <p className="mt-1 text-sm text-muted-foreground">Firmá en el recuadro con el dedo. Se usa automáticamente cuando abrís recibos y documentos internos.</p>
         <div className="mt-4">
-          <SignaturePad url={data.signatureBlobUrl} onUploaded={(u) => set("signatureBlobUrl", u)} onError={(t) => setMsg({ kind: "err", text: t })} />
+          <SignaturePad url={data.signatureBlobUrl} onUploaded={(u) => { set("signatureBlobUrl", u); setMsg({ kind: "ok", text: "Firma guardada." }); }} onError={(t) => setMsg({ kind: "err", text: t })} />
         </div>
       </section>
 
       {msg && (
-        <div className={`rounded-xl border px-4 py-2 text-sm ${msg.kind === "ok" ? "border-[hsl(var(--success))]/30 bg-[hsl(var(--success))]/10 text-[hsl(var(--success))]" : "border-destructive/30 bg-destructive/10 text-destructive"}`}>{msg.text}</div>
+        <div ref={msgRef} className={`rounded-xl border px-4 py-3 text-sm ${msg.kind === "ok" ? "border-[hsl(var(--success))]/30 bg-[hsl(var(--success))]/10 text-[hsl(var(--success))]" : "border-destructive/30 bg-destructive/10 text-destructive"}`}>{msg.text}</div>
       )}
 
       <div className="flex justify-end gap-2">
