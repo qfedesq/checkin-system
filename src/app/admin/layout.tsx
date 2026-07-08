@@ -6,7 +6,11 @@ import { prisma } from "@/lib/prisma";
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const session = await auth();
   if (!session?.user) redirect("/login");
-  if (session.user.role !== "ADMIN") redirect("/dashboard");
+
+  // El JWT no se revoca al deshabilitar la cuenta o bajar de rol: se revalida contra la DB en cada carga.
+  const currentUser = await prisma.user.findUnique({ where: { id: session.user.id }, select: { status: true, role: true } });
+  if (!currentUser || currentUser.status !== "ACTIVE") redirect("/login");
+  if (currentUser.role !== "ADMIN") redirect("/dashboard");
 
   const [pendingUsers, pendingLeaves, pendingDocs, pendingProfileChanges] = await Promise.all([
     prisma.user.count({ where: { status: "PENDING_APPROVAL" } }),
