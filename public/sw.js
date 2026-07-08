@@ -18,8 +18,8 @@ self.addEventListener("push", (event) => {
   event.waitUntil(
     self.registration.showNotification(data.title, {
       body: data.body,
-      icon: "/emmalva-vertical.png",
-      badge: "/emmalva-vertical.png",
+      icon: "/icon-512.png",
+      badge: "/icon-512.png",
       data: { url: data.url },
     }),
   );

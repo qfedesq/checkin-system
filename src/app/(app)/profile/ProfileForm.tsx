@@ -28,6 +28,7 @@ type Initial = {
   emergencyContact: string;
   emergencyPhone: string;
   signatureBlobUrl: string;
+  faceImageBlobUrl: string;
   healthCardFrontBlobUrl: string;
   healthCardBackBlobUrl: string;
   licenseFrontBlobUrl: string;
@@ -39,7 +40,7 @@ const EMPTY: Initial = {
   phone: "", professionalLicenseExpiry: "", healthCardExpiry: "",
   shirtSize: "", hoodieSize: "", jacketSize: "", pantsSize: "", shoeSize: "",
   address: "", addressNumber: "", neighborhood: "", city: "", postalCode: "",
-  emergencyContact: "", emergencyPhone: "", signatureBlobUrl: "",
+  emergencyContact: "", emergencyPhone: "", signatureBlobUrl: "", faceImageBlobUrl: "",
   healthCardFrontBlobUrl: "", healthCardBackBlobUrl: "", licenseFrontBlobUrl: "", licenseBackBlobUrl: "",
 };
 
@@ -53,8 +54,8 @@ export function ProfileForm({ initial, email, pendingFields }: { initial: Initia
   const [msg, setMsg] = useState<{ kind: "ok" | "err"; text: string } | null>(null);
 
   const isDriver = data.category === "DRIVER";
-  // Identidad que sólo edita el admin: apellido, nombre, CUIL (además de legajo/ingreso/email).
-  // Fecha de nacimiento, categoría y firma las carga el propio empleado.
+  // Solo-admin: CUIL (viene del alta de ARCA), legajo y fecha de ingreso (administrativos)
+  // y el email (login). Todo lo demás lo carga el propio empleado.
   const locked = initial !== null;
   const hasPending = (pendingFields?.length ?? 0) > 0;
 
@@ -105,10 +106,10 @@ export function ProfileForm({ initial, email, pendingFields }: { initial: Initia
         <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
           <Field label="Email"><input disabled className="surface-control" value={email} /></Field>
           <Field label="Legajo (asignado por admin)"><input disabled className="surface-control" value={data.legajo || "—"} /></Field>
-          <Field label={locked ? "Apellido (lo edita el admin)" : "Apellido"}><input className="surface-control" required disabled={locked} value={data.lastName} onChange={(e) => set("lastName", e.target.value)} /></Field>
-          <Field label={locked ? "Nombre (lo edita el admin)" : "Nombre"}><input className="surface-control" required disabled={locked} value={data.firstName} onChange={(e) => set("firstName", e.target.value)} /></Field>
+          <Field label="Apellido"><input className="surface-control" required value={data.lastName} onChange={(e) => set("lastName", e.target.value)} /></Field>
+          <Field label="Nombre"><input className="surface-control" required value={data.firstName} onChange={(e) => set("firstName", e.target.value)} /></Field>
           <Field label="Fecha de nacimiento"><input type="date" className="surface-control" required value={data.dob} onChange={(e) => set("dob", e.target.value)} /></Field>
-          <Field label={locked ? "CUIL (lo edita el admin)" : "CUIL"}><input className="surface-control" required disabled={locked} value={data.cuil} onChange={(e) => set("cuil", e.target.value)} placeholder="20-12345678-9" /></Field>
+          <Field label="CUIL (lo carga el admin)"><input className="surface-control" required disabled={locked} value={data.cuil} onChange={(e) => set("cuil", e.target.value)} placeholder="20-12345678-9" /></Field>
           <Field label="Fecha de ingreso (asignada por admin)"><input disabled className="surface-control" value={data.hireDate || "—"} /></Field>
           <Field label="Categoría">
             <select className="surface-select" value={data.category} onChange={(e) => set("category", e.target.value as "DRIVER" | "HELPER")}>
@@ -170,6 +171,14 @@ export function ProfileForm({ initial, email, pendingFields }: { initial: Initia
         <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
           <Field label="Nombre"><input className="surface-control" required value={data.emergencyContact} onChange={(e) => set("emergencyContact", e.target.value)} /></Field>
           <Field label="Teléfono"><input className="surface-control" required value={data.emergencyPhone} onChange={(e) => set("emergencyPhone", e.target.value)} /></Field>
+        </div>
+      </section>
+
+      <section className="panel p-6">
+        <h2 className="text-lg font-semibold">Foto de perfil</h2>
+        <p className="mt-1 text-sm text-muted-foreground">Subí una foto de frente de tu cara.</p>
+        <div className="mt-4 w-40">
+          <ImageSlot label="Foto" kind="face" url={data.faceImageBlobUrl} onUploaded={(u) => set("faceImageBlobUrl", u)} onError={(t) => setMsg({ kind: "err", text: t })} />
         </div>
       </section>
 

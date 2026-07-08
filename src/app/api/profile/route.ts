@@ -6,10 +6,12 @@ import { recordAudit } from "@/lib/audit";
 import { notifyAdmins } from "@/lib/notify";
 import { isEmployeeProfileComplete } from "@/lib/profile";
 
-// Campos que el empleado puede proponer cambiar (el resto sólo los edita el admin
-// desde la ficha: legajo, apellidos, nombres, DNI, CUIL, fecha de ingreso, email, foto de cara).
-// La firma y las imágenes de documentos se suben directo por /api/profile/uploads.
+// Campos que el empleado puede proponer cambiar. Sólo son solo-admin: CUIL (lo trae el
+// alta de ARCA), legajo y fecha de ingreso (administrativos) y el email (login).
+// La firma y las imágenes se suben directo por /api/profile/uploads.
 const EDITABLE_FIELDS = [
+  "lastName",
+  "firstName",
   "dob",
   "category",
   "phone",
@@ -33,6 +35,8 @@ type EditableField = (typeof EDITABLE_FIELDS)[number];
 const DATE_FIELDS: EditableField[] = ["dob", "professionalLicenseExpiry", "healthCardExpiry"];
 
 const editSchema = z.object({
+  lastName: z.string().min(1),
+  firstName: z.string().min(1),
   dob: z.string(),
   category: z.enum(["DRIVER", "HELPER"]),
   phone: z.string().min(1),
@@ -55,8 +59,6 @@ const editSchema = z.object({
 // El alta inicial del perfil (empleado sin perfil todavía) sigue siendo directa:
 // el admin la revisa después desde la ficha.
 const createSchema = editSchema.extend({
-  lastName: z.string().min(1),
-  firstName: z.string().min(1),
   cuil: z.string().min(1),
   signatureBlobUrl: z.string().optional().nullable(),
 });
@@ -135,6 +137,8 @@ export async function PUT(req: NextRequest) {
     await prisma.employeeProfile.update({
       where: { userId: session.user.id },
       data: {
+        lastName: d.lastName,
+        firstName: d.firstName,
         dob: asDate(d.dob) ?? existing.dob,
         category: d.category,
         phone: d.phone,

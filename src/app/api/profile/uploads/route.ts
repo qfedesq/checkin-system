@@ -9,6 +9,7 @@ const ALLOWED = ["image/png", "image/jpeg", "image/webp"];
 // Imágenes que el propio empleado puede subir a su perfil (se guardan al instante).
 const KIND_TO_FIELD: Record<string, string> = {
   signature: "signatureBlobUrl",
+  face: "faceImageBlobUrl",
   healthFront: "healthCardFrontBlobUrl",
   healthBack: "healthCardBackBlobUrl",
   licenseFront: "licenseFrontBlobUrl",

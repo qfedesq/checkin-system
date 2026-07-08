@@ -3,7 +3,7 @@
 Plataforma de gestión de empleados, vacaciones, documentación y check-in/out con biometría.
 Construida con **Next.js 15** + **Prisma** + **Auth.js** + **WebAuthn**, desplegada en **Vercel** sobre **Neon Postgres**.
 
-Identidad visual acorde al [Manual de Marca Emmalva](public/emmalva-horizontal.svg): isotipo cian (#29ABE2) y tipografía **Nunito** (alternativa libre a Gotham Rounded del manual).
+Identidad visual Emmalva: isotipo cian (#29ABE2, componente `LogoIcon` en `src/components/brand/Logo.tsx`, también usado como ícono de la PWA) y tipografía **Gotham Rounded**.
 
 ## Stack
 

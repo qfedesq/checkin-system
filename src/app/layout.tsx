@@ -9,8 +9,8 @@ export const metadata: Metadata = {
   manifest: "/manifest.webmanifest",
   appleWebApp: { capable: true, title: "Emmalva", statusBarStyle: "black-translucent" },
   icons: {
-    icon: "/emmalva-vertical.png",
-    apple: "/emmalva-vertical.png",
+    icon: "/icon-512.png",
+    apple: "/apple-touch-icon.png",
   },
 };
 

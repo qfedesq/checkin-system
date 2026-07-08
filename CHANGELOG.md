@@ -2,6 +2,13 @@
 
 Cada release sube la versión en `+0.01`. El número visible abajo a la izquierda en la app coincide con este archivo.
 
+## v0.21 — 2026-07-07
+
+**Ícono correcto de la app + el empleado carga todos sus datos.**
+
+- **Ícono de la PWA**: se reemplazó el asset equivocado (aparecía el logo de otra app al agregar a inicio) por el isotipo de Emmalva. Ahora al "Agregar a inicio" el ícono es el logo de la empresa. *(En iPhone, si ya la tenías agregada, borrala de inicio y volvé a agregarla para refrescar el ícono.)*
+- **Perfil del empleado**: ahora carga también **apellido, nombre y foto de frente de cara**. El único dato reservado al administrador es el **CUIL** (además de legajo, fecha de ingreso y email). Así se evita el ida y vuelta pidiendo datos.
+
 ## v0.20 — 2026-07-07
 
 **Perfil del empleado: más campos a su cargo (feedback de prueba).**
