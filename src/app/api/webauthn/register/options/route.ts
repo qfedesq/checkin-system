@@ -3,8 +3,9 @@ import { generateRegistrationOptions } from "@simplewebauthn/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { rpID, rpName } from "@/lib/webauthn";
+import { route } from "@/lib/route";
 
-export async function POST() {
+export const POST = route("webauthn.register.options", async () => {
   const session = await auth();
   if (!session?.user) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
 
@@ -37,4 +38,4 @@ export async function POST() {
   });
 
   return NextResponse.json(options);
-}
+});

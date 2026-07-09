@@ -1,0 +1,267 @@
+[
+  {
+    "id": "A11Y-1",
+    "area": "accessibility",
+    "status": "issue",
+    "severity": "critical",
+    "title": "Firma digital (SignaturePad) sin alternativa no táctil ni operable por teclado",
+    "description": "El <canvas> sólo escucha Pointer Events (onPointerDown/Move/Up/Leave), no tiene tabIndex ni responde a teclado, y no expone aria-label/role. No existe método alternativo (tipear el nombre, subir imagen de firma) para usuarios que no puedan dibujar con el dedo o el mouse. El texto de ayuda está fuera del canvas y no vinculado con aria-describedby.",
+    "wcag": ["2.1.1 Keyboard (A)", "1.1.1 Non-text Content (A)", "4.1.2 Name, Role, Value (A)"],
+    "locations": [
+      { "file": "src/app/(app)/profile/SignaturePad.tsx", "lines": "118-125" },
+      { "file": "src/app/(app)/profile/SignaturePad.tsx", "lines": "134" },
+      { "file": "src/app/(app)/profile/ProfileForm.tsx", "lines": "224-228" }
+    ],
+    "recommendation": "Agregar un método alternativo de firma (ej. tipear el nombre completo con una tipografía cursiva, o permitir subir una foto de la firma en papel) y/o hacer el canvas operable por teclado + darle un nombre accesible."
+  },
+  {
+    "id": "A11Y-2",
+    "area": "accessibility",
+    "status": "issue",
+    "severity": "high",
+    "title": "Contraste insuficiente de --primary/--accent/--success en modo claro",
+    "description": "Calculando luminancia relativa (fórmula WCAG) sobre los tokens HSL de globals.css en modo claro: texto con --primary sobre fondos claros da ~2.5:1, --accent ~3.3:1, --success ~3.4:1 (todos por debajo del mínimo 4.5:1 para texto normal). --destructive pasa al límite (~4.6:1). El mismo problema aparece invertido: texto blanco (--primary-foreground) sobre fondo --primary plano (contadores de pendientes) también da ~2.5:1, y el tramo superior del degradé de .btn-primary (hsl(--primary) puro) da ~2.5:1 aunque el tramo inferior (--primary-dark) sí pasa (~5.6:1). En modo oscuro los mismos tokens superan 4.5:1 ampliamente; es un problema específico del tema claro.",
+    "wcag": ["1.4.3 Contrast (Minimum) (AA)"],
+    "locations": [
+      { "file": "src/app/globals.css", "lines": "39-69 (tokens :root), 242-262 (.btn-primary, .badge-*)" },
+      { "file": "src/components/layout/AppShell.tsx", "lines": "109, 139, 193, 242 (contadores bg-primary/text-primary-foreground)" },
+      { "file": "src/app/login/LoginForm.tsx", "lines": "87 (link text-primary)" },
+      { "file": "src/app/pending/page.tsx", "lines": "banner text-accent/bg-accent-10" },
+      { "file": "src/app/admin/profile-changes/ProfileChangesClient.tsx", "lines": "105 (columna Propuesto, text-primary)" }
+    ],
+    "recommendation": "Oscurecer levemente --primary/--accent/--success para uso como color de texto en modo claro (o crear variantes -text más oscuras), y verificar con una herramienta real de contraste (no sólo cálculo estático) el degradé de .btn-primary."
+  },
+  {
+    "id": "A11Y-3",
+    "area": "accessibility",
+    "status": "issue",
+    "severity": "high",
+    "title": "Labels de formulario sin asociación programática (sin htmlFor/id) en login, reset de contraseña y modales admin",
+    "description": "0 apariciones de htmlFor en todo el repo. Existen dos patrones de <label>: el correcto, donde el label envuelve al input (asociación implícita válida), usado en ProfileForm y varios clientes; y el incorrecto, donde <label> es hermano del <input> sin ningún vínculo programático, usado en LoginForm, ResetPasswordForm y los modales de UsersTable/AdminDocuments. Un lector de pantalla no anuncia la etiqueta al llegar a esos inputs.",
+    "wcag": ["1.3.1 Info and Relationships (A)", "3.3.2 Labels or Instructions (A)", "4.1.2 Name, Role, Value (A)"],
+    "locations": [
+      { "file": "src/app/login/LoginForm.tsx", "lines": "74, 86" },
+      { "file": "src/app/reset-password/ResetPasswordForm.tsx", "lines": "41, 45, 49" },
+      { "file": "src/app/admin/users/UsersTable.tsx", "lines": "231, 235, 243, 247, 254, 258, 305, 309" },
+      { "file": "src/app/admin/documents/AdminDocuments.tsx", "lines": "81" }
+    ],
+    "recommendation": "Envolver el input dentro del <label> (mismo patrón ya usado en ProfileForm.tsx/DocsVencimientos.tsx) o agregar id + htmlFor explícito."
+  },
+  {
+    "id": "A11Y-4",
+    "area": "accessibility",
+    "status": "issue",
+    "severity": "high",
+    "title": "Modales sin semántica de diálogo ni gestión de foco (sin role=dialog, sin trampa de foco, sin cierre con Escape)",
+    "description": "CreateUserDialog, ApproveDialog (UsersTable.tsx) y el modal de rechazo (AdminDocuments.tsx) son <div className=\"fixed inset-0...\"> sin role, sin aria-modal, sin foco inicial, sin trampa de foco y sin manejo de Escape (0 apariciones de 'Escape' en todo el repo). El drawer mobile de AppShell.tsx sí tiene role=\"dialog\" aria-modal=\"true\", pero tampoco atrapa el foco ni cierra con Escape; el contenido de fondo no se marca inert.",
+    "wcag": ["2.4.3 Focus Order (A)", "4.1.2 Name, Role, Value (A)"],
+    "locations": [
+      { "file": "src/app/admin/users/UsersTable.tsx", "lines": "225 (CreateUserDialog), 299 (ApproveDialog)" },
+      { "file": "src/app/admin/documents/AdminDocuments.tsx", "lines": "77" },
+      { "file": "src/components/layout/AppShell.tsx", "lines": "215-223" }
+    ],
+    "recommendation": "Agregar role=\"dialog\" aria-modal=\"true\" aria-labelledby a los 3 modales de UsersTable/AdminDocuments; en los 4 casos mover el foco al abrir, atraparlo dentro del panel, cerrar con Escape y devolver el foco al elemento que abrió el modal al cerrar. Considerar un componente Modal genérico (ya sugerido en D3) que centralice esto."
+  },
+  {
+    "id": "A11Y-5",
+    "area": "accessibility",
+    "status": "issue",
+    "severity": "medium",
+    "title": "Botones toggle (pestañas, selector de duración) sin estado expuesto a asistive tech",
+    "description": "En CalendarClient.tsx los botones Vacaciones/Franco y 7 días/14 días comunican el estado seleccionado sólo con una clase visual (btn-primary vs btn-ghost), sin aria-pressed/aria-selected/role. Un lector de pantalla no puede determinar cuál opción está activa.",
+    "wcag": ["4.1.2 Name, Role, Value (A)"],
+    "locations": [
+      { "file": "src/app/(app)/calendar/CalendarClient.tsx", "lines": "96-97, 146-148" }
+    ],
+    "recommendation": "Agregar aria-pressed={activo} a los botones toggle, o migrar a role=\"tablist\"/role=\"tab\" con aria-selected para el selector Vacaciones/Franco."
+  },
+  {
+    "id": "A11Y-6",
+    "area": "accessibility",
+    "status": "issue",
+    "severity": "medium",
+    "title": "Gráficos donut (DonutChart) sin nombre accesible",
+    "description": "El <svg role=\"img\"> de DonutChart no tiene aria-label/aria-labelledby ni <title>. Las 3 tortas del dashboard admin quedan sin nombre para un lector de pantalla, aunque la leyenda en texto (<ul>) del mismo componente sí expone los valores en forma redundante.",
+    "wcag": ["1.1.1 Non-text Content (A)"],
+    "locations": [
+      { "file": "src/components/ui/DonutChart.tsx", "lines": "19" },
+      { "file": "src/app/admin/page.tsx", "lines": "106-138" }
+    ],
+    "recommendation": "Agregar aria-label descriptivo (ej. \"Check-in de hoy: 8 de 12\") al <svg>, generado a partir del centerLabel + primer segmento."
+  },
+  {
+    "id": "A11Y-7",
+    "area": "accessibility",
+    "status": "issue",
+    "severity": "medium",
+    "title": "Encabezado <h1> duplicado en el manual público (usuario no logueado)",
+    "description": "AuthShell.tsx renderiza <h1>{title}</h1>. Cuando el visitante no está logueado, help/layout.tsx envuelve el contenido MDX en ese AuthShell, y el MDX (intro.mdx, employee.mdx, admin.mdx, faq.mdx, changelog.mdx) siempre arranca con '# Título', que se renderiza como un segundo <h1> (.prose-doc h1) en la misma página. No ocurre para usuarios logueados (AppShell no agrega su propio h1).",
+    "wcag": ["1.3.1 Info and Relationships (A)"],
+    "locations": [
+      { "file": "src/components/layout/AuthShell.tsx", "lines": "23" },
+      { "file": "src/app/help/layout.tsx", "lines": "34-40" },
+      { "file": "src/content/manual/intro.mdx", "lines": "1" }
+    ],
+    "recommendation": "Bajar el primer heading del contenido MDX a h2 cuando se renderiza dentro de AuthShell, o no pasar 'title' a AuthShell en las rutas de /help y dejar que el h1 lo ponga el propio MDX."
+  },
+  {
+    "id": "A11Y-8",
+    "area": "accessibility",
+    "status": "issue",
+    "severity": "low",
+    "title": "Sin soporte de prefers-reduced-motion",
+    "description": "0 apariciones de 'prefers-reduced-motion' en todo el proyecto. globals.css fija html { scroll-behavior: smooth } de forma incondicional. Impacto real bajo: no hay @keyframes ni clases animate-* en ningún componente, sólo transiciones CSS de color/hover de duración corta.",
+    "wcag": ["2.3.3 Animation from Interactions (AAA, fuera de alcance AA — incluido por pedido de scope)"],
+    "locations": [
+      { "file": "src/app/globals.css", "lines": "104" }
+    ],
+    "recommendation": "Envolver scroll-behavior: smooth en @media (prefers-reduced-motion: no-preference) como buena práctica; no es bloqueante para AA."
+  },
+  {
+    "id": "A11Y-9",
+    "area": "accessibility",
+    "status": "issue",
+    "severity": "low",
+    "title": "aria-label en inglés dentro de una app en español",
+    "description": "ThemeToggle.tsx usa aria-label=\"Toggle theme\" mientras el resto de los aria-label del proyecto están en español ('Abrir menú', 'Cerrar menú', 'Cerrar') y <html lang=\"es\">. Puede pronunciarse mal en lectores de pantalla configurados en es-AR.",
+    "wcag": [],
+    "locations": [
+      { "file": "src/components/ui/ThemeToggle.tsx", "lines": "18" }
+    ],
+    "recommendation": "Cambiar a aria-label=\"Cambiar tema\" o al texto dinámico ya calculado en 'title' (línea 17)."
+  },
+  {
+    "id": "A11Y-10",
+    "area": "accessibility",
+    "status": "issue",
+    "severity": "low",
+    "title": "Pestañas de navegación sin aria-current",
+    "description": "Las pestañas de inbox/page.tsx (Todos/Recibos/Notificaciones) y el nav lateral de help/layout.tsx distinguen la sección activa sólo con una clase visual (btn-primary/btn-ghost o color de texto), sin aria-current=\"page\".",
+    "wcag": ["4.1.2 Name, Role, Value (A)"],
+    "locations": [
+      { "file": "src/app/(app)/inbox/page.tsx", "lines": "54" },
+      { "file": "src/app/help/layout.tsx", "lines": "20-28" }
+    ],
+    "recommendation": "Agregar aria-current={type === t.key ? \"page\" : undefined} a los Link de pestañas."
+  },
+  {
+    "id": "A11Y-11",
+    "area": "accessibility",
+    "status": "correct",
+    "severity": "info",
+    "title": "<html lang=\"es\"> correctamente declarado",
+    "description": "Un solo idioma para toda la app, fijado en la raíz.",
+    "wcag": ["3.1.1 Language of Page (A)"],
+    "locations": [{ "file": "src/app/layout.tsx", "lines": "30" }]
+  },
+  {
+    "id": "A11Y-12",
+    "area": "accessibility",
+    "status": "correct",
+    "severity": "info",
+    "title": "Theme init script sin FOUC y con fallback a prefers-color-scheme",
+    "description": "Script inyectado inline en <head> antes del primer paint; respeta el esquema del sistema como fallback y persiste el override del usuario.",
+    "wcag": [],
+    "locations": [
+      { "file": "src/components/providers/ThemeProvider.tsx", "lines": "57" },
+      { "file": "src/app/layout.tsx", "lines": "32" }
+    ]
+  },
+  {
+    "id": "A11Y-13",
+    "area": "accessibility",
+    "status": "correct",
+    "severity": "info",
+    "title": "--muted-foreground pasa contraste AA en ambos temas",
+    "description": "El color de texto secundario más usado en toda la app (~5.6:1 en claro, ~7.8:1 en oscuro contra fondos de card/panel) supera cómodamente el mínimo de 4.5:1.",
+    "wcag": ["1.4.3 Contrast (Minimum) (AA)"],
+    "locations": [{ "file": "src/app/globals.css", "lines": "52, 85" }]
+  },
+  {
+    "id": "A11Y-14",
+    "area": "accessibility",
+    "status": "correct",
+    "severity": "info",
+    "title": "--destructive pasa contraste AA en modo claro",
+    "description": "Texto en color destructivo (badges/botones de rechazo, deshabilitar, etc.) da ~4.6:1 en modo claro.",
+    "wcag": ["1.4.3 Contrast (Minimum) (AA)"],
+    "locations": [{ "file": "src/app/globals.css", "lines": "55" }]
+  },
+  {
+    "id": "A11Y-15",
+    "area": "accessibility",
+    "status": "correct",
+    "severity": "info",
+    "title": "Controles de formulario nativos en toda la app",
+    "description": "input/select/textarea nativos en todos los formularios; ninguna reimplementación de dropdown/checkbox a mano que rompa semántica de teclado/AT. .surface-select sólo agrega flechas decorativas vía background-image sobre un <select> real.",
+    "wcag": ["4.1.2 Name, Role, Value (A)"],
+    "locations": [{ "file": "src/app/globals.css", "lines": "205-213" }]
+  },
+  {
+    "id": "A11Y-16",
+    "area": "accessibility",
+    "status": "correct",
+    "severity": "info",
+    "title": "Foco visible reimplementado correctamente tras quitar el outline nativo",
+    "description": ".surface-control/.surface-textarea quitan el outline nativo pero lo sustituyen por un anillo :focus-visible (ring-2 ring-primary/25) — cumple 2.4.7 vía indicador alternativo, no lo elimina sin reemplazo.",
+    "wcag": ["2.4.7 Focus Visible (AA)"],
+    "locations": [{ "file": "src/app/globals.css", "lines": "192, 203, 216, 227" }]
+  },
+  {
+    "id": "A11Y-17",
+    "area": "accessibility",
+    "status": "correct",
+    "severity": "info",
+    "title": "Patrón de <label> envolvente (asociación implícita) correcto en la mayoría de las pantallas",
+    "description": "El input queda anidado dentro del <label>, técnica válida de asociación programática, usada en varios componentes (contraste directo con A11Y-3).",
+    "wcag": ["1.3.1 Info and Relationships (A)"],
+    "locations": [
+      { "file": "src/app/(app)/profile/ProfileForm.tsx", "lines": "245-250" },
+      { "file": "src/app/(app)/documents/DocsVencimientos.tsx", "lines": "67-70" },
+      { "file": "src/app/(app)/documents/DocumentsClient.tsx", "lines": "54-57" },
+      { "file": "src/app/admin/attendance/AttendanceClient.tsx", "lines": "59-73" },
+      { "file": "src/app/admin/employees/[id]/EmployeeDetailClient.tsx", "lines": "282-287" },
+      { "file": "src/app/admin/deliveries/DeliveriesClient.tsx", "lines": "45-63" }
+    ]
+  },
+  {
+    "id": "A11Y-18",
+    "area": "accessibility",
+    "status": "correct",
+    "severity": "info",
+    "title": "Alt text significativo en imágenes funcionales; único alt=\"\" correctamente decorativo",
+    "description": "ImageSlot usa alt={label} descriptivo (ej. 'Libreta (frente)'); SignaturePad usa alt='firma'. El único alt=\"\" del repo (avatar en el listado de empleados) es decorativo válido porque el nombre ya está en texto inmediatamente adyacente.",
+    "wcag": ["1.1.1 Non-text Content (A)"],
+    "locations": [
+      { "file": "src/app/(app)/profile/ProfileForm.tsx", "lines": "296" },
+      { "file": "src/app/(app)/documents/DocsVencimientos.tsx", "lines": "114" },
+      { "file": "src/app/admin/employees/[id]/EmployeeDetailClient.tsx", "lines": "325" },
+      { "file": "src/app/(app)/profile/SignaturePad.tsx", "lines": "107" },
+      { "file": "src/app/admin/employees/page.tsx", "lines": "60" }
+    ]
+  },
+  {
+    "id": "A11Y-19",
+    "area": "accessibility",
+    "status": "correct",
+    "severity": "info",
+    "title": "Ícono de marca decorativo con aria-hidden + wordmark textual",
+    "description": "LogoIcon lleva aria-hidden y siempre aparece junto al wordmark 'Emmalva' en texto — patrón correcto de ícono decorativo + nombre accesible visible.",
+    "wcag": ["1.1.1 Non-text Content (A)"],
+    "locations": [{ "file": "src/components/brand/Logo.tsx", "lines": "17" }]
+  },
+  {
+    "id": "A11Y-20",
+    "area": "accessibility",
+    "status": "correct",
+    "severity": "info",
+    "title": "Jerarquía de encabezados h1 → h2 consistente y diálogos nativos accesibles",
+    "description": "PageHeader (un solo h1 por página) seguido de h2 por sección en casi toda la app autenticada, sin saltos de nivel (única excepción: A11Y-7). Además, window.confirm/window.prompt se usan para confirmaciones destructivas y motivos de rechazo, inherentemente accesibles y operables por teclado a diferencia de los modales a mano (A11Y-4).",
+    "wcag": ["1.3.1 Info and Relationships (A)"],
+    "locations": [
+      { "file": "src/components/ui/PageHeader.tsx", "lines": "1-17" },
+      { "file": "src/app/admin/employees/[id]/EmployeeDetailClient.tsx", "lines": "120" },
+      { "file": "src/app/admin/profile-changes/ProfileChangesClient.tsx", "lines": "49" }
+    ]
+  }
+]

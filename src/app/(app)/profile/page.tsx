@@ -2,6 +2,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { ProfileForm } from "./ProfileForm";
+import { fileUrl } from "@/lib/file-token";
 
 export const dynamic = "force-dynamic";
 
@@ -37,12 +38,12 @@ export default async function ProfilePage() {
         postalCode: profile.postalCode,
         emergencyContact: profile.emergencyContact,
         emergencyPhone: profile.emergencyPhone,
-        signatureBlobUrl: profile.signatureBlobUrl ?? "",
-        faceImageBlobUrl: profile.faceImageBlobUrl ?? "",
-        healthCardFrontBlobUrl: profile.healthCardFrontBlobUrl ?? "",
-        healthCardBackBlobUrl: profile.healthCardBackBlobUrl ?? "",
-        licenseFrontBlobUrl: profile.licenseFrontBlobUrl ?? "",
-        licenseBackBlobUrl: profile.licenseBackBlobUrl ?? "",
+        signatureBlobUrl: fileUrl(profile.signatureBlobUrl),
+        faceImageBlobUrl: fileUrl(profile.faceImageBlobUrl),
+        healthCardFrontBlobUrl: fileUrl(profile.healthCardFrontBlobUrl),
+        healthCardBackBlobUrl: fileUrl(profile.healthCardBackBlobUrl),
+        licenseFrontBlobUrl: fileUrl(profile.licenseFrontBlobUrl),
+        licenseBackBlobUrl: fileUrl(profile.licenseBackBlobUrl),
       }
     : null;
 

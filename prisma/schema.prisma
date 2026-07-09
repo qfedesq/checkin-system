@@ -187,6 +187,7 @@ model LeaveRequest {
 
   @@index([startDate, endDate])
   @@index([userId])
+  @@index([status])
 }
 
 model DocumentUpload {
@@ -205,6 +206,7 @@ model DocumentUpload {
   createdAt    DateTime  @default(now())
 
   @@index([userId])
+  @@index([status])
 }
 
 model DeliveredDocument {
@@ -238,6 +240,7 @@ model Attendance {
   checkoutReminderSentAt DateTime?
 
   @@index([userId, checkInAt])
+  @@index([checkOutAt])
 }
 
 model AuditLog {

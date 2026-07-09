@@ -4,6 +4,14 @@ import { useRouter } from "next/navigation";
 import { Download } from "lucide-react";
 import { formatDate, formatDateTime, minutesToHhmm } from "@/lib/utils";
 
+async function closeAttendance(id: string) {
+  const res = await fetch(`/api/admin/attendance/${id}/close`, { method: "POST" });
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    throw new Error(data.error || "No se pudo cerrar la jornada");
+  }
+}
+
 type Row = {
   id: string;
   employee: string;
@@ -26,6 +34,20 @@ export function AttendanceClient({ initial, employees, rows }: {
   const [from, setFrom] = useState(initial.from);
   const [to, setTo] = useState(initial.to);
   const [userId, setUserId] = useState(initial.userId);
+  const [closingId, setClosingId] = useState<string | null>(null);
+
+  async function handleClose(id: string) {
+    if (!confirm("¿Cerrar esta jornada huérfana? Se registrará el check-out con la hora actual.")) return;
+    setClosingId(id);
+    try {
+      await closeAttendance(id);
+      router.refresh();
+    } catch (e) {
+      alert(e instanceof Error ? e.message : "No se pudo cerrar la jornada");
+    } finally {
+      setClosingId(null);
+    }
+  }
 
   function setMonth(offset: number) {
     const now = new Date();
@@ -94,6 +116,7 @@ export function AttendanceClient({ initial, employees, rows }: {
               <th className="px-3 py-3">Duración</th>
               <th className="px-3 py-3">Ubic. in</th>
               <th className="px-3 py-3">Ubic. out</th>
+              <th className="px-3 py-3"></th>
             </tr>
           </thead>
           <tbody>
@@ -109,9 +132,20 @@ export function AttendanceClient({ initial, employees, rows }: {
                 <td className="px-3 py-3 mono">{minutesToHhmm(r.durationMin)}</td>
                 <td className="px-3 py-3 mono text-[11px] text-muted-foreground">{r.checkInLat.toFixed(4)}, {r.checkInLng.toFixed(4)}</td>
                 <td className="px-3 py-3 mono text-[11px] text-muted-foreground">{r.checkOutLat !== null && r.checkOutLng !== null ? `${r.checkOutLat.toFixed(4)}, ${r.checkOutLng.toFixed(4)}` : "—"}</td>
+                <td className="px-3 py-3">
+                  {!r.checkOutAt && (
+                    <button
+                      className="btn-ghost text-xs"
+                      disabled={closingId === r.id}
+                      onClick={() => handleClose(r.id)}
+                    >
+                      {closingId === r.id ? "Cerrando…" : "Cerrar jornada"}
+                    </button>
+                  )}
+                </td>
               </tr>
             ))}
-            {rows.length === 0 && <tr><td colSpan={7} className="px-5 py-10 text-center text-muted-foreground">Sin registros en ese rango.</td></tr>}
+            {rows.length === 0 && <tr><td colSpan={8} className="px-5 py-10 text-center text-muted-foreground">Sin registros en ese rango.</td></tr>}
           </tbody>
         </table></div>
       </section>

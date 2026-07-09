@@ -4,12 +4,24 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { recordAudit } from "@/lib/audit";
+import { checkRateLimit } from "@/lib/rate-limit";
+import { route } from "@/lib/route";
 
 const body = z.object({ current: z.string().min(1), next: z.string().min(8) });
 
-export async function POST(req: NextRequest) {
+export const POST = route("password.change", async (req: NextRequest) => {
   const session = await auth();
   if (!session?.user) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+
+  // Best-effort: frena intentos repetidos de adivinar la contraseña actual.
+  // Ver src/lib/rate-limit.ts sobre la limitación en serverless multi-instancia.
+  const rl = checkRateLimit(`password-change:${session.user.id}`);
+  if (!rl.ok) {
+    return NextResponse.json(
+      { error: "Demasiados intentos. Probá de nuevo en unos minutos." },
+      { status: 429, headers: rl.retryAfterSec ? { "Retry-After": String(rl.retryAfterSec) } : undefined },
+    );
+  }
 
   const parsed = body.safeParse(await req.json().catch(() => ({})));
   if (!parsed.success) return NextResponse.json({ error: "Datos inválidos" }, { status: 400 });
@@ -28,4 +40,4 @@ export async function POST(req: NextRequest) {
 
   await recordAudit({ actorId: user.id, action: "password.change", subjectId: user.id });
   return NextResponse.json({ ok: true });
-}
+});

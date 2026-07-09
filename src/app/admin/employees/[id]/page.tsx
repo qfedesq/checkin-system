@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { EmployeeDetailClient } from "./EmployeeDetailClient";
+import { fileUrl } from "@/lib/file-token";
 
 export const dynamic = "force-dynamic";
 
@@ -49,14 +50,14 @@ export default async function AdminEmployeeDetailPage({ params }: { params: Prom
       emergencyContact: p?.emergencyContact ?? "",
       emergencyPhone: p?.emergencyPhone ?? "",
       vacationWeeksPerYear: p?.vacationWeeksPerYear ?? 2,
-      dniFrontBlobUrl: p?.dniFrontBlobUrl ?? null,
-      dniBackBlobUrl: p?.dniBackBlobUrl ?? null,
-      licenseFrontBlobUrl: p?.licenseFrontBlobUrl ?? null,
-      licenseBackBlobUrl: p?.licenseBackBlobUrl ?? null,
-      healthCardFrontBlobUrl: p?.healthCardFrontBlobUrl ?? null,
-      healthCardBackBlobUrl: p?.healthCardBackBlobUrl ?? null,
-      faceImageBlobUrl: p?.faceImageBlobUrl ?? null,
-      signatureBlobUrl: p?.signatureBlobUrl ?? null,
+      dniFrontBlobUrl: fileUrl(p?.dniFrontBlobUrl) || null,
+      dniBackBlobUrl: fileUrl(p?.dniBackBlobUrl) || null,
+      licenseFrontBlobUrl: fileUrl(p?.licenseFrontBlobUrl) || null,
+      licenseBackBlobUrl: fileUrl(p?.licenseBackBlobUrl) || null,
+      healthCardFrontBlobUrl: fileUrl(p?.healthCardFrontBlobUrl) || null,
+      healthCardBackBlobUrl: fileUrl(p?.healthCardBackBlobUrl) || null,
+      faceImageBlobUrl: fileUrl(p?.faceImageBlobUrl) || null,
+      signatureBlobUrl: fileUrl(p?.signatureBlobUrl) || null,
     },
     deliveries: user.deliveriesReceived.map((d) => ({
       id: d.id,
@@ -64,7 +65,7 @@ export default async function AdminEmployeeDetailPage({ params }: { params: Prom
       title: d.title,
       createdAt: d.createdAt.toISOString(),
       openedAt: d.openedAt?.toISOString() ?? null,
-      signedBlobUrl: d.signedBlobUrl,
+      signedBlobUrl: d.signedBlobUrl ? fileUrl(d.signedBlobUrl) : null,
     })),
   };
 

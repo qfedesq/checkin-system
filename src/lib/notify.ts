@@ -2,6 +2,7 @@ import "server-only";
 import { prisma } from "./prisma";
 import { sendEmail, adminAlertHtml } from "./email";
 import { sendPushToUser } from "./push";
+import { logError } from "./log";
 
 function appUrl(path = "") {
   const base = process.env.AUTH_URL ?? (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000");
@@ -106,8 +107,11 @@ export async function notifyUser(userId: string, event: EmployeeEvent, payload: 
   const p = EMPLOYEE_PRESETS[event];
   const html = adminAlertHtml(p.title, payload.body, appUrl(p.path), p.label);
 
-  await Promise.allSettled([
+  const results = await Promise.allSettled([
     sendEmail(user.email, p.subject, html),
     sendPushToUser(userId, { title: p.title, body: payload.body.replace(/<[^>]+>/g, ""), url: appUrl(p.path) }),
   ]);
+  for (const r of results) {
+    if (r.status === "rejected") logError("notify.notifyUser", r.reason);
+  }
 }

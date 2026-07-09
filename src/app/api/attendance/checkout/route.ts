@@ -1,14 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { auth } from "@/lib/auth";
+import { requireActiveUser } from "@/lib/session-guard";
 import { prisma } from "@/lib/prisma";
 import { recordAudit } from "@/lib/audit";
+import { route } from "@/lib/route";
 
 const schema = z.object({ lat: z.number(), lng: z.number() });
 
-export async function POST(req: NextRequest) {
-  const session = await auth();
-  if (!session?.user) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+export const POST = route("attendance.checkout", async (req: NextRequest) => {
+  const { session, error } = await requireActiveUser();
+  if (error) return error;
   const parsed = schema.safeParse(await req.json().catch(() => ({})));
   if (!parsed.success) return NextResponse.json({ error: "Datos inválidos" }, { status: 400 });
 
@@ -30,4 +31,4 @@ export async function POST(req: NextRequest) {
   await recordAudit({ actorId: session.user.id, action: "attendance.checkout", subjectId: updated.id, metadata: { durationMin } });
   // La duración queda en DB (visible sólo al admin); al empleado sólo le confirmamos el cierre.
   return NextResponse.json({ ok: true });
-}
+});

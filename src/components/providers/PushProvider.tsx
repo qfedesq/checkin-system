@@ -4,6 +4,19 @@ import { useEffect, useState } from "react";
 import { BellRing, X } from "lucide-react";
 
 const DISMISS_KEY = "emmalva-push-dismissed";
+const IOS_HINT_DISMISS_KEY = "emmalva-push-ios-hint-dismissed";
+
+function isIos() {
+  return /iphone|ipad|ipod/i.test(navigator.userAgent);
+}
+
+function isStandalone() {
+  return (
+    window.matchMedia?.("(display-mode: standalone)").matches ||
+    // Safari/iOS expone esta propiedad no estándar
+    (navigator as Navigator & { standalone?: boolean }).standalone === true
+  );
+}
 
 function urlBase64ToUint8Array(base64: string) {
   const padding = "=".repeat((4 - (base64.length % 4)) % 4);
@@ -27,9 +40,18 @@ async function subscribe(registration: ServiceWorkerRegistration, vapidKey: stri
 
 export function PushProvider() {
   const [showBanner, setShowBanner] = useState(false);
+  const [showIosHint, setShowIosHint] = useState(false);
   const vapidKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ?? "";
 
   useEffect(() => {
+    // En iOS, Web Push sólo funciona si la app está instalada como PWA
+    // (ícono en la pantalla de inicio, modo standalone). En Safari "normal"
+    // el banner de activación nunca funcionaría, así que mostramos un hint
+    // explicando cómo instalarla en vez de un botón que fallaría en silencio.
+    if (isIos() && !isStandalone()) {
+      if (!localStorage.getItem(IOS_HINT_DISMISS_KEY)) setShowIosHint(true);
+      return;
+    }
     if (!vapidKey) return;
     if (!("serviceWorker" in navigator) || !("PushManager" in window) || !("Notification" in window)) return;
 
@@ -65,6 +87,33 @@ export function PushProvider() {
   function dismiss() {
     localStorage.setItem(DISMISS_KEY, "1");
     setShowBanner(false);
+  }
+
+  function dismissIosHint() {
+    localStorage.setItem(IOS_HINT_DISMISS_KEY, "1");
+    setShowIosHint(false);
+  }
+
+  if (showIosHint) {
+    return (
+      <div className="fixed inset-x-4 bottom-20 z-50 md:bottom-6 md:left-auto md:right-6 md:w-[380px]">
+        <div className="panel flex items-start gap-3 p-4 shadow-panel">
+          <BellRing className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
+          <div className="min-w-0 flex-1">
+            <div className="text-sm font-semibold">Notificaciones en iPhone</div>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Para recibir avisos acá necesitás instalar Emmalva: tocá Compartir → &quot;Agregar a inicio&quot;, y después abrila desde ese ícono.
+            </p>
+            <div className="mt-3 flex items-center gap-2">
+              <button className="btn-ghost text-xs" onClick={dismissIosHint}>Entendido</button>
+            </div>
+          </div>
+          <button className="rail-icon-button shrink-0" onClick={dismissIosHint} aria-label="Cerrar">
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+      </div>
+    );
   }
 
   if (!showBanner) return null;

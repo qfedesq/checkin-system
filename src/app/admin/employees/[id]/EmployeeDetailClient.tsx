@@ -322,7 +322,7 @@ function ImageSlot({ userId, kind, label, url, onUploaded }: {
       >
         {url ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={url} alt={label} className="h-full w-full object-cover" />
+          <img src={url} alt={label} loading="lazy" decoding="async" className="h-full w-full object-cover" />
         ) : (
           <span className="flex flex-col items-center gap-1 text-xs text-muted-foreground">
             <Upload className="h-4 w-4" />

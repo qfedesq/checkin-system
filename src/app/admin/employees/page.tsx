@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ChevronRight, UserCircle } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { fileUrl } from "@/lib/file-token";
 
 export const dynamic = "force-dynamic";
 
@@ -9,6 +10,7 @@ export default async function AdminEmployeesPage({ searchParams }: { searchParam
   const { q } = await searchParams;
   const query = (q ?? "").trim();
 
+  // Cota defensiva: limita el listado (se ordena alfabéticamente después). TODO: paginación real si el headcount crece.
   const users = await prisma.user.findMany({
     where: {
       role: "EMPLOYEE",
@@ -24,6 +26,7 @@ export default async function AdminEmployeesPage({ searchParams }: { searchParam
         : {}),
     },
     include: { profile: true },
+    take: 100,
   });
 
   // Alfabético por apellido (los sin perfil van al final)
@@ -57,7 +60,15 @@ export default async function AdminEmployeesPage({ searchParams }: { searchParam
               <Link href={`/admin/employees/${u.id}`} className="flex items-center gap-4 px-5 py-4 transition hover:bg-secondary/60">
                 {u.profile?.faceImageBlobUrl ? (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={u.profile.faceImageBlobUrl} alt="" className="h-10 w-10 shrink-0 rounded-full object-cover" />
+                  <img
+                    src={fileUrl(u.profile.faceImageBlobUrl)}
+                    alt=""
+                    width={40}
+                    height={40}
+                    loading="lazy"
+                    decoding="async"
+                    className="h-10 w-10 shrink-0 rounded-full object-cover"
+                  />
                 ) : (
                   <UserCircle className="h-10 w-10 shrink-0 text-muted-foreground/50" />
                 )}

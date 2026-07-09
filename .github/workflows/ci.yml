@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["**"]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    env:
+      # Valores dummy: el build no requiere una DB real (todas las rutas dinámicas
+      # son server-rendered on demand, no hay data fetching en build-time).
+      DATABASE_URL: "postgresql://user:pass@localhost:5432/db"
+      AUTH_SECRET: "ci-dummy-secret-not-for-prod"
+      AUTH_URL: "http://localhost:3000"
+      WEBAUTHN_RP_ID: "localhost"
+      WEBAUTHN_RP_NAME: "Checkin System"
+      CRON_SECRET: "ci-dummy-cron-secret"
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.32.1
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build
+        run: pnpm build
+
+      - name: Test
+        run: pnpm test
+
+      - name: Audit (informativo, no bloqueante)
+        run: pnpm audit --prod --audit-level=high || true

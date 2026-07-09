@@ -5,9 +5,11 @@ import { AdminLeavesTable } from "./AdminLeavesTable";
 export const dynamic = "force-dynamic";
 
 export default async function AdminLeavesPage() {
+  // Cota defensiva: prioriza pendientes (status asc) y próximas. TODO: paginación real si el volumen crece.
   const leaves = await prisma.leaveRequest.findMany({
     orderBy: [{ status: "asc" }, { startDate: "asc" }],
     include: { user: { include: { profile: true } } },
+    take: 100,
   });
   const rows = leaves.map((l) => ({
     id: l.id,

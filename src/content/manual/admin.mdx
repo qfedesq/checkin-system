@@ -82,4 +82,12 @@ Cuando el empleado lo abra, el sistema lo firma automáticamente con la firma di
 
 ## Exportar jornadas a Excel
 
-En `/admin/attendance` filtrá por rango de fechas y/o empleado. Click en **Excel** y bajás el archivo con legajo, apellido, nombre, fecha, check-in, check-out, duración (en minutos y hh:mm) y coordenadas.
+En `/admin/attendance` filtrá por rango de fechas y/o empleado. Click en **Excel** y bajás el archivo con legajo, apellido, nombre, fecha, check-in, check-out, duración (en minutos y hh:mm) y coordenadas. Cada exportación queda registrada en la auditoría (quién y con qué filtros).
+
+## Cerrar una jornada abierta
+
+Si un empleado hizo check-in pero se olvidó del check-out, en `/admin/attendance` la jornada queda abierta. Usá **Cerrar jornada** para cerrarla manualmente. Queda asentado en la auditoría.
+
+## Archivos y privacidad
+
+Las fotos y documentos (DNI, carnet, libreta, firma) se entregan sólo a usuarios con sesión iniciada mediante un enlace temporal; ya no hay una URL pública fija. Si compartís un enlace de una imagen, deja de funcionar a los pocos minutos.

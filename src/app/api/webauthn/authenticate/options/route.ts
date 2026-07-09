@@ -2,8 +2,21 @@ import { NextRequest, NextResponse } from "next/server";
 import { generateAuthenticationOptions } from "@simplewebauthn/server";
 import { prisma } from "@/lib/prisma";
 import { rpID } from "@/lib/webauthn";
+import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
+import { route } from "@/lib/route";
 
-export async function POST(req: NextRequest) {
+export const POST = route("webauthn.authenticate.options", async (req: NextRequest) => {
+  // Best-effort por IP: frena enumeración de emails / fuerza bruta contra
+  // este endpoint público (sin sesión). Ver src/lib/rate-limit.ts sobre la
+  // limitación en serverless multi-instancia.
+  const rl = checkRateLimit(`webauthn-auth-options:${getClientIp(req)}`);
+  if (!rl.ok) {
+    return NextResponse.json(
+      { error: "Demasiados intentos. Probá de nuevo en unos minutos." },
+      { status: 429, headers: rl.retryAfterSec ? { "Retry-After": String(rl.retryAfterSec) } : undefined },
+    );
+  }
+
   const { email } = await req.json();
   const user = await prisma.user.findUnique({
     where: { email: (email ?? "").toLowerCase() },
@@ -37,4 +50,4 @@ export async function POST(req: NextRequest) {
   });
 
   return NextResponse.json(options);
-}
+});

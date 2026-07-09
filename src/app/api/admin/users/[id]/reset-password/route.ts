@@ -3,11 +3,12 @@ import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/admin-guard";
 import { recordAudit } from "@/lib/audit";
+import { route } from "@/lib/route";
 
 // Clave temporaria fija pedida por el cliente; mustChangePassword fuerza el cambio en el primer login.
 const TEMP_PASSWORD = "Emmalva01";
 
-export async function POST(_req: Request, ctx: { params: Promise<{ id: string }> }) {
+export const POST = route("admin.users.reset-password", async (_req: Request, ctx: { params: Promise<{ id: string }> }) => {
   const { session, error } = await requireAdmin();
   if (error) return error;
 
@@ -22,4 +23,4 @@ export async function POST(_req: Request, ctx: { params: Promise<{ id: string }>
 
   await recordAudit({ actorId: session.user.id, action: "user.reset_password", subjectId: id });
   return NextResponse.json({ ok: true, tempPassword });
-}
+});

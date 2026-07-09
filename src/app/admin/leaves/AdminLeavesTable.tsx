@@ -9,18 +9,26 @@ type Row = { id: string; type: "VACATION" | "DAY_OFF"; startDate: string; endDat
 export function AdminLeavesTable({ leaves }: { leaves: Row[] }) {
   const [busy, setBusy] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
+  const [msg, setMsg] = useState<string | null>(null);
   const router = useRouter();
   async function act(id: string, action: "approve" | "reject") {
-    setBusy(id); setErr(null);
+    if (action === "reject" && !confirm("¿Seguro que querés rechazar esta solicitud?")) return;
+    setBusy(id); setErr(null); setMsg(null);
     const res = await fetch(`/api/admin/leaves/${id}/${action}`, { method: "POST" });
     const out = await res.json();
     setBusy(null);
-    if (!res.ok) setErr(out.error ?? "Error");
-    else router.refresh();
+    if (!res.ok) {
+      setErr(out.error ?? "No pudimos procesar la solicitud. Probá de nuevo.");
+      return;
+    }
+    setMsg(action === "approve" ? "Solicitud aprobada." : "Solicitud rechazada.");
+    setTimeout(() => setMsg(null), 4000);
+    router.refresh();
   }
   return (
     <div className="panel p-0 overflow-hidden">
       {err && <div className="px-5 py-3 text-sm text-destructive bg-destructive/10 border-b border-destructive/20">{err}</div>}
+      {msg && <div className="px-5 py-3 text-sm text-[hsl(var(--success-text))] bg-[hsl(var(--success))]/10 border-b border-[hsl(var(--success))]/20">{msg}</div>}
       <div className="overflow-x-auto"><table className="w-full min-w-[760px] text-sm">
         <thead>
           <tr className="border-b border-border/60 text-left mono text-[11px] uppercase tracking-[0.16em] text-muted-foreground">

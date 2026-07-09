@@ -1,3 +1,5 @@
+import type { Category, Prisma, PrismaClient } from "@prisma/client";
+
 // Todas las fechas-calendario (vacaciones, francos) se manejan como medianoche UTC del
 // día elegido, independientes de la zona horaria del servidor o del cliente.
 
@@ -60,4 +62,67 @@ export function monthBounds(date: Date): { start: Date; end: Date } {
 export function vacationBalance(weeksPerYear: number, usedDays: number): { totalDays: number; usedDays: number; leftDays: number } {
   const totalDays = weeksPerYear * 7;
   return { totalDays, usedDays, leftDays: Math.max(0, totalDays - usedDays) };
+}
+
+type LeaveDb = PrismaClient | Prisma.TransactionClient;
+
+export type VacationApprovableParams = {
+  userId: string;
+  category: Category;
+  startDate: Date;
+  endDate: Date;
+  days: number;
+  vacationWeeksPerYear: number;
+  /** Estados que cuentan contra el saldo anual: creación usa PENDING+APPROVED, aprobación usa solo APPROVED. */
+  balanceStatuses: ("PENDING" | "APPROVED")[];
+  /** Excluir esta solicitud propia del cómputo de saldo (p. ej. la que se está aprobando). */
+  excludeLeaveId?: string;
+};
+
+/**
+ * Revalida las dos reglas de negocio de vacaciones (usadas tanto al crear como al aprobar
+ * una solicitud, para que ambos caminos apliquen exactamente la misma lógica):
+ *  1. Saldo anual: vacationWeeksPerYear*7 − días ya contabilizados del año ≥ days pedidos.
+ *  2. Cupo semanal: máximo un chofer y un ayudante de vacaciones APPROVED por semana/categoría.
+ */
+export async function checkVacationApprovable(
+  db: LeaveDb,
+  params: VacationApprovableParams
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  const { userId, category, startDate, endDate, days, vacationWeeksPerYear, balanceStatuses, excludeLeaveId } = params;
+
+  const { start: yStart, end: yEnd } = yearBounds(startDate);
+  const yearLeaves = await db.leaveRequest.findMany({
+    where: {
+      userId,
+      type: "VACATION",
+      status: { in: balanceStatuses },
+      startDate: { gte: yStart, lte: yEnd },
+      ...(excludeLeaveId ? { id: { not: excludeLeaveId } } : {}),
+    },
+    select: { days: true },
+  });
+  const used = yearLeaves.reduce((a, l) => a + l.days, 0);
+  const balance = vacationBalance(vacationWeeksPerYear, used);
+  if (days > balance.leftDays) {
+    return { ok: false, error: `No te alcanza el saldo anual de vacaciones: te quedan ${balance.leftDays} día(s) de ${balance.totalDays}` };
+  }
+
+  const categoryOverlap = await db.leaveRequest.findFirst({
+    where: {
+      type: "VACATION",
+      status: "APPROVED",
+      userId: { not: userId },
+      startDate: { lte: endDate },
+      endDate: { gte: startDate },
+      user: { profile: { category } },
+      ...(excludeLeaveId ? { id: { not: excludeLeaveId } } : {}),
+    },
+  });
+  if (categoryOverlap) {
+    const label = category === "DRIVER" ? "chofer" : "ayudante";
+    return { ok: false, error: `Ya hay un ${label} de vacaciones en ese período (máximo uno por semana)` };
+  }
+
+  return { ok: true };
 }

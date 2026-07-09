@@ -71,8 +71,9 @@ export function LoginForm({ from, error }: { from?: string; error?: string }) {
   return (
     <form onSubmit={onSubmit} className="space-y-4">
       <div>
-        <label className="eyebrow">Email</label>
+        <label htmlFor="login-email" className="eyebrow">Email</label>
         <input
+          id="login-email"
           type="email"
           required
           value={email}
@@ -83,12 +84,13 @@ export function LoginForm({ from, error }: { from?: string; error?: string }) {
       </div>
       <div>
         <div className="flex items-baseline justify-between">
-          <label className="eyebrow">Contraseña</label>
-          <Link href="/forgot-password" className="text-[11px] text-primary underline underline-offset-4">
+          <label htmlFor="login-password" className="eyebrow">Contraseña</label>
+          <Link href="/forgot-password" className="text-[11px] text-[hsl(var(--primary-text))] underline underline-offset-4">
             Olvidé mi contraseña
           </Link>
         </div>
         <input
+          id="login-password"
           type="password"
           required
           value={password}

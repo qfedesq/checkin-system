@@ -47,7 +47,7 @@ export function EnrollButton({ hasWebauthn }: { hasWebauthn: boolean }) {
     <div className="space-y-4">
       <ul className="space-y-2 text-sm text-muted-foreground">
         <li>• Usaremos la biometría nativa de este dispositivo.</li>
-        <li>• A partir de acá, sólo podrás ingresar desde este teléfono/computadora.</li>
+        <li>• A partir de acá, vas a usar esta biometría para fichar (check-in/out) desde este teléfono/computadora. El ingreso a tu cuenta sigue siendo con email y contraseña.</li>
         <li>• Si cambiás de dispositivo, pedile al administrador que lo resetee.</li>
       </ul>
       {err && <div className="rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-2 text-sm text-destructive">{err}</div>}

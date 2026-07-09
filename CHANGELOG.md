@@ -2,6 +2,18 @@
 
 Cada release sube la versión en `+0.01`. El número visible abajo a la izquierda en la app coincide con este archivo.
 
+## v0.25 — 2026-07-09
+
+**Auditoría de calidad y seguridad: la app quedó más segura y estable.**
+
+- **Sesiones más seguras**: si el administrador te deshabilita o cambia tu rol, ahora tiene efecto al instante (antes podía tardar en aplicarse). Mientras tengas que cambiar la clave temporaria, no podés usar el resto de la app hasta hacerlo.
+- **Archivos privados**: las fotos y documentos (DNI, carnet, libreta, firma) ya no se sirven por un enlace público adivinable; se entregan sólo a usuarios con sesión iniciada.
+- **Check-in más robusto**: se evita el doble fichaje simultáneo, y el check-in vuelve a funcionar cuando abrís el link desde WhatsApp u otras apps. Los administradores pueden **cerrar una jornada** que quedó abierta.
+- **Vacaciones y francos**: el cupo y el saldo se vuelven a validar en el momento de **aprobar** (no sólo al pedir), evitando aprobar de más por pedidos hechos al mismo tiempo.
+- **Fechas**: los reportes y el "hoy" del panel usan la hora de Argentina de forma consistente (el export ya no recorta el último día).
+- **Más avisos claros**: las acciones sensibles piden confirmación, no se pueden apretar dos veces, y hay pantallas de carga/error cuando algo falla.
+- **Mejoras internas** (no se ven pero importan): validación real del tipo de archivo subido, encabezados de seguridad, registro de auditoría del export, límites de intentos en contraseña/biometría, índices y migraciones versionadas de la base, y arreglos de accesibilidad y de tamaño de botones en el celular.
+
 ## v0.24 — 2026-07-08
 
 **Fix: al enviar el perfil siempre aparece un aviso.**

@@ -1,6 +1,6 @@
 {
   "name": "checkin-system",
-  "version": "0.24",
+  "version": "0.25",
   "private": true,
   "packageManager": "pnpm@10.32.1",
   "scripts": {
@@ -11,10 +11,11 @@
     "postinstall": "prisma generate",
     "prisma:generate": "prisma generate",
     "db:push": "prisma db push",
+    "migrate:deploy": "prisma migrate deploy",
     "db:seed": "tsx prisma/seed.ts",
     "version:bump": "node scripts/bump-app-version.mjs",
     "sync:changelog": "node scripts/sync-changelog.mjs",
-    "test": "node --import tsx --test tests/*.test.ts"
+    "test": "node --conditions react-server --import tsx --test tests/*.test.ts"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.7.4",

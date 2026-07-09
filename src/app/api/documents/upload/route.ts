@@ -4,10 +4,12 @@ import { prisma } from "@/lib/prisma";
 import { uploadBlob } from "@/lib/blob";
 import { recordAudit } from "@/lib/audit";
 import { notifyAdmins } from "@/lib/notify";
+import { route } from "@/lib/route";
+import { matchesDeclaredType } from "@/lib/file-validate";
 
 const ALLOWED = ["application/pdf", "image/png", "image/jpeg"];
 
-export async function POST(req: NextRequest) {
+export const POST = route("documents.upload", async (req: NextRequest) => {
   const session = await auth();
   if (!session?.user) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
 
@@ -19,6 +21,8 @@ export async function POST(req: NextRequest) {
   if (!(file instanceof File)) return NextResponse.json({ error: "Archivo requerido" }, { status: 400 });
   if (!ALLOWED.includes(file.type)) return NextResponse.json({ error: "Formato no permitido" }, { status: 400 });
   if (file.size > 10 * 1024 * 1024) return NextResponse.json({ error: "Archivo demasiado grande (máx 10 MB)" }, { status: 400 });
+  // QA-034: el MIME declarado por el cliente no alcanza; confirmamos con los magic bytes reales.
+  if (!(await matchesDeclaredType(file))) return NextResponse.json({ error: "El archivo no coincide con el formato declarado" }, { status: 400 });
   if (!["DRIVER_LICENSE", "HEALTH_CARD", "OTHER"].includes(type)) return NextResponse.json({ error: "Tipo inválido" }, { status: 400 });
   const exp = expiresAt ? new Date(expiresAt) : null;
   if (exp && Number.isNaN(exp.getTime())) return NextResponse.json({ error: "Fecha inválida" }, { status: 400 });
@@ -44,4 +48,4 @@ export async function POST(req: NextRequest) {
   }).catch((e) => console.error("[notify] doc", e));
 
   return NextResponse.json({ ok: true, id: doc.id });
-}
+});

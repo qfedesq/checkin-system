@@ -1,13 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { startAuthentication } from "@simplewebauthn/browser";
+import { startAuthentication, browserSupportsWebAuthn } from "@simplewebauthn/browser";
 import { useSession } from "next-auth/react";
 import { MapPin, Fingerprint, CheckCircle2 } from "lucide-react";
 import { formatDateTime } from "@/lib/utils";
 
 type Open = { id: string; checkInAt: string; lat: number; lng: number } | null;
+
+const WEBAUTHN_UNSUPPORTED_MSG =
+  "Tu navegador no permite la verificación biométrica. Abrí Emmalva en Safari o Chrome (no dentro de WhatsApp) para fichar.";
 
 export function CheckinClient({ open }: { open: Open }) {
   const router = useRouter();
@@ -15,8 +18,17 @@ export function CheckinClient({ open }: { open: Open }) {
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [ok, setOk] = useState<string | null>(null);
+  const [webauthnSupported, setWebauthnSupported] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    setWebauthnSupported(browserSupportsWebAuthn());
+  }, []);
 
   async function doAction(kind: "checkin" | "checkout") {
+    if (!webauthnSupported) {
+      setErr(WEBAUTHN_UNSUPPORTED_MSG);
+      return;
+    }
     setBusy(true); setErr(null); setOk(null);
     try {
       const position = await new Promise<GeolocationPosition>((resolve, reject) => {
@@ -67,7 +79,7 @@ export function CheckinClient({ open }: { open: Open }) {
             <CheckCircle2 className="mx-auto h-14 w-14 text-[hsl(var(--success))]" />
             <p className="mt-3 text-sm font-semibold">Check-in registrado</p>
             <p className="mt-1 text-xs text-muted-foreground">Desde {formatDateTime(open.checkInAt)}</p>
-            <button onClick={() => doAction("checkout")} disabled={busy} className="btn-primary mx-auto mt-6">
+            <button onClick={() => doAction("checkout")} disabled={busy || webauthnSupported === false} className="btn-primary mx-auto mt-6">
               <Fingerprint className="h-4 w-4" />
               {busy ? "Registrando…" : "Hacer check-out"}
             </button>
@@ -76,11 +88,14 @@ export function CheckinClient({ open }: { open: Open }) {
           <>
             <div className="eyebrow mb-4">Registrar ingreso</div>
             <p className="text-sm text-muted-foreground">Vamos a tomar tu ubicación y pedirte tu biometría.</p>
-            <button onClick={() => doAction("checkin")} disabled={busy} className="btn-primary mx-auto mt-6">
+            <button onClick={() => doAction("checkin")} disabled={busy || webauthnSupported === false} className="btn-primary mx-auto mt-6">
               <MapPin className="h-4 w-4" />
               {busy ? "Registrando…" : "Hacer check-in"}
             </button>
           </>
+        )}
+        {webauthnSupported === false && (
+          <div className="mt-4 rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-2 text-sm text-destructive">{WEBAUTHN_UNSUPPORTED_MSG}</div>
         )}
         {err && <div className="mt-4 rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-2 text-sm text-destructive">{err}</div>}
         {ok && <div className="mt-4 rounded-xl border border-[hsl(var(--success))]/30 bg-[hsl(var(--success))]/10 px-4 py-2 text-sm text-[hsl(var(--success))] inline-flex gap-2 items-center"><CheckCircle2 className="h-4 w-4" /> {ok}</div>}

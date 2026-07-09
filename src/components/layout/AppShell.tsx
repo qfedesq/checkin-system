@@ -128,9 +128,10 @@ export function AppShell({
                   <li key={item.href}>
                     <Link
                       href={item.href}
+                      aria-current={isActive(item.href) ? "page" : undefined}
                       className={cn(
                         "flex items-center gap-3 rounded-xl px-3 py-2 text-sm text-muted-foreground transition",
-                        isActive(item.href) ? "bg-primary/10 text-primary border border-primary/20" : "hover:bg-secondary hover:text-foreground",
+                        isActive(item.href) ? "bg-primary/10 text-[hsl(var(--primary-text))] border border-primary/20" : "hover:bg-secondary hover:text-foreground",
                       )}
                     >
                       <Icon className="h-4 w-4" />
@@ -182,9 +183,10 @@ export function AppShell({
               <li key={item.href}>
                 <Link
                   href={item.href}
+                  aria-current={active ? "page" : undefined}
                   className={cn(
                     "flex flex-col items-center justify-center gap-1 py-2.5 text-[10px] font-semibold uppercase tracking-wide transition relative",
-                    active ? "text-primary" : "text-muted-foreground active:text-foreground",
+                    active ? "text-[hsl(var(--primary-text))]" : "text-muted-foreground active:text-foreground",
                   )}
                 >
                   <span className="relative">
@@ -231,9 +233,10 @@ export function AppShell({
                     <li key={item.href}>
                       <Link
                         href={item.href}
+                        aria-current={active ? "page" : undefined}
                         className={cn(
                           "flex items-center gap-3 rounded-xl px-4 py-3 text-sm transition",
-                          active ? "bg-primary/10 text-primary border border-primary/20" : "text-muted-foreground active:bg-secondary active:text-foreground",
+                          active ? "bg-primary/10 text-[hsl(var(--primary-text))] border border-primary/20" : "text-muted-foreground active:bg-secondary active:text-foreground",
                         )}
                       >
                         <Icon className="h-5 w-5" />

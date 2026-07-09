@@ -1,8 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/admin-guard";
 import { recordAudit } from "@/lib/audit";
+import { fileUrl } from "@/lib/file-token";
+import { route } from "@/lib/route";
 
 const schema = z.object({
   email: z.string().email(),
@@ -32,7 +35,7 @@ const schema = z.object({
   vacationWeeksPerYear: z.number().int().min(0).max(10),
 });
 
-export async function GET(_req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
+export const GET = route("admin.employees.get", async (_req: NextRequest, ctx: { params: Promise<{ id: string }> }) => {
   const { error } = await requireAdmin();
   if (error) return error;
   const { id } = await ctx.params;
@@ -43,17 +46,31 @@ export async function GET(_req: NextRequest, ctx: { params: Promise<{ id: string
   });
   if (!user) return NextResponse.json({ error: "No encontrado" }, { status: 404 });
 
+  const profile = user.profile
+    ? {
+        ...user.profile,
+        dniFrontBlobUrl: fileUrl(user.profile.dniFrontBlobUrl) || null,
+        dniBackBlobUrl: fileUrl(user.profile.dniBackBlobUrl) || null,
+        licenseFrontBlobUrl: fileUrl(user.profile.licenseFrontBlobUrl) || null,
+        licenseBackBlobUrl: fileUrl(user.profile.licenseBackBlobUrl) || null,
+        healthCardFrontBlobUrl: fileUrl(user.profile.healthCardFrontBlobUrl) || null,
+        healthCardBackBlobUrl: fileUrl(user.profile.healthCardBackBlobUrl) || null,
+        faceImageBlobUrl: fileUrl(user.profile.faceImageBlobUrl) || null,
+        signatureBlobUrl: fileUrl(user.profile.signatureBlobUrl) || null,
+      }
+    : null;
+
   return NextResponse.json({
     id: user.id,
     email: user.email,
     role: user.role,
     status: user.status,
     hasDevice: Boolean(user.deviceId),
-    profile: user.profile,
+    profile,
   });
-}
+});
 
-export async function PUT(req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
+export const PUT = route("admin.employees.put", async (req: NextRequest, ctx: { params: Promise<{ id: string }> }) => {
   const { session, error } = await requireAdmin();
   if (error) return error;
   const { id } = await ctx.params;
@@ -115,15 +132,34 @@ export async function PUT(req: NextRequest, ctx: { params: Promise<{ id: string 
     vacationWeeksPerYear: d.vacationWeeksPerYear,
   };
 
-  await prisma.$transaction([
-    prisma.user.update({ where: { id }, data: { email } }),
-    prisma.employeeProfile.upsert({
-      where: { userId: id },
-      create: { userId: id, ...profileData },
-      update: profileData,
-    }),
-  ]);
+  try {
+    await prisma.$transaction([
+      prisma.user.update({ where: { id }, data: { email } }),
+      prisma.employeeProfile.upsert({
+        where: { userId: id },
+        create: { userId: id, ...profileData },
+        update: profileData,
+      }),
+    ]);
+  } catch (e) {
+    // QA-040: defensa ante condición de carrera — los pre-checks de arriba ya cubren el caso
+    // normal, pero dos requests simultáneos pueden pasar ambos checks y chocar en el commit.
+    if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002") {
+      const field = String(e.meta?.target ?? "");
+      const message = field.includes("email")
+        ? "Ese email ya está en uso"
+        : field.includes("legajo")
+          ? "Ese legajo ya está asignado"
+          : field.includes("dni")
+            ? "Ese DNI ya está registrado"
+            : field.includes("cuil")
+              ? "Ese CUIL ya está registrado"
+              : "Ya existe un registro con ese valor";
+      return NextResponse.json({ error: message }, { status: 409 });
+    }
+    throw e;
+  }
 
   await recordAudit({ actorId: session.user.id, action: "employee.update", subjectId: id });
   return NextResponse.json({ ok: true });
-}
+});

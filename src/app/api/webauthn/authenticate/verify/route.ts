@@ -4,8 +4,9 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { origin, rpID, deviceHashFromCredentialId } from "@/lib/webauthn";
 import { recordAudit } from "@/lib/audit";
+import { route } from "@/lib/route";
 
-export async function POST(req: NextRequest) {
+export const POST = route("webauthn.authenticate.verify", async (req: NextRequest) => {
   const session = await auth();
   if (!session?.user) return NextResponse.json({ ok: false, error: "No autorizado" }, { status: 401 });
 
@@ -59,4 +60,4 @@ export async function POST(req: NextRequest) {
 
   await recordAudit({ actorId: user.id, action: "webauthn.authenticate", subjectId: user.id });
   return NextResponse.json({ ok: true });
-}
+});

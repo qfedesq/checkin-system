@@ -2,10 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { parseLocalDate, validateVacationRange, yearBounds, monthBounds, vacationBalance } from "@/lib/leaves";
+import { parseLocalDate, validateVacationRange, monthBounds, checkVacationApprovable } from "@/lib/leaves";
 import { recordAudit } from "@/lib/audit";
 import { notifyAdmins } from "@/lib/notify";
 import { formatCalendarDate } from "@/lib/utils";
+import { route } from "@/lib/route";
 
 const body = z.object({
   type: z.enum(["VACATION", "DAY_OFF"]),
@@ -13,7 +14,7 @@ const body = z.object({
   days: z.number().int().optional(),
 });
 
-export async function POST(req: NextRequest) {
+export const POST = route("leaves.create", async (req: NextRequest) => {
   const session = await auth();
   if (!session?.user) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
 
@@ -44,33 +45,17 @@ export async function POST(req: NextRequest) {
     const profile = await prisma.employeeProfile.findUnique({ where: { userId: session.user.id } });
     if (!profile) return NextResponse.json({ error: "Completá tu perfil antes de pedir vacaciones" }, { status: 400 });
 
-    // Saldo anual: semanas asignadas × 7 − días ya pedidos en el año
-    const { start: yStart, end: yEnd } = yearBounds(startDate);
-    const yearLeaves = await prisma.leaveRequest.findMany({
-      where: { userId: session.user.id, type: "VACATION", status: { in: ["PENDING", "APPROVED"] }, startDate: { gte: yStart, lte: yEnd } },
-      select: { days: true },
+    // Saldo anual + cupo semanal por categoría (misma lógica que en la aprobación)
+    const check = await checkVacationApprovable(prisma, {
+      userId: session.user.id,
+      category: profile.category,
+      startDate,
+      endDate,
+      days: daysInt,
+      vacationWeeksPerYear: profile.vacationWeeksPerYear,
+      balanceStatuses: ["PENDING", "APPROVED"],
     });
-    const used = yearLeaves.reduce((a, l) => a + l.days, 0);
-    const balance = vacationBalance(profile.vacationWeeksPerYear, used);
-    if (daysInt > balance.leftDays) {
-      return NextResponse.json({ error: `No te alcanza el saldo anual de vacaciones: te quedan ${balance.leftDays} día(s) de ${balance.totalDays}` }, { status: 409 });
-    }
-
-    // Cupo semanal: máximo un chofer y un ayudante de vacaciones por semana
-    const categoryOverlap = await prisma.leaveRequest.findFirst({
-      where: {
-        type: "VACATION",
-        status: "APPROVED",
-        userId: { not: session.user.id },
-        startDate: { lte: endDate },
-        endDate: { gte: startDate },
-        user: { profile: { category: profile.category } },
-      },
-    });
-    if (categoryOverlap) {
-      const label = profile.category === "DRIVER" ? "chofer" : "ayudante";
-      return NextResponse.json({ error: `Ya hay un ${label} de vacaciones en ese período (máximo uno por semana)` }, { status: 409 });
-    }
+    if (!check.ok) return NextResponse.json({ error: check.error }, { status: 409 });
   } else {
     const local = parseLocalDate(parsed.data.startDate);
     if (!local) return NextResponse.json({ error: "Fecha inválida" }, { status: 400 });
@@ -111,4 +96,4 @@ export async function POST(req: NextRequest) {
   }).catch((e) => console.error("[notify] leave", e));
 
   return NextResponse.json({ ok: true, id: leave.id });
-}
+});

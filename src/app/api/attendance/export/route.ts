@@ -2,20 +2,33 @@ import { NextRequest, NextResponse } from "next/server";
 import ExcelJS from "exceljs";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/admin-guard";
+import { recordAudit } from "@/lib/audit";
+import { route } from "@/lib/route";
 
-export async function GET(req: NextRequest) {
-  const { error } = await requireAdmin();
+export const GET = route("attendance.export", async (req: NextRequest) => {
+  const { session, error } = await requireAdmin();
   if (error) return error;
 
   const from = req.nextUrl.searchParams.get("from");
   const to = req.nextUrl.searchParams.get("to");
   const userId = req.nextUrl.searchParams.get("userId");
-  const fromDate = from ? new Date(from) : new Date(0);
-  const toDate = to ? new Date(to + "T23:59:59") : new Date();
+  // QA-011: from/to llegan como "YYYY-MM-DD" (día-calendario ART, UTC-3 sin DST).
+  // 00:00 ART = 03:00 UTC del mismo día; el fin de "to" es el inicio (03:00 UTC,
+  // exclusivo) del día siguiente, para no recortar jornadas de la tarde/noche del
+  // último día (antes se parseaba "T23:59:59" sin TZ, cortando ~3h en el server UTC).
+  const parseArtDay = (value: string) => {
+    const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+    if (!match) return null;
+    return { y: Number(match[1]), m: Number(match[2]) - 1, d: Number(match[3]) };
+  };
+  const fromParts = from ? parseArtDay(from) : null;
+  const toParts = to ? parseArtDay(to) : null;
+  const fromDate = fromParts ? new Date(Date.UTC(fromParts.y, fromParts.m, fromParts.d, 3, 0, 0)) : new Date(0);
+  const toDate = toParts ? new Date(Date.UTC(toParts.y, toParts.m, toParts.d + 1, 3, 0, 0)) : new Date();
 
   const rows = await prisma.attendance.findMany({
     where: {
-      checkInAt: { gte: fromDate, lte: toDate },
+      checkInAt: { gte: fromDate, lt: toDate },
       ...(userId ? { userId } : {}),
     },
     orderBy: { checkInAt: "asc" },
@@ -60,6 +73,10 @@ export async function GET(req: NextRequest) {
     });
   }
 
+  // QA-038: el export incluye coordenadas de geolocalización de check-in/out; queda
+  // registro de quién lo pidió y con qué filtros.
+  await recordAudit({ actorId: session.user.id, action: "attendance.export", metadata: { from, to, userId } });
+
   const buf = await wb.xlsx.writeBuffer();
   return new NextResponse(buf as unknown as ArrayBuffer, {
     headers: {
@@ -67,4 +84,4 @@ export async function GET(req: NextRequest) {
       "content-disposition": `attachment; filename="jornadas-${new Date().toISOString().slice(0, 10)}.xlsx"`,
     },
   });
-}
+});

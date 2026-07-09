@@ -3,8 +3,9 @@ import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/admin-guard";
 import { recordAudit } from "@/lib/audit";
 import { notifyUser } from "@/lib/notify";
+import { route } from "@/lib/route";
 
-export async function POST(_req: Request, ctx: { params: Promise<{ id: string }> }) {
+export const POST = route("admin.users.approve-device", async (_req: Request, ctx: { params: Promise<{ id: string }> }) => {
   const { session, error } = await requireAdmin();
   if (error) return error;
   const { id } = await ctx.params;
@@ -22,4 +23,4 @@ export async function POST(_req: Request, ctx: { params: Promise<{ id: string }>
   notifyUser(id, "device.approved", { body: "El administrador aprobó tu dispositivo. Ya podés hacer check-in y check-out." }).catch((e) => console.error("[notify] device.approve", e));
 
   return NextResponse.json({ ok: true });
-}
+});

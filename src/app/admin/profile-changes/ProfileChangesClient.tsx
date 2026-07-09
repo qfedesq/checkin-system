@@ -42,15 +42,18 @@ export function ProfileChangesClient({ rows }: { rows: Row[] }) {
   const router = useRouter();
   const [busy, setBusy] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
+  const [msg, setMsg] = useState<string | null>(null);
 
   async function act(id: string, action: "approve" | "reject") {
     let body: BodyInit | undefined;
     if (action === "reject") {
-      const note = window.prompt("Motivo del rechazo (opcional):") ?? "";
+      const note = window.prompt("Motivo del rechazo (opcional):");
+      if (note === null) return; // el admin canceló el prompt: no rechazar
       body = JSON.stringify({ note });
     }
     setBusy(id);
     setErr(null);
+    setMsg(null);
     const res = await fetch(`/api/admin/profile-changes/${id}/${action}`, {
       method: "POST",
       headers: { "content-type": "application/json" },
@@ -58,19 +61,22 @@ export function ProfileChangesClient({ rows }: { rows: Row[] }) {
     });
     const out = await res.json();
     setBusy(null);
-    if (!res.ok) return setErr(out.error ?? "Error");
+    if (!res.ok) return setErr(out.error ?? "No pudimos procesar el cambio de perfil. Probá de nuevo.");
+    setMsg(action === "approve" ? "Cambio aprobado." : "Cambio rechazado.");
+    setTimeout(() => setMsg(null), 4000);
     router.refresh();
   }
 
   return (
     <div className="space-y-4">
       {err && <div className="rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-2 text-sm text-destructive">{err}</div>}
+      {msg && <div className="rounded-xl border border-[hsl(var(--success))]/30 bg-[hsl(var(--success))]/10 px-4 py-2 text-sm text-[hsl(var(--success-text))]">{msg}</div>}
       {rows.length === 0 && <section className="panel p-10 text-center text-sm text-muted-foreground">No hay cambios de perfil para revisar.</section>}
       {rows.map((r) => (
         <section key={r.id} className="panel p-5">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <Link href={`/admin/employees/${r.userId}`} className="text-sm font-semibold hover:text-primary hover:underline">{r.employee}</Link>
+              <Link href={`/admin/employees/${r.userId}`} className="text-sm font-semibold hover:text-[hsl(var(--primary-text))] hover:underline">{r.employee}</Link>
               <div className="text-xs text-muted-foreground">{formatDateTime(r.createdAt)}</div>
             </div>
             <div className="flex items-center gap-2">
@@ -102,7 +108,7 @@ export function ProfileChangesClient({ rows }: { rows: Row[] }) {
                   <tr key={field} className="border-b border-border/40 last:border-0">
                     <td className="py-2 pr-3 font-medium">{FIELD_LABELS[field] ?? field}</td>
                     <td className="py-2 pr-3 text-muted-foreground">{from || "—"}</td>
-                    <td className="py-2 text-primary">{to || "—"}</td>
+                    <td className="py-2 text-[hsl(var(--primary-text))]">{to || "—"}</td>
                   </tr>
                 ))}
               </tbody>

@@ -1,18 +1,52 @@
+import crypto from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { sendEmail, expiryEmailHtml, adminAlertHtml } from "@/lib/email";
 import { sendPushToUser } from "@/lib/push";
 import { notifyUser } from "@/lib/notify";
 import { daysUntil, formatCalendarDate } from "@/lib/utils";
+import { logError } from "@/lib/log";
+import { route } from "@/lib/route";
 
 const PLACEHOLDER_YEAR = 2098; // libretas "2099-12-31" = sin dato, no cuentan
+const BATCH_SIZE = 10;
 
-export async function GET(req: NextRequest) {
-  const secret = req.headers.get("authorization") ?? req.nextUrl.searchParams.get("key");
-  if (process.env.CRON_SECRET && secret !== `Bearer ${process.env.CRON_SECRET}` && secret !== process.env.CRON_SECRET) {
+async function processInBatches<T>(items: T[], fn: (item: T) => Promise<void>, size = BATCH_SIZE) {
+  for (let i = 0; i < items.length; i += size) {
+    await Promise.all(items.slice(i, i + size).map(fn));
+  }
+}
+
+// QA-021: fail-closed (sin CRON_SECRET configurado, nadie pasa) + comparación timing-safe.
+// Header preferido: Authorization: Bearer <secret>. Se acepta ?key= como fallback.
+function isAuthorized(req: NextRequest): boolean {
+  const secretEnv = process.env.CRON_SECRET;
+  if (!secretEnv) return false;
+
+  const header = req.headers.get("authorization") ?? "";
+  const provided = header.startsWith("Bearer ") ? header.slice(7) : req.nextUrl.searchParams.get("key") ?? "";
+
+  const a = Buffer.from(provided);
+  const b = Buffer.from(secretEnv);
+  return a.length === b.length && crypto.timingSafeEqual(a, b);
+}
+
+export const maxDuration = 60;
+
+export const GET = route("cron.expiry-check", async (req: NextRequest) => {
+  if (!isAuthorized(req)) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
 
+  try {
+    return await runExpiryCheck();
+  } catch (err) {
+    logError("cron.expiry-check", err);
+    return NextResponse.json({ error: "Internal error" }, { status: 500 });
+  }
+});
+
+async function runExpiryCheck() {
   const results = { profilesNotified: 0, docsNotified: 0, autoDisabled: 0 };
   const now = new Date();
 
@@ -21,8 +55,8 @@ export async function GET(req: NextRequest) {
     include: { user: { select: { email: true, status: true, role: true } } },
   });
 
-  for (const p of profiles) {
-    if (p.user.status !== "ACTIVE") continue;
+  await processInBatches(profiles, async (p) => {
+    if (p.user.status !== "ACTIVE") return;
     const name = `${p.firstName} ${p.lastName}`.trim();
 
     if (p.healthCardExpiry && p.healthCardExpiry.getFullYear() <= PLACEHOLDER_YEAR) {
@@ -71,7 +105,7 @@ export async function GET(req: NextRequest) {
         results.autoDisabled++;
       }
     }
-  }
+  });
 
   // Documentos subidos con vencimiento
   const docs = await prisma.documentUpload.findMany({
@@ -79,18 +113,18 @@ export async function GET(req: NextRequest) {
     include: { user: { select: { email: true, profile: { select: { firstName: true, lastName: true } } } } },
   });
 
-  for (const doc of docs) {
-    if (!doc.expiresAt) continue;
+  await processInBatches(docs, async (doc) => {
+    if (!doc.expiresAt) return;
     const d = daysUntil(doc.expiresAt);
-    if (d === null || d > 30 || d < 0) continue;
+    if (d === null || d > 30 || d < 0) return;
     const last = doc.notifiedAt?.toDateString();
-    if (last === now.toDateString()) continue;
+    if (last === now.toDateString()) return;
     const name = doc.user.profile ? `${doc.user.profile.firstName} ${doc.user.profile.lastName}`.trim() : "";
     const label = doc.type === "DRIVER_LICENSE" ? "carnet de conducir" : doc.type === "HEALTH_CARD" ? "libreta sanitaria" : "documento";
     await sendEmail(doc.user.email, `Tu ${label} vence pronto`, expiryEmailHtml(name, label, doc.expiresAt, d));
     await prisma.documentUpload.update({ where: { id: doc.id }, data: { notifiedAt: now } });
     results.docsNotified++;
-  }
+  });
 
   return NextResponse.json({ ok: true, ...results });
 }
