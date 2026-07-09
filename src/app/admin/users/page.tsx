@@ -5,9 +5,11 @@ import { UsersTable } from "./UsersTable";
 export const dynamic = "force-dynamic";
 
 export default async function AdminUsersPage() {
+  // Cota defensiva: prioriza pendientes (status asc) y más recientes. TODO: paginación real si el headcount crece.
   const users = await prisma.user.findMany({
     orderBy: [{ status: "asc" }, { createdAt: "desc" }],
     include: { profile: true, webauthnCredentials: { select: { id: true } } },
+    take: 100,
   });
 
   const serializable = users.map((u) => ({

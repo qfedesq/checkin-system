@@ -4,6 +4,15 @@ import { notifyUser } from "@/lib/notify";
 
 // A las 7 h 45 m del check-in sin check-out, preguntar si sigue prestando servicio.
 const REMINDER_AFTER_MIN = 7 * 60 + 45;
+const BATCH_SIZE = 10;
+
+async function processInBatches<T>(items: T[], fn: (item: T) => Promise<void>, size = BATCH_SIZE) {
+  for (let i = 0; i < items.length; i += size) {
+    await Promise.all(items.slice(i, i + size).map(fn));
+  }
+}
+
+export const maxDuration = 60;
 
 export async function GET(req: NextRequest) {
   const secret = req.headers.get("authorization") ?? req.nextUrl.searchParams.get("key");
@@ -24,13 +33,13 @@ export async function GET(req: NextRequest) {
   });
 
   let notified = 0;
-  for (const a of open) {
+  await processInBatches(open, async (a) => {
     await notifyUser(a.userId, "attendance.checkout.reminder", {
       body: `Pasaron 7 h 45 m desde tu check-in de las ${a.checkInAt.toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit", timeZone: "America/Argentina/Buenos_Aires" })}. ¿Seguís prestando servicio? Si ya terminaste tu jornada, no olvides hacer el check-out.`,
     });
     await prisma.attendance.update({ where: { id: a.id }, data: { checkoutReminderSentAt: new Date() } });
     notified++;
-  }
+  });
 
   return NextResponse.json({ ok: true, notified });
 }

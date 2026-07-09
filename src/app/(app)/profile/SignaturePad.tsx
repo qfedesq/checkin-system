@@ -118,7 +118,15 @@ export function SignaturePad({ url, onUploaded, onError }: {
       <div className="flex items-center gap-4">
         <div className="surface-card flex h-24 w-48 items-center justify-center overflow-hidden bg-white p-2">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={url} alt="firma" className="max-h-full max-w-full object-contain" />
+          <img
+            src={url}
+            alt="firma"
+            width={192}
+            height={96}
+            loading="lazy"
+            decoding="async"
+            className="max-h-full max-w-full object-contain"
+          />
         </div>
         <button type="button" className="btn-ghost" onClick={() => { setHasStrokes(false); setEditing(true); }}>
           <RotateCcw className="h-4 w-4" /> Volver a firmar

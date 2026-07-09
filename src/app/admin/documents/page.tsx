@@ -6,9 +6,11 @@ import { fileUrl } from "@/lib/file-token";
 export const dynamic = "force-dynamic";
 
 export default async function AdminDocumentsPage() {
+  // Cota defensiva: prioriza pendientes (status asc) y más recientes. TODO: paginación real si el volumen crece.
   const docs = await prisma.documentUpload.findMany({
     orderBy: [{ status: "asc" }, { createdAt: "desc" }],
     include: { user: { include: { profile: true } } },
+    take: 100,
   });
   const rows = docs.map((d) => ({
     id: d.id,
