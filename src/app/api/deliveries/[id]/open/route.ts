@@ -19,9 +19,14 @@ export async function GET(_req: NextRequest, ctx: { params: Promise<{ id: string
     return NextResponse.json({ error: "No autorizado" }, { status: 403 });
   }
 
-  // Si ya firmamos, servimos el firmado
+  const pdfHeaders = (extra?: Record<string, string>) =>
+    new Headers({ "content-type": "application/pdf", "cache-control": "private, max-age=60", ...extra });
+
+  // Si ya firmamos, servimos el firmado streameando los bytes (sin exponer la URL del blob).
   if (doc.signedBlobUrl) {
-    return NextResponse.redirect(doc.signedBlobUrl);
+    const signed = await fetch(doc.signedBlobUrl);
+    if (!signed.ok || !signed.body) return NextResponse.json({ error: "No pudimos leer el archivo" }, { status: 502 });
+    return new NextResponse(signed.body, { status: 200, headers: pdfHeaders() });
   }
 
   // Descargar original
@@ -53,5 +58,9 @@ export async function GET(_req: NextRequest, ctx: { params: Promise<{ id: string
   });
   await recordAudit({ actorId: session.user.id, action: "delivery.open", subjectId: id, metadata: { hash } });
 
-  return NextResponse.redirect(signedUrl);
+  // Servimos los bytes recién firmados directo (ya los tenemos en memoria); no exponemos la URL del blob.
+  return new NextResponse(Buffer.from(bytes), {
+    status: 200,
+    headers: pdfHeaders({ "content-disposition": `inline; filename="${filename}"` }),
+  });
 }

@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { DocumentsClient } from "./DocumentsClient";
 import { DocsVencimientos } from "./DocsVencimientos";
+import { fileUrl } from "@/lib/file-token";
 
 export const dynamic = "force-dynamic";
 
@@ -18,7 +19,7 @@ export default async function DocumentsPage() {
   const serializable = docs.map((d) => ({
     id: d.id,
     type: d.type,
-    blobUrl: d.blobUrl,
+    blobUrl: fileUrl(d.blobUrl),
     mimeType: d.mimeType,
     expiresAt: d.expiresAt?.toISOString() ?? null,
     status: d.status,
@@ -28,13 +29,13 @@ export default async function DocumentsPage() {
 
   const health = {
     date: profile?.healthCardExpiry && profile.healthCardExpiry.getFullYear() < 2099 ? iso(profile.healthCardExpiry) : "",
-    front: profile?.healthCardFrontBlobUrl ?? "",
-    back: profile?.healthCardBackBlobUrl ?? "",
+    front: fileUrl(profile?.healthCardFrontBlobUrl),
+    back: fileUrl(profile?.healthCardBackBlobUrl),
   };
   const license = {
     date: iso(profile?.professionalLicenseExpiry),
-    front: profile?.licenseFrontBlobUrl ?? "",
-    back: profile?.licenseBackBlobUrl ?? "",
+    front: fileUrl(profile?.licenseFrontBlobUrl),
+    back: fileUrl(profile?.licenseBackBlobUrl),
   };
 
   return (

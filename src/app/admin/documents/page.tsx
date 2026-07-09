@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { AdminDocuments } from "./AdminDocuments";
+import { fileUrl } from "@/lib/file-token";
 
 export const dynamic = "force-dynamic";
 
@@ -12,7 +13,7 @@ export default async function AdminDocumentsPage() {
   const rows = docs.map((d) => ({
     id: d.id,
     type: d.type,
-    blobUrl: d.blobUrl,
+    blobUrl: fileUrl(d.blobUrl),
     expiresAt: d.expiresAt?.toISOString() ?? null,
     status: d.status,
     note: d.note ?? "",

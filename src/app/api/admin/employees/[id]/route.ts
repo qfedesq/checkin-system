@@ -3,6 +3,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/admin-guard";
 import { recordAudit } from "@/lib/audit";
+import { fileUrl } from "@/lib/file-token";
 
 const schema = z.object({
   email: z.string().email(),
@@ -43,13 +44,27 @@ export async function GET(_req: NextRequest, ctx: { params: Promise<{ id: string
   });
   if (!user) return NextResponse.json({ error: "No encontrado" }, { status: 404 });
 
+  const profile = user.profile
+    ? {
+        ...user.profile,
+        dniFrontBlobUrl: fileUrl(user.profile.dniFrontBlobUrl) || null,
+        dniBackBlobUrl: fileUrl(user.profile.dniBackBlobUrl) || null,
+        licenseFrontBlobUrl: fileUrl(user.profile.licenseFrontBlobUrl) || null,
+        licenseBackBlobUrl: fileUrl(user.profile.licenseBackBlobUrl) || null,
+        healthCardFrontBlobUrl: fileUrl(user.profile.healthCardFrontBlobUrl) || null,
+        healthCardBackBlobUrl: fileUrl(user.profile.healthCardBackBlobUrl) || null,
+        faceImageBlobUrl: fileUrl(user.profile.faceImageBlobUrl) || null,
+        signatureBlobUrl: fileUrl(user.profile.signatureBlobUrl) || null,
+      }
+    : null;
+
   return NextResponse.json({
     id: user.id,
     email: user.email,
     role: user.role,
     status: user.status,
     hasDevice: Boolean(user.deviceId),
-    profile: user.profile,
+    profile,
   });
 }
 

@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/admin-guard";
 import { uploadBlob } from "@/lib/blob";
 import { recordAudit } from "@/lib/audit";
+import { fileUrl } from "@/lib/file-token";
 
 const ALLOWED = ["image/png", "image/jpeg", "image/webp"];
 
@@ -39,5 +40,5 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
   await prisma.employeeProfile.update({ where: { userId: id }, data: { [field]: url } });
 
   await recordAudit({ actorId: session.user.id, action: "employee.upload_image", subjectId: id, metadata: { kind } });
-  return NextResponse.json({ ok: true, url });
+  return NextResponse.json({ ok: true, url: fileUrl(url) });
 }
