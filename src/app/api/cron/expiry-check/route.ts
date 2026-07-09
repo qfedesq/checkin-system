@@ -1,9 +1,11 @@
+import crypto from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { sendEmail, expiryEmailHtml, adminAlertHtml } from "@/lib/email";
 import { sendPushToUser } from "@/lib/push";
 import { notifyUser } from "@/lib/notify";
 import { daysUntil, formatCalendarDate } from "@/lib/utils";
+import { logError } from "@/lib/log";
 
 const PLACEHOLDER_YEAR = 2098; // libretas "2099-12-31" = sin dato, no cuentan
 const BATCH_SIZE = 10;
@@ -14,14 +16,36 @@ async function processInBatches<T>(items: T[], fn: (item: T) => Promise<void>, s
   }
 }
 
+// QA-021: fail-closed (sin CRON_SECRET configurado, nadie pasa) + comparación timing-safe.
+// Header preferido: Authorization: Bearer <secret>. Se acepta ?key= como fallback.
+function isAuthorized(req: NextRequest): boolean {
+  const secretEnv = process.env.CRON_SECRET;
+  if (!secretEnv) return false;
+
+  const header = req.headers.get("authorization") ?? "";
+  const provided = header.startsWith("Bearer ") ? header.slice(7) : req.nextUrl.searchParams.get("key") ?? "";
+
+  const a = Buffer.from(provided);
+  const b = Buffer.from(secretEnv);
+  return a.length === b.length && crypto.timingSafeEqual(a, b);
+}
+
 export const maxDuration = 60;
 
 export async function GET(req: NextRequest) {
-  const secret = req.headers.get("authorization") ?? req.nextUrl.searchParams.get("key");
-  if (process.env.CRON_SECRET && secret !== `Bearer ${process.env.CRON_SECRET}` && secret !== process.env.CRON_SECRET) {
+  if (!isAuthorized(req)) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
 
+  try {
+    return await runExpiryCheck();
+  } catch (err) {
+    logError("cron.expiry-check", err);
+    return NextResponse.json({ error: "Internal error" }, { status: 500 });
+  }
+}
+
+async function runExpiryCheck() {
   const results = { profilesNotified: 0, docsNotified: 0, autoDisabled: 0 };
   const now = new Date();
 

@@ -1,5 +1,6 @@
 import "server-only";
 import { prisma } from "./prisma";
+import { logError } from "./log";
 
 export async function recordAudit(input: { actorId?: string | null; action: string; subjectId?: string; metadata?: Record<string, unknown> }) {
   try {
@@ -12,6 +13,6 @@ export async function recordAudit(input: { actorId?: string | null; action: stri
       },
     });
   } catch (err) {
-    console.error("[audit] failed", err);
+    logError("audit", err);
   }
 }
