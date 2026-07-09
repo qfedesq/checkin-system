@@ -4,7 +4,7 @@ Branch `qa/full-audit-2026-07-08` (sin push, sin deploy). Regresión final: **13
 
 ## Resumen ejecutivo
 - Auditoría: 4 discovery + 8 audit agents (Sonnet 5) → **58 findings consolidados** (1 BLOCKER, 4 CRITICAL, 22 MAJOR, ~26 MINOR, ~5 COSMETIC) + ~30 CORRECT.
-- Remediación: **Ola 1 (BLOCKER+CRITICAL) y Ola 2 (MAJOR) COMPLETAS**. Ola 3 (MINOR/COSMETIC) pendiente. 15 commits `qa(...)`.
+- Remediación: **Ola 1 (BLOCKER+CRITICAL), Ola 2 (MAJOR) y Ola 3 (MINOR de valor) COMPLETAS**. Restan sólo cosméticos/smells y refactors de bajo valor (ver abajo). 17 commits `qa(...)`.
 
 ## Antes / Después (findings accionables)
 | ID | Sev | Antes | Estado |
@@ -43,8 +43,31 @@ Branch `qa/full-audit-2026-07-08` (sin push, sin deploy). Regresión final: **13
 5. **QA-022**: rate-limit es best-effort en serverless; robusto = Upstash/Redis.
 6. GMAIL_APP_PASSWORD sigue sin setear en Vercel (emails en stub).
 
-## Ola 3 (MINOR/COSMETIC) — pendiente
-QA-031 (loading/error boundaries), QA-033 (counts duplicados admin), QA-034 (magic bytes de archivos), QA-035 (sanitizar filename en blob key), QA-036 (enumeración webauthn — ya mitigada parcial por rate-limit), QA-037 (headers/CSP), QA-038 (audit log del export), QA-039 (lock optimista ProfileChangeRequest), QA-040 (colisión de unicidad → 409 en vez de 500), QA-041 (auto-deshabilitar/último admin), QA-042 (loop reset-password), QA-043 (idempotencia apertura de recibo), QA-046 (dedup ImageSlot/lógica de perfil), QA-048 (push standalone iOS), QA-049 (targets 44px), QA-050 (canvas resize), QA-051 (manifest 192/maskable), QA-054 (código muerto PENDING_APPROVAL), QA-055/056/057/058 (cosméticos/smells), + QA-015/017/019/020 (profundizar).
+## Ola 3 (MINOR/COSMETIC)
+**Resueltos (2 commits: 3b46b19 backend, ef50fcf ux):**
+- QA-031 ✅ boundaries loading/error/not-found (root)
+- QA-034 ✅ validación magic-bytes (PNG/JPEG/WEBP/PDF) en los 4 uploads
+- QA-035 ✅ filename sanitizado en la key del blob
+- QA-037 ✅ headers de seguridad (X-Frame-Options/nosniff/Referrer-Policy/Permissions-Policy con WebAuthn+geo permitidos). CSP omitida a propósito (riesgo push/proxy/fonts) — ítem aparte.
+- QA-038 ✅ audit log del export Excel (`attendance.export`)
+- QA-040 ✅ colisión de unicidad → 409 (employees PUT, users POST)
+- QA-041 ✅ guard: no auto-deshabilitar ni deshabilitar al último admin activo
+- QA-042 ✅ reset-password sin loop (update() best-effort)
+- QA-048 ✅ hint de instalar PWA en iOS no-standalone (push)
+- QA-049 ✅ targets táctiles 44px en mobile
+- QA-050 ✅ canvas de firma re-escala en resize/orientationchange
+
+**Diferidos (bajo valor / riesgo de refactor / requieren asset o decisión):**
+- QA-033 (counts duplicados admin layout+page — perf menor)
+- QA-036 (enumeración webauthn — ya mitigada por rate-limit)
+- QA-039 (lock optimista ProfileChangeRequest — baja probabilidad)
+- QA-043 (idempotencia apertura de recibo — baja probabilidad)
+- QA-046 (dedup ImageSlot — refactor multi-archivo)
+- QA-051 (manifest 192/maskable — requiere generar asset PNG 192)
+- QA-054 (código muerto PENDING_APPROVAL — se dejó a propósito, ver plan)
+- QA-055/056/057/058 (cosméticos/smells)
+- QA-015/017/019/020 (profundizar deps/cobertura/imágenes/paginación)
+- CSP completa (de QA-037)
 
 ## Convenciones para CLAUDE.md (aprendidas en la remediación)
 - Endpoints sensibles: usar `requireActiveUser()` / `requireAdmin()` (revalidan estado contra DB; el JWT no se revoca solo).
