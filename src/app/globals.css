@@ -303,6 +303,10 @@
        al enfocar un input con font-size < 16px. Forzamos 16px en mobile para evitarlo. */
     .surface-control, .surface-select, .surface-textarea,
     input, select, textarea { font-size: 16px; }
+
+    /* targets táctiles: mínimo 44px recomendado (WCAG 2.5.5 / Apple HIG).
+       .rail-icon-button ya es 44x44 (h-11 w-11); sólo .btn queda corto (h-10=40px). */
+    .btn { min-height: 44px; }
   }
 
   /* safe area en modales full-height */

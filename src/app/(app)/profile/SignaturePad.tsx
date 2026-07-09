@@ -20,12 +20,20 @@ export function SignaturePad({ url, onUploaded, onError }: {
   const [busy, setBusy] = useState(false);
   const [hasStrokes, setHasStrokes] = useState(false);
 
-  useEffect(() => {
-    if (!editing) return;
+  function setupCanvas(preserve: boolean) {
     const canvas = canvasRef.current;
     if (!canvas) return;
+    // Si ya había trazo, lo exportamos antes de redimensionar (cambiar
+    // canvas.width/height borra el contenido) para poder redibujarlo escalado
+    // al nuevo tamaño (rotación de pantalla, resize, etc).
+    let snapshot: HTMLImageElement | null = null;
+    if (preserve && dirty.current && canvas.width > 0 && canvas.height > 0) {
+      snapshot = new Image();
+      snapshot.src = canvas.toDataURL("image/png");
+    }
     const ratio = window.devicePixelRatio || 1;
     const rect = canvas.getBoundingClientRect();
+    if (rect.width === 0 || rect.height === 0) return;
     canvas.width = Math.round(rect.width * ratio);
     canvas.height = Math.round(rect.height * ratio);
     const ctx = canvas.getContext("2d");
@@ -37,6 +45,26 @@ export function SignaturePad({ url, onUploaded, onError }: {
     ctx.lineWidth = 2.4;
     ctx.lineCap = "round";
     ctx.lineJoin = "round";
+    if (snapshot) {
+      snapshot.onload = () => {
+        ctx.drawImage(snapshot!, 0, 0, rect.width, rect.height);
+      };
+    }
+  }
+
+  useEffect(() => {
+    if (!editing) return;
+    setupCanvas(false);
+
+    function handleResize() {
+      setupCanvas(true);
+    }
+    window.addEventListener("resize", handleResize);
+    window.addEventListener("orientationchange", handleResize);
+    return () => {
+      window.removeEventListener("resize", handleResize);
+      window.removeEventListener("orientationchange", handleResize);
+    };
   }, [editing]);
 
   function point(e: React.PointerEvent<HTMLCanvasElement>) {

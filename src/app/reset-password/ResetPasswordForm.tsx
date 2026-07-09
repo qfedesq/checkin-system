@@ -30,7 +30,13 @@ export function ResetPasswordForm() {
       setBusy(false);
       return;
     }
-    await update({ mustChangePassword: false });
+    // La contraseña ya se cambió en la DB: si falla el refresh de la sesión
+    // (JWT), no bloqueamos al usuario en un loop, simplemente navegamos.
+    try {
+      await update({ mustChangePassword: false });
+    } catch (e) {
+      console.error("[reset-password] session update falló", e);
+    }
     router.push("/");
     router.refresh();
   }
