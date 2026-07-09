@@ -8,10 +8,15 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
   if (error) return error;
   const { id } = await ctx.params;
   const { note } = await req.json().catch(() => ({ note: "" }));
-  await prisma.documentUpload.update({
-    where: { id },
+
+  // Guard atómico (QA-007): sólo transiciona si sigue PENDING_REVIEW; evita doble transición o
+  // pisar un approve/reject concurrente de otro admin.
+  const result = await prisma.documentUpload.updateMany({
+    where: { id, status: "PENDING_REVIEW" },
     data: { status: "REJECTED", reviewedAt: new Date(), reviewedById: session.user.id, note: note || "Rechazado" },
   });
+  if (result.count === 0) return NextResponse.json({ error: "La solicitud ya fue revisada" }, { status: 409 });
+
   await recordAudit({ actorId: session.user.id, action: "document.reject", subjectId: id, metadata: { note } });
   return NextResponse.json({ ok: true });
 }

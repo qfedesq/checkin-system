@@ -9,10 +9,18 @@ export async function POST(_req: Request, ctx: { params: Promise<{ id: string }>
   const { session, error } = await requireAdmin();
   if (error) return error;
   const { id } = await ctx.params;
-  const leave = await prisma.leaveRequest.update({
-    where: { id },
+
+  // Guard atómico (QA-007): sólo transiciona si sigue PENDING; evita doble transición o
+  // pisar un approve/reject concurrente de otro admin.
+  const result = await prisma.leaveRequest.updateMany({
+    where: { id, status: "PENDING" },
     data: { status: "REJECTED", reviewedAt: new Date(), reviewedById: session.user.id },
   });
+  if (result.count === 0) return NextResponse.json({ error: "La solicitud ya fue revisada" }, { status: 409 });
+
+  const leave = await prisma.leaveRequest.findUnique({ where: { id } });
+  if (!leave) return NextResponse.json({ ok: true });
+
   await recordAudit({ actorId: session.user.id, action: "leave.reject", subjectId: id });
 
   const label = leave.type === "VACATION" ? `Vacaciones (${leave.days} días desde ${formatCalendarDate(leave.startDate)})` : `Franco del ${formatCalendarDate(leave.startDate)}`;

@@ -13,28 +13,32 @@ export async function POST(_req: Request, ctx: { params: Promise<{ id: string }>
   if (error) return error;
   const { id } = await ctx.params;
 
-  const leave = await prisma.leaveRequest.findUnique({ where: { id } });
-  if (!leave) return NextResponse.json({ error: "No encontrada" }, { status: 404 });
-
+  let outcome: { kind: "notfound" } | { kind: "conflict" } | { kind: "ok"; leave: Awaited<ReturnType<typeof prisma.leaveRequest.findUnique>> };
   try {
-    await prisma.$transaction(async (tx) => {
-      if (leave.type === "DAY_OFF") {
+    outcome = await prisma.$transaction(async (tx) => {
+      // Releer el estado dentro de la tx (QA-007): si ya no está PENDING, otro admin (o esta
+      // misma request duplicada) ya la resolvió — abortar sin re-aplicar ni notificar.
+      const current = await tx.leaveRequest.findUnique({ where: { id } });
+      if (!current) return { kind: "notfound" as const };
+      if (current.status !== "PENDING") return { kind: "conflict" as const };
+
+      if (current.type === "DAY_OFF") {
         const collision = await tx.leaveRequest.findFirst({
-          where: { type: "DAY_OFF", status: "APPROVED", startDate: leave.startDate, id: { not: id } },
+          where: { type: "DAY_OFF", status: "APPROVED", startDate: current.startDate, id: { not: id } },
         });
         if (collision) throw new ApprovalConflictError("Ya hay un franco aprobado para ese día");
       } else {
-        const profile = await tx.employeeProfile.findUnique({ where: { userId: leave.userId } });
+        const profile = await tx.employeeProfile.findUnique({ where: { userId: current.userId } });
         if (!profile) throw new ApprovalConflictError("El empleado no tiene perfil completo");
 
         // Revalida cupo semanal por categoría y saldo anual antes de aprobar: sin esto, dos
         // solicitudes PENDING solapadas de la misma categoría podían aprobarse ambas (QA-004).
         const check = await checkVacationApprovable(tx, {
-          userId: leave.userId,
+          userId: current.userId,
           category: profile.category,
-          startDate: leave.startDate,
-          endDate: leave.endDate,
-          days: leave.days,
+          startDate: current.startDate,
+          endDate: current.endDate,
+          days: current.days,
           vacationWeeksPerYear: profile.vacationWeeksPerYear,
           balanceStatuses: ["APPROVED"],
           excludeLeaveId: id,
@@ -42,16 +46,24 @@ export async function POST(_req: Request, ctx: { params: Promise<{ id: string }>
         if (!check.ok) throw new ApprovalConflictError(check.error);
       }
 
-      await tx.leaveRequest.update({
-        where: { id },
+      // Guard atómico final (QA-007): el WHERE con status:"PENDING" hace que, si dos requests
+      // concurrentes llegan hasta acá, sólo una actualice fila (la otra ve count===0).
+      const result = await tx.leaveRequest.updateMany({
+        where: { id, status: "PENDING" },
         data: { status: "APPROVED", reviewedAt: new Date(), reviewedById: session.user.id },
       });
+      if (result.count === 0) return { kind: "conflict" as const };
+      return { kind: "ok" as const, leave: current };
     });
   } catch (e) {
     if (e instanceof ApprovalConflictError) return NextResponse.json({ error: e.message }, { status: 409 });
     throw e;
   }
 
+  if (outcome.kind === "notfound") return NextResponse.json({ error: "No encontrada" }, { status: 404 });
+  if (outcome.kind === "conflict") return NextResponse.json({ error: "La solicitud ya fue revisada" }, { status: 409 });
+
+  const leave = outcome.leave!;
   await recordAudit({ actorId: session.user.id, action: "leave.approve", subjectId: id });
 
   const label = leave.type === "VACATION" ? `Vacaciones (${leave.days} días desde ${formatCalendarDate(leave.startDate)})` : `Franco del ${formatCalendarDate(leave.startDate)}`;
