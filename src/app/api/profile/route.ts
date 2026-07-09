@@ -5,6 +5,7 @@ import { auth } from "@/lib/auth";
 import { recordAudit } from "@/lib/audit";
 import { notifyAdmins } from "@/lib/notify";
 import { isEmployeeProfileComplete } from "@/lib/profile";
+import { route } from "@/lib/route";
 
 // Campos que el empleado puede proponer cambiar. Sólo son solo-admin: CUIL (lo trae el
 // alta de ARCA), legajo y fecha de ingreso (administrativos) y el email (login).
@@ -73,7 +74,7 @@ function isoDay(d: Date | null | undefined): string {
   return d ? d.toISOString().slice(0, 10) : "";
 }
 
-export async function PUT(req: NextRequest) {
+export const PUT = route("profile.put", async (req: NextRequest) => {
   const session = await auth();
   if (!session?.user) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
 
@@ -200,4 +201,4 @@ export async function PUT(req: NextRequest) {
   }).catch((e) => console.error("[notify] profile.change", e));
 
   return NextResponse.json({ ok: true, pendingApproval: true });
-}
+});

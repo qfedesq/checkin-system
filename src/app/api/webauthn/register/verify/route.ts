@@ -5,8 +5,9 @@ import { prisma } from "@/lib/prisma";
 import { origin, rpID, deviceHashFromCredentialId } from "@/lib/webauthn";
 import { recordAudit } from "@/lib/audit";
 import { notifyAdmins } from "@/lib/notify";
+import { route } from "@/lib/route";
 
-export async function POST(req: NextRequest) {
+export const POST = route("webauthn.register.verify", async (req: NextRequest) => {
   const session = await auth();
   if (!session?.user) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
 
@@ -64,4 +65,4 @@ export async function POST(req: NextRequest) {
     notifyAdmins("device.pending", { actorEmail: session.user.email ?? "", actorName: session.user.name }).catch((e) => console.error("[notify] device.pending", e));
   }
   return NextResponse.json({ ok: true, pendingApproval: !isAdmin });
-}
+});

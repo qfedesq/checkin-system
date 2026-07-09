@@ -2,8 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import ExcelJS from "exceljs";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/admin-guard";
+import { route } from "@/lib/route";
 
-export async function GET(req: NextRequest) {
+export const GET = route("attendance.export", async (req: NextRequest) => {
   const { error } = await requireAdmin();
   if (error) return error;
 
@@ -78,4 +79,4 @@ export async function GET(req: NextRequest) {
       "content-disposition": `attachment; filename="jornadas-${new Date().toISOString().slice(0, 10)}.xlsx"`,
     },
   });
-}
+});

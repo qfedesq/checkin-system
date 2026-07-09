@@ -5,12 +5,13 @@ import { prisma } from "@/lib/prisma";
 import { recordAudit } from "@/lib/audit";
 import { notifyAdmins } from "@/lib/notify";
 import { isEmployeeProfileComplete } from "@/lib/profile";
+import { route } from "@/lib/route";
 
 // Actualiza sólo un vencimiento (libreta o carnet) desde la sección Documentación.
 // Misma regla que el perfil: primera carga directa, ediciones posteriores por aprobación.
 const body = z.object({ kind: z.enum(["health", "license"]), date: z.string().min(1) });
 
-export async function POST(req: NextRequest) {
+export const POST = route("profile.expiry", async (req: NextRequest) => {
   const session = await auth();
   if (!session?.user) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
 
@@ -52,4 +53,4 @@ export async function POST(req: NextRequest) {
   }).catch((e) => console.error("[notify] expiry", e));
 
   return NextResponse.json({ ok: true, pendingApproval: true });
-}
+});

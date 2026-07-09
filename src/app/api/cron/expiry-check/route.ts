@@ -6,6 +6,7 @@ import { sendPushToUser } from "@/lib/push";
 import { notifyUser } from "@/lib/notify";
 import { daysUntil, formatCalendarDate } from "@/lib/utils";
 import { logError } from "@/lib/log";
+import { route } from "@/lib/route";
 
 const PLACEHOLDER_YEAR = 2098; // libretas "2099-12-31" = sin dato, no cuentan
 const BATCH_SIZE = 10;
@@ -32,7 +33,7 @@ function isAuthorized(req: NextRequest): boolean {
 
 export const maxDuration = 60;
 
-export async function GET(req: NextRequest) {
+export const GET = route("cron.expiry-check", async (req: NextRequest) => {
   if (!isAuthorized(req)) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
@@ -43,7 +44,7 @@ export async function GET(req: NextRequest) {
     logError("cron.expiry-check", err);
     return NextResponse.json({ error: "Internal error" }, { status: 500 });
   }
-}
+});
 
 async function runExpiryCheck() {
   const results = { profilesNotified: 0, docsNotified: 0, autoDisabled: 0 };

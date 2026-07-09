@@ -4,6 +4,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/admin-guard";
 import { recordAudit } from "@/lib/audit";
+import { route } from "@/lib/route";
 
 const body = z.object({
   email: z.string().email(),
@@ -17,7 +18,7 @@ const body = z.object({
 // Clave temporaria fija pedida por el cliente; mustChangePassword fuerza el cambio en el primer login.
 const TEMP_PASSWORD = "Emmalva01";
 
-export async function POST(req: NextRequest) {
+export const POST = route("admin.users.create", async (req: NextRequest) => {
   const { session, error } = await requireAdmin();
   if (error) return error;
 
@@ -89,4 +90,4 @@ export async function POST(req: NextRequest) {
   });
 
   return NextResponse.json({ ok: true, id: user.id, tempPassword });
-}
+});

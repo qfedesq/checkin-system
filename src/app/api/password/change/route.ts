@@ -5,10 +5,11 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { recordAudit } from "@/lib/audit";
 import { checkRateLimit } from "@/lib/rate-limit";
+import { route } from "@/lib/route";
 
 const body = z.object({ current: z.string().min(1), next: z.string().min(8) });
 
-export async function POST(req: NextRequest) {
+export const POST = route("password.change", async (req: NextRequest) => {
   const session = await auth();
   if (!session?.user) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
 
@@ -39,4 +40,4 @@ export async function POST(req: NextRequest) {
 
   await recordAudit({ actorId: user.id, action: "password.change", subjectId: user.id });
   return NextResponse.json({ ok: true });
-}
+});

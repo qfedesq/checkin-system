@@ -6,6 +6,7 @@ import { parseLocalDate, validateVacationRange, monthBounds, checkVacationApprov
 import { recordAudit } from "@/lib/audit";
 import { notifyAdmins } from "@/lib/notify";
 import { formatCalendarDate } from "@/lib/utils";
+import { route } from "@/lib/route";
 
 const body = z.object({
   type: z.enum(["VACATION", "DAY_OFF"]),
@@ -13,7 +14,7 @@ const body = z.object({
   days: z.number().int().optional(),
 });
 
-export async function POST(req: NextRequest) {
+export const POST = route("leaves.create", async (req: NextRequest) => {
   const session = await auth();
   if (!session?.user) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
 
@@ -95,4 +96,4 @@ export async function POST(req: NextRequest) {
   }).catch((e) => console.error("[notify] leave", e));
 
   return NextResponse.json({ ok: true, id: leave.id });
-}
+});

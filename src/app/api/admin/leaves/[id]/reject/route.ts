@@ -4,8 +4,9 @@ import { requireAdmin } from "@/lib/admin-guard";
 import { recordAudit } from "@/lib/audit";
 import { notifyUser } from "@/lib/notify";
 import { formatCalendarDate } from "@/lib/utils";
+import { route } from "@/lib/route";
 
-export async function POST(_req: Request, ctx: { params: Promise<{ id: string }> }) {
+export const POST = route("admin.leaves.reject", async (_req: Request, ctx: { params: Promise<{ id: string }> }) => {
   const { session, error } = await requireAdmin();
   if (error) return error;
   const { id } = await ctx.params;
@@ -27,4 +28,4 @@ export async function POST(_req: Request, ctx: { params: Promise<{ id: string }>
   notifyUser(leave.userId, "leave.rejected", { body: `Tu solicitud de <strong>${label}</strong> fue rechazada. Consultá con el administrador.` }).catch((e) => console.error("[notify] leave.reject", e));
 
   return NextResponse.json({ ok: true });
-}
+});

@@ -3,8 +3,9 @@ import { generateAuthenticationOptions } from "@simplewebauthn/server";
 import { prisma } from "@/lib/prisma";
 import { rpID } from "@/lib/webauthn";
 import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
+import { route } from "@/lib/route";
 
-export async function POST(req: NextRequest) {
+export const POST = route("webauthn.authenticate.options", async (req: NextRequest) => {
   // Best-effort por IP: frena enumeración de emails / fuerza bruta contra
   // este endpoint público (sin sesión). Ver src/lib/rate-limit.ts sobre la
   // limitación en serverless multi-instancia.
@@ -49,4 +50,4 @@ export async function POST(req: NextRequest) {
   });
 
   return NextResponse.json(options);
-}
+});

@@ -3,12 +3,13 @@ import { z } from "zod";
 import { requireActiveUser } from "@/lib/session-guard";
 import { prisma } from "@/lib/prisma";
 import { recordAudit } from "@/lib/audit";
+import { route } from "@/lib/route";
 
 const schema = z.object({ lat: z.number(), lng: z.number() });
 
 class CheckinConflictError extends Error {}
 
-export async function POST(req: NextRequest) {
+export const POST = route("attendance.checkin", async (req: NextRequest) => {
   const { session, error } = await requireActiveUser();
   if (error) return error;
   const parsed = schema.safeParse(await req.json().catch(() => ({})));
@@ -53,4 +54,4 @@ export async function POST(req: NextRequest) {
   }
   await recordAudit({ actorId: session.user.id, action: "attendance.checkin", subjectId: att.id });
   return NextResponse.json({ ok: true, id: att.id });
-}
+});

@@ -4,8 +4,9 @@ import { prisma } from "@/lib/prisma";
 import { uploadBlob } from "@/lib/blob";
 import { recordAudit } from "@/lib/audit";
 import { notifyUser } from "@/lib/notify";
+import { route } from "@/lib/route";
 
-export async function POST(req: NextRequest) {
+export const POST = route("admin.deliveries.upload", async (req: NextRequest) => {
   const { session, error } = await requireAdmin();
   if (error) return error;
 
@@ -39,4 +40,4 @@ export async function POST(req: NextRequest) {
   notifyUser(recipientId, "delivery.new", { body: `Tenés un nuevo <strong>${kindLabel}</strong> disponible: “${title}”. Al abrirlo se firma automáticamente con tu firma digital.` }).catch((e) => console.error("[notify] delivery.new", e));
 
   return NextResponse.json({ ok: true, id: d.id });
-}
+});

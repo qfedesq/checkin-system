@@ -5,10 +5,11 @@ import { recordAudit } from "@/lib/audit";
 import { notifyUser } from "@/lib/notify";
 import { formatCalendarDate } from "@/lib/utils";
 import { checkVacationApprovable } from "@/lib/leaves";
+import { route } from "@/lib/route";
 
 class ApprovalConflictError extends Error {}
 
-export async function POST(_req: Request, ctx: { params: Promise<{ id: string }> }) {
+export const POST = route("admin.leaves.approve", async (_req: Request, ctx: { params: Promise<{ id: string }> }) => {
   const { session, error } = await requireAdmin();
   if (error) return error;
   const { id } = await ctx.params;
@@ -70,4 +71,4 @@ export async function POST(_req: Request, ctx: { params: Promise<{ id: string }>
   notifyUser(leave.userId, "leave.approved", { body: `Tu solicitud de <strong>${label}</strong> fue aprobada.` }).catch((e) => console.error("[notify] leave.approve", e));
 
   return NextResponse.json({ ok: true });
-}
+});

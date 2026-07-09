@@ -2,13 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { route } from "@/lib/route";
 
 const body = z.object({
   endpoint: z.string().url(),
   keys: z.object({ p256dh: z.string().min(1), auth: z.string().min(1) }),
 });
 
-export async function POST(req: NextRequest) {
+export const POST = route("push.subscribe", async (req: NextRequest) => {
   const session = await auth();
   if (!session?.user?.id) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
 
@@ -32,9 +33,9 @@ export async function POST(req: NextRequest) {
   });
 
   return NextResponse.json({ ok: true });
-}
+});
 
-export async function DELETE(req: NextRequest) {
+export const DELETE = route("push.unsubscribe", async (req: NextRequest) => {
   const session = await auth();
   if (!session?.user?.id) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
 
@@ -45,4 +46,4 @@ export async function DELETE(req: NextRequest) {
     where: { endpoint, userId: session.user.id },
   });
   return NextResponse.json({ ok: true });
-}
+});

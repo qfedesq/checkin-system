@@ -4,10 +4,11 @@ import { prisma } from "@/lib/prisma";
 import { uploadBlob } from "@/lib/blob";
 import { recordAudit } from "@/lib/audit";
 import { notifyAdmins } from "@/lib/notify";
+import { route } from "@/lib/route";
 
 const ALLOWED = ["application/pdf", "image/png", "image/jpeg"];
 
-export async function POST(req: NextRequest) {
+export const POST = route("documents.upload", async (req: NextRequest) => {
   const session = await auth();
   if (!session?.user) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
 
@@ -44,4 +45,4 @@ export async function POST(req: NextRequest) {
   }).catch((e) => console.error("[notify] doc", e));
 
   return NextResponse.json({ ok: true, id: doc.id });
-}
+});

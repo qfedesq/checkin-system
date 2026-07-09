@@ -3,8 +3,9 @@ import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/admin-guard";
 import { recordAudit } from "@/lib/audit";
 import { notifyUser } from "@/lib/notify";
+import { route } from "@/lib/route";
 
-export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
+export const POST = route("admin.profile-changes.reject", async (req: NextRequest, ctx: { params: Promise<{ id: string }> }) => {
   const { session, error } = await requireAdmin();
   if (error) return error;
   const { id } = await ctx.params;
@@ -26,4 +27,4 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
   }).catch((e) => console.error("[notify] profile.change.reject", e));
 
   return NextResponse.json({ ok: true });
-}
+});

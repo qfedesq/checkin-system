@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/admin-guard";
 import { recordAudit } from "@/lib/audit";
 import { fileUrl } from "@/lib/file-token";
+import { route } from "@/lib/route";
 
 const schema = z.object({
   email: z.string().email(),
@@ -33,7 +34,7 @@ const schema = z.object({
   vacationWeeksPerYear: z.number().int().min(0).max(10),
 });
 
-export async function GET(_req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
+export const GET = route("admin.employees.get", async (_req: NextRequest, ctx: { params: Promise<{ id: string }> }) => {
   const { error } = await requireAdmin();
   if (error) return error;
   const { id } = await ctx.params;
@@ -66,9 +67,9 @@ export async function GET(_req: NextRequest, ctx: { params: Promise<{ id: string
     hasDevice: Boolean(user.deviceId),
     profile,
   });
-}
+});
 
-export async function PUT(req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
+export const PUT = route("admin.employees.put", async (req: NextRequest, ctx: { params: Promise<{ id: string }> }) => {
   const { session, error } = await requireAdmin();
   if (error) return error;
   const { id } = await ctx.params;
@@ -141,4 +142,4 @@ export async function PUT(req: NextRequest, ctx: { params: Promise<{ id: string 
 
   await recordAudit({ actorId: session.user.id, action: "employee.update", subjectId: id });
   return NextResponse.json({ ok: true });
-}
+});

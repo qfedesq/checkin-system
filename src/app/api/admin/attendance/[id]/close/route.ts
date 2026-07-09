@@ -2,12 +2,13 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/admin-guard";
 import { recordAudit } from "@/lib/audit";
+import { route } from "@/lib/route";
 
 // Cierre manual de una jornada huérfana (QA-008): el admin puede cerrar un Attendance que quedó
 // abierto (checkOutAt null) — p.ej. por una carrera de check-in o porque el empleado nunca
 // hizo check-out. Usa updateMany con el guard checkOutAt:null para que sea idempotente si dos
 // admins la cierran a la vez.
-export async function POST(_req: Request, ctx: { params: Promise<{ id: string }> }) {
+export const POST = route("admin.attendance.close", async (_req: Request, ctx: { params: Promise<{ id: string }> }) => {
   const { session, error } = await requireAdmin();
   if (error) return error;
   const { id } = await ctx.params;
@@ -30,4 +31,4 @@ export async function POST(_req: Request, ctx: { params: Promise<{ id: string }>
 
   await recordAudit({ actorId: session.user.id, action: "attendance.close.manual", subjectId: id, metadata: { durationMin } });
   return NextResponse.json({ ok: true });
-}
+});

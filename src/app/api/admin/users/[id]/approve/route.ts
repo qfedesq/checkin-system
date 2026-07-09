@@ -3,10 +3,11 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/admin-guard";
 import { recordAudit } from "@/lib/audit";
+import { route } from "@/lib/route";
 
 const body = z.object({ legajo: z.string().min(1), hireDate: z.string() });
 
-export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
+export const POST = route("admin.users.approve", async (req: NextRequest, ctx: { params: Promise<{ id: string }> }) => {
   const { session, error } = await requireAdmin();
   if (error) return error;
 
@@ -63,4 +64,4 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
 
   await recordAudit({ actorId: session.user.id, action: "user.approve", subjectId: id, metadata: { legajo: parsed.data.legajo } });
   return NextResponse.json({ ok: true });
-}
+});

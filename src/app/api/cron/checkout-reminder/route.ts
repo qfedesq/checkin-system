@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { notifyUser } from "@/lib/notify";
 import { logError } from "@/lib/log";
+import { route } from "@/lib/route";
 
 // A las 7 h 45 m del check-in sin check-out, preguntar si sigue prestando servicio.
 const REMINDER_AFTER_MIN = 7 * 60 + 45;
@@ -30,7 +31,7 @@ function isAuthorized(req: NextRequest): boolean {
 
 export const maxDuration = 60;
 
-export async function GET(req: NextRequest) {
+export const GET = route("cron.checkout-reminder", async (req: NextRequest) => {
   if (!isAuthorized(req)) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
@@ -41,7 +42,7 @@ export async function GET(req: NextRequest) {
     logError("cron.checkout-reminder", err);
     return NextResponse.json({ error: "Internal error" }, { status: 500 });
   }
-}
+});
 
 async function runCheckoutReminder() {
   const threshold = new Date(Date.now() - REMINDER_AFTER_MIN * 60 * 1000);

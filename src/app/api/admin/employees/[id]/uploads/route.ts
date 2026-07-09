@@ -4,6 +4,7 @@ import { requireAdmin } from "@/lib/admin-guard";
 import { uploadBlob } from "@/lib/blob";
 import { recordAudit } from "@/lib/audit";
 import { fileUrl } from "@/lib/file-token";
+import { route } from "@/lib/route";
 
 const ALLOWED = ["image/png", "image/jpeg", "image/webp"];
 
@@ -18,7 +19,7 @@ const KIND_TO_FIELD: Record<string, string> = {
   signature: "signatureBlobUrl",
 };
 
-export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
+export const POST = route("admin.employees.uploads", async (req: NextRequest, ctx: { params: Promise<{ id: string }> }) => {
   const { session, error } = await requireAdmin();
   if (error) return error;
   const { id } = await ctx.params;
@@ -41,4 +42,4 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
 
   await recordAudit({ actorId: session.user.id, action: "employee.upload_image", subjectId: id, metadata: { kind } });
   return NextResponse.json({ ok: true, url: fileUrl(url) });
-}
+});

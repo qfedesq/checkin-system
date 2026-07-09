@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { uploadBlob } from "@/lib/blob";
 import { recordAudit } from "@/lib/audit";
 import { fileUrl } from "@/lib/file-token";
+import { route } from "@/lib/route";
 
 const ALLOWED = ["image/png", "image/jpeg", "image/webp"];
 
@@ -19,7 +20,7 @@ const KIND_TO_FIELD: Record<string, string> = {
   dniBack: "dniBackBlobUrl",
 };
 
-export async function POST(req: NextRequest) {
+export const POST = route("profile.uploads", async (req: NextRequest) => {
   const session = await auth();
   if (!session?.user?.id) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
 
@@ -41,4 +42,4 @@ export async function POST(req: NextRequest) {
 
   await recordAudit({ actorId: session.user.id, action: "profile.upload_image", subjectId: session.user.id, metadata: { kind } });
   return NextResponse.json({ ok: true, url: fileUrl(url) });
-}
+});

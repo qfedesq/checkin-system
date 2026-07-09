@@ -4,8 +4,9 @@ import { prisma } from "@/lib/prisma";
 import { signPdf } from "@/lib/pdf-sign";
 import { uploadBlob } from "@/lib/blob";
 import { recordAudit } from "@/lib/audit";
+import { route } from "@/lib/route";
 
-export async function GET(_req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
+export const GET = route("deliveries.open", async (_req: NextRequest, ctx: { params: Promise<{ id: string }> }) => {
   const session = await auth();
   if (!session?.user) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   const { id } = await ctx.params;
@@ -63,4 +64,4 @@ export async function GET(_req: NextRequest, ctx: { params: Promise<{ id: string
     status: 200,
     headers: pdfHeaders({ "content-disposition": `inline; filename="${filename}"` }),
   });
-}
+});

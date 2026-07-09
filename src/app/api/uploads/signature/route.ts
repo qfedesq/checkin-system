@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { uploadBlob } from "@/lib/blob";
+import { route } from "@/lib/route";
 
 const ALLOWED = ["image/png", "image/jpeg"];
 
-export async function POST(req: NextRequest) {
+export const POST = route("uploads.signature", async (req: NextRequest) => {
   const session = await auth();
   if (!session?.user) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
 
@@ -16,4 +17,4 @@ export async function POST(req: NextRequest) {
 
   const url = await uploadBlob(`signatures/${session.user.id}`, file, file.name, file.type);
   return NextResponse.json({ url });
-}
+});

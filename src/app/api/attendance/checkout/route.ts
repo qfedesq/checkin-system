@@ -3,10 +3,11 @@ import { z } from "zod";
 import { requireActiveUser } from "@/lib/session-guard";
 import { prisma } from "@/lib/prisma";
 import { recordAudit } from "@/lib/audit";
+import { route } from "@/lib/route";
 
 const schema = z.object({ lat: z.number(), lng: z.number() });
 
-export async function POST(req: NextRequest) {
+export const POST = route("attendance.checkout", async (req: NextRequest) => {
   const { session, error } = await requireActiveUser();
   if (error) return error;
   const parsed = schema.safeParse(await req.json().catch(() => ({})));
@@ -30,4 +31,4 @@ export async function POST(req: NextRequest) {
   await recordAudit({ actorId: session.user.id, action: "attendance.checkout", subjectId: updated.id, metadata: { durationMin } });
   // La duración queda en DB (visible sólo al admin); al empleado sólo le confirmamos el cierre.
   return NextResponse.json({ ok: true });
-}
+});
