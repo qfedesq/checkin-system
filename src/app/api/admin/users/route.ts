@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/admin-guard";
 import { recordAudit } from "@/lib/audit";
@@ -40,46 +41,62 @@ export const POST = route("admin.users.create", async (req: NextRequest) => {
   const tempPassword = TEMP_PASSWORD;
   const passwordHash = await bcrypt.hash(tempPassword, 12);
 
-  const user = await prisma.user.create({
-    data: {
-      email,
-      passwordHash,
-      role: parsed.data.role,
-      status: "ACTIVE",
-      mustChangePassword: true,
-      approvedAt: new Date(),
-      approvedById: session.user.id,
-    },
-  });
-
-  // Si el admin pasó legajo/hireDate/nombres, creamos el perfil con esos datos + placeholders mínimos
-  if (parsed.data.legajo || hireDate || parsed.data.firstName || parsed.data.lastName) {
-    await prisma.employeeProfile.create({
+  let user;
+  try {
+    user = await prisma.user.create({
       data: {
-        userId: user.id,
-        legajo: parsed.data.legajo ?? null,
-        hireDate,
-        firstName: parsed.data.firstName ?? "",
-        lastName: parsed.data.lastName ?? "",
-        dob: new Date("1970-01-01"),
-        cuil: `PENDING-${user.id.slice(0, 8)}`,
-        category: "HELPER",
-        phone: "",
-        healthCardExpiry: new Date("2099-12-31"),
-        shirtSize: "",
-        hoodieSize: "",
-        jacketSize: "",
-        pantsSize: "",
-        shoeSize: "",
-        address: "",
-        addressNumber: "",
-        neighborhood: "",
-        city: "",
-        postalCode: "",
-        emergencyContact: "",
-        emergencyPhone: "",
+        email,
+        passwordHash,
+        role: parsed.data.role,
+        status: "ACTIVE",
+        mustChangePassword: true,
+        approvedAt: new Date(),
+        approvedById: session.user.id,
       },
     });
+
+    // Si el admin pasó legajo/hireDate/nombres, creamos el perfil con esos datos + placeholders mínimos
+    if (parsed.data.legajo || hireDate || parsed.data.firstName || parsed.data.lastName) {
+      await prisma.employeeProfile.create({
+        data: {
+          userId: user.id,
+          legajo: parsed.data.legajo ?? null,
+          hireDate,
+          firstName: parsed.data.firstName ?? "",
+          lastName: parsed.data.lastName ?? "",
+          dob: new Date("1970-01-01"),
+          cuil: `PENDING-${user.id.slice(0, 8)}`,
+          category: "HELPER",
+          phone: "",
+          healthCardExpiry: new Date("2099-12-31"),
+          shirtSize: "",
+          hoodieSize: "",
+          jacketSize: "",
+          pantsSize: "",
+          shoeSize: "",
+          address: "",
+          addressNumber: "",
+          neighborhood: "",
+          city: "",
+          postalCode: "",
+          emergencyContact: "",
+          emergencyPhone: "",
+        },
+      });
+    }
+  } catch (e) {
+    // QA-040: defensa ante condición de carrera — el pre-check de email/legajo ya cubre el
+    // caso normal, pero dos altas simultáneas pueden pasar ambos checks y chocar en el commit.
+    if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002") {
+      const field = String(e.meta?.target ?? "");
+      const message = field.includes("email")
+        ? "Ya existe un usuario con ese email"
+        : field.includes("legajo")
+          ? "Ese legajo ya está asignado"
+          : "Ya existe un registro con ese valor";
+      return NextResponse.json({ error: message }, { status: 409 });
+    }
+    throw e;
   }
 
   await recordAudit({

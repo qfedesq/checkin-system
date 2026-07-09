@@ -5,6 +5,7 @@ import { uploadBlob } from "@/lib/blob";
 import { recordAudit } from "@/lib/audit";
 import { notifyUser } from "@/lib/notify";
 import { route } from "@/lib/route";
+import { matchesDeclaredType } from "@/lib/file-validate";
 
 export const POST = route("admin.deliveries.upload", async (req: NextRequest) => {
   const { session, error } = await requireAdmin();
@@ -19,6 +20,8 @@ export const POST = route("admin.deliveries.upload", async (req: NextRequest) =>
   if (!(file instanceof File)) return NextResponse.json({ error: "Archivo requerido" }, { status: 400 });
   if (file.type !== "application/pdf") return NextResponse.json({ error: "Sólo PDF" }, { status: 400 });
   if (file.size > 15 * 1024 * 1024) return NextResponse.json({ error: "Máx 15 MB" }, { status: 400 });
+  // QA-034: confirmamos el formato real por magic bytes, no sólo el MIME declarado.
+  if (!(await matchesDeclaredType(file))) return NextResponse.json({ error: "El archivo no coincide con el formato declarado" }, { status: 400 });
   if (!recipientId || !title) return NextResponse.json({ error: "Datos incompletos" }, { status: 400 });
   if (!["PAYSLIP", "INTERNAL_DOC", "OTHER"].includes(type)) return NextResponse.json({ error: "Tipo inválido" }, { status: 400 });
 

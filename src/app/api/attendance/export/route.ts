@@ -2,10 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import ExcelJS from "exceljs";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/admin-guard";
+import { recordAudit } from "@/lib/audit";
 import { route } from "@/lib/route";
 
 export const GET = route("attendance.export", async (req: NextRequest) => {
-  const { error } = await requireAdmin();
+  const { session, error } = await requireAdmin();
   if (error) return error;
 
   const from = req.nextUrl.searchParams.get("from");
@@ -71,6 +72,10 @@ export const GET = route("attendance.export", async (req: NextRequest) => {
       outCoord: r.checkOutLat !== null && r.checkOutLng !== null ? `${r.checkOutLat.toFixed(5)}, ${r.checkOutLng.toFixed(5)}` : "",
     });
   }
+
+  // QA-038: el export incluye coordenadas de geolocalización de check-in/out; queda
+  // registro de quién lo pidió y con qué filtros.
+  await recordAudit({ actorId: session.user.id, action: "attendance.export", metadata: { from, to, userId } });
 
   const buf = await wb.xlsx.writeBuffer();
   return new NextResponse(buf as unknown as ArrayBuffer, {

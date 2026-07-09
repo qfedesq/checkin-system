@@ -5,6 +5,7 @@ import { uploadBlob } from "@/lib/blob";
 import { recordAudit } from "@/lib/audit";
 import { fileUrl } from "@/lib/file-token";
 import { route } from "@/lib/route";
+import { matchesDeclaredType } from "@/lib/file-validate";
 
 const ALLOWED = ["image/png", "image/jpeg", "image/webp"];
 
@@ -36,6 +37,8 @@ export const POST = route("profile.uploads", async (req: NextRequest) => {
   if (!(file instanceof File)) return NextResponse.json({ error: "Archivo requerido" }, { status: 400 });
   if (!ALLOWED.includes(file.type)) return NextResponse.json({ error: "Formato no permitido (PNG, JPG o WEBP)" }, { status: 400 });
   if (file.size > 8 * 1024 * 1024) return NextResponse.json({ error: "Archivo demasiado grande (máx 8MB)" }, { status: 400 });
+  // QA-034: confirmamos el formato real por magic bytes, no sólo el MIME declarado.
+  if (!(await matchesDeclaredType(file))) return NextResponse.json({ error: "El archivo no coincide con el formato declarado" }, { status: 400 });
 
   const url = await uploadBlob(`employee-docs/${session.user.id}/${kind}`, file, file.name, file.type);
   await prisma.employeeProfile.update({ where: { userId: session.user.id }, data: { [field]: url } });

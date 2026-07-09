@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/admin-guard";
 import { recordAudit } from "@/lib/audit";
@@ -131,14 +132,33 @@ export const PUT = route("admin.employees.put", async (req: NextRequest, ctx: { 
     vacationWeeksPerYear: d.vacationWeeksPerYear,
   };
 
-  await prisma.$transaction([
-    prisma.user.update({ where: { id }, data: { email } }),
-    prisma.employeeProfile.upsert({
-      where: { userId: id },
-      create: { userId: id, ...profileData },
-      update: profileData,
-    }),
-  ]);
+  try {
+    await prisma.$transaction([
+      prisma.user.update({ where: { id }, data: { email } }),
+      prisma.employeeProfile.upsert({
+        where: { userId: id },
+        create: { userId: id, ...profileData },
+        update: profileData,
+      }),
+    ]);
+  } catch (e) {
+    // QA-040: defensa ante condición de carrera — los pre-checks de arriba ya cubren el caso
+    // normal, pero dos requests simultáneos pueden pasar ambos checks y chocar en el commit.
+    if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002") {
+      const field = String(e.meta?.target ?? "");
+      const message = field.includes("email")
+        ? "Ese email ya está en uso"
+        : field.includes("legajo")
+          ? "Ese legajo ya está asignado"
+          : field.includes("dni")
+            ? "Ese DNI ya está registrado"
+            : field.includes("cuil")
+              ? "Ese CUIL ya está registrado"
+              : "Ya existe un registro con ese valor";
+      return NextResponse.json({ error: message }, { status: 409 });
+    }
+    throw e;
+  }
 
   await recordAudit({ actorId: session.user.id, action: "employee.update", subjectId: id });
   return NextResponse.json({ ok: true });
