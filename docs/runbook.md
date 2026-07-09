@@ -73,6 +73,32 @@ node scripts/backfill-device-approval.mjs
 
 Aprueba retroactivamente los dispositivos ya registrados. Sin esto, todos los usuarios existentes quedan bloqueados para fichar.
 
+## Migraciones Prisma versionadas (desde WS-8 / QA-016)
+
+A partir de ahora el schema **no se sincroniza más con `prisma db push`** en producción. Se usan migraciones versionadas (`prisma/migrations/`). `db push` queda sólo para desarrollo local contra una DB descartable.
+
+Migraciones existentes:
+- `0_init`: baseline — representa el schema que ya está desplegado en prod (generado con `prisma migrate diff --from-empty --to-schema-datamodel`, sin tocar ninguna DB).
+- `1_indexes`: agrega `LeaveRequest.status`, `DocumentUpload.status`, `Attendance.checkOutAt`, y el índice único parcial `attendance_one_open_per_user` (cierra el race de doble check-in, QA-008).
+
+**Baseline en la DB de producción (hacer una sola vez, la primera vez que se corre este flujo contra la Neon existente):**
+
+```bash
+# marca 0_init como ya aplicado sin ejecutar su SQL (la DB ya tiene ese estado)
+pnpm prisma migrate resolve --applied 0_init
+
+# aplica las migraciones pendientes (hoy: 1_indexes)
+pnpm prisma migrate deploy
+```
+
+**De ahí en adelante**, cada cambio de schema se hace así:
+1. Editar `prisma/schema.prisma`.
+2. Local: `pnpm prisma migrate dev --name <descripcion>` contra una DB de desarrollo (crea la carpeta de migración y la aplica ahí).
+3. Commit de `prisma/migrations/<nueva_carpeta>/migration.sql`.
+4. Deploy a producción: `pnpm prisma migrate deploy` (o `pnpm migrate:deploy`), nunca `db push`.
+
+Nota sobre el índice único parcial: Prisma no soporta `WHERE` en `@@index`/`@@unique` del schema, así que ese índice vive únicamente en el SQL de la migración (`1_indexes/migration.sql`) y no aparece reflejado en `schema.prisma`. Evitar `db push` en producción — al no reconocer índices parciales, un `db push` sin cuidado podría no recrearlo si se resetea el schema.
+
 ## Restaurar DB
 
 Neon ofrece branches y point-in-time restore. Desde el dashboard de Neon, crear branch desde timestamp deseado y actualizar `DATABASE_URL` en Vercel.
