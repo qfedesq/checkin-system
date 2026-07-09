@@ -18,13 +18,18 @@ export const GET = route("calendar.availability", async (req: NextRequest) => {
 
   const [profile, myLeaves, francosAprobados, myYearVacations] = await Promise.all([
     prisma.employeeProfile.findUnique({ where: { userId: session.user.id }, select: { category: true, vacationWeeksPerYear: true } }),
+    // Todas las solicitudes vigentes del usuario desde el inicio de la ventana en
+    // adelante — SIN tope superior. Antes se acotaba a `startDate <= toDate` (la
+    // ventana del calendario, ~4 meses) y una solicitud más lejana no figuraba en
+    // "Mis solicitudes" aunque sí se descontara del saldo anual (confusión "0 de 14"
+    // con una sola solicitud visible). El calendario ignora las fechas fuera de vista.
     prisma.leaveRequest.findMany({
       where: {
         userId: session.user.id,
         status: { in: ["PENDING", "APPROVED"] },
         endDate: { gte: fromDate },
-        startDate: { lte: toDate },
       },
+      orderBy: { startDate: "asc" },
       select: { id: true, type: true, startDate: true, endDate: true, status: true, days: true },
     }),
     prisma.leaveRequest.findMany({

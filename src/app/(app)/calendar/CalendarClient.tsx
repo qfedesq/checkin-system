@@ -35,6 +35,14 @@ export function CalendarClient() {
   const leftDays = data?.vacation.leftDays ?? 0;
   const canRequestVacation = leftDays >= 7;
 
+  // Fin del rango de vacaciones (inicio lunes + duración - 1 = domingo).
+  const vacationEndISO = useMemo(() => {
+    if (!selected) return "";
+    const end = new Date(selected);
+    end.setDate(end.getDate() + duration - 1);
+    return toCalendarISODate(end);
+  }, [selected, duration]);
+
   // Si no le queda saldo para 14 días, forzamos la duración a 7.
   useEffect(() => {
     if (leftDays < 14 && duration === 14) setDuration(7);
@@ -148,6 +156,16 @@ export function CalendarClient() {
               <button aria-pressed={duration === 14} className={duration === 14 ? "btn-primary" : "btn-ghost"} onClick={() => setDuration(14)}>14 días</button>
             )}
           </div>
+        )}
+
+        {selected && (
+          <p className="mt-4 text-sm text-muted-foreground">
+            {tab === "VACATION" ? (
+              <>Vas a pedir del <strong className="text-foreground">lunes {formatCalendarDate(toCalendarISODate(selected))}</strong> al <strong className="text-foreground">domingo {formatCalendarDate(vacationEndISO)}</strong> ({duration} días de corrido).</>
+            ) : (
+              <>Vas a pedir un franco el <strong className="text-foreground">{formatCalendarDate(toCalendarISODate(selected))}</strong>.</>
+            )}
+          </p>
         )}
 
         {msg && (

@@ -272,14 +272,19 @@ function ImageSlot({ label, kind, url, onUploaded, onError, contain }: {
 
   async function upload(file: File) {
     setBusy(true);
-    const form = new FormData();
-    form.set("file", file);
-    form.set("kind", kind);
-    const res = await fetch("/api/profile/uploads", { method: "POST", body: form });
-    const out = await res.json();
-    setBusy(false);
-    if (!res.ok) return onError(out.error ?? "No pudimos subir la imagen");
-    onUploaded(out.url);
+    try {
+      const form = new FormData();
+      form.set("file", file);
+      form.set("kind", kind);
+      const res = await fetch("/api/profile/uploads", { method: "POST", body: form });
+      const out = await res.json().catch(() => ({}));
+      if (!res.ok) return onError(out.error ?? "No pudimos subir la imagen. Probá con una foto más liviana.");
+      onUploaded(out.url);
+    } catch {
+      onError("No pudimos subir la imagen. Revisá tu conexión e intentá de nuevo.");
+    } finally {
+      setBusy(false);
+    }
   }
 
   return (

@@ -32,17 +32,22 @@ export function DocumentsClient({ documents }: { documents: Doc[] }) {
   async function onUpload(file: File) {
     setBusy(true);
     setErr(null);
-    const fd = new FormData();
-    fd.append("file", file);
-    fd.append("type", "OTHER");
-    fd.append("expiresAt", expires);
-    const res = await fetch("/api/documents/upload", { method: "POST", body: fd });
-    const body = await res.json();
-    setBusy(false);
-    if (fileRef.current) fileRef.current.value = "";
-    if (!res.ok) return setErr(body.error ?? "No pudimos subir el archivo");
-    setExpires("");
-    router.refresh();
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      fd.append("type", "OTHER");
+      fd.append("expiresAt", expires);
+      const res = await fetch("/api/documents/upload", { method: "POST", body: fd });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) return setErr(body.error ?? "No pudimos subir el archivo. Probá con uno más liviano.");
+      setExpires("");
+      router.refresh();
+    } catch {
+      setErr("No pudimos subir el archivo. Revisá tu conexión e intentá de nuevo.");
+    } finally {
+      setBusy(false);
+      if (fileRef.current) fileRef.current.value = "";
+    }
   }
 
   return (
@@ -50,23 +55,21 @@ export function DocumentsClient({ documents }: { documents: Doc[] }) {
       <section className="panel p-6">
         <h2 className="text-lg font-semibold">Otros documentos</h2>
         <p className="mt-1 text-sm text-muted-foreground">Para libreta y carnet usá el bloque de arriba. Acá podés adjuntar cualquier otro documento.</p>
-        <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-[1fr_auto]">
-          <label className="block">
+        <div className="surface-card mt-4 flex flex-col gap-4 p-4 sm:flex-row sm:items-end">
+          <label className="block w-full sm:max-w-xs">
             <span className="eyebrow">Vencimiento (opcional)</span>
-            <input type="date" className="surface-control mt-1" value={expires} onChange={(e) => setExpires(e.target.value)} />
+            <input type="date" className="surface-control mt-1 w-full" value={expires} onChange={(e) => setExpires(e.target.value)} />
           </label>
-          <div className="flex items-end">
-            <input
-              ref={fileRef}
-              type="file"
-              accept="application/pdf,image/png,image/jpeg"
-              className="hidden"
-              onChange={(e) => e.target.files?.[0] && onUpload(e.target.files[0])}
-            />
-            <button type="button" className="btn-primary" disabled={busy} onClick={() => fileRef.current?.click()}>
-              <Upload className="h-4 w-4" /> {busy ? "Subiendo…" : "Seleccionar archivo"}
-            </button>
-          </div>
+          <input
+            ref={fileRef}
+            type="file"
+            accept="application/pdf,image/png,image/jpeg"
+            className="hidden"
+            onChange={(e) => e.target.files?.[0] && onUpload(e.target.files[0])}
+          />
+          <button type="button" className="btn-primary w-full justify-center sm:w-auto" disabled={busy} onClick={() => fileRef.current?.click()}>
+            <Upload className="h-4 w-4" /> {busy ? "Subiendo…" : "Seleccionar archivo"}
+          </button>
         </div>
         <p className="mt-2 text-xs text-muted-foreground">PDF, JPG o PNG · máx 10 MB</p>
         {err && <div className="mt-3 rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-2 text-sm text-destructive">{err}</div>}

@@ -89,15 +89,22 @@ function ImageSlot({ label, kind, url, onError }: { label: string; kind: string;
 
   async function upload(file: File) {
     setBusy(true);
-    const form = new FormData();
-    form.set("file", file);
-    form.set("kind", kind);
-    const res = await fetch("/api/profile/uploads", { method: "POST", body: form });
-    const out = await res.json();
-    setBusy(false);
-    if (!res.ok) return onError(out.error ?? "No pudimos subir la imagen");
-    setCurrent(out.url);
-    router.refresh();
+    try {
+      const form = new FormData();
+      form.set("file", file);
+      form.set("kind", kind);
+      const res = await fetch("/api/profile/uploads", { method: "POST", body: form });
+      // Si la respuesta no es JSON (413 de Vercel, 5xx con HTML), .json() tira:
+      // lo tratamos como error en vez de dejar el botón colgado en "Subiendo…".
+      const out = await res.json().catch(() => ({}));
+      if (!res.ok) return onError(out.error ?? "No pudimos subir la imagen. Probá con una foto más liviana.");
+      setCurrent(out.url);
+      router.refresh();
+    } catch {
+      onError("No pudimos subir la imagen. Revisá tu conexión e intentá de nuevo.");
+    } finally {
+      setBusy(false);
+    }
   }
 
   return (

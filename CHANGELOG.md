@@ -2,6 +2,16 @@
 
 Cada release sube la versión en `+0.01`. El número visible abajo a la izquierda en la app coincide con este archivo.
 
+## v0.26 — 2026-07-09
+
+**Ajustes de feedback: calendario más claro y subida de fotos más robusta.**
+
+- **Vacaciones — "Mis solicitudes" completa**: si pedías una semana varios meses adelante, la solicitud se descontaba del saldo pero **no aparecía en la lista** (parecía que "no quedaba saldo" con una sola solicitud a la vista). Ahora la lista muestra **todas** tus solicitudes vigentes, sin importar qué mes estés viendo en el calendario.
+- **Rango de vacaciones a la vista**: al elegir una fecha, se aclara **"del lunes X al domingo Y (N días de corrido)"**, así no hay confusión entre la semana que ves (empieza domingo) y las vacaciones (empiezan siempre lunes).
+- **Texto corregido**: "7 o 14 días **de corrido**" y "un franco **mensual**" (antes decía "franco diario").
+- **Subida de fotos**: si una imagen fallaba (por ejemplo, una foto muy pesada), el botón quedaba trabado en **"Subiendo…"** para siempre. Ahora avisa el error y te deja reintentar (sugiere usar una foto más liviana). Aplica a carnet, libreta, DNI, foto de cara y "Otros documentos".
+- **"Otros documentos"**: el recuadro de vencimiento + "Seleccionar archivo" quedó **bien encuadrado** dentro de la tarjeta (antes se veía desalineado en el celular).
+
 ## v0.25 — 2026-07-09
 
 **Auditoría de calidad y seguridad: la app quedó más segura y estable.**
