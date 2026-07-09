@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { CheckCircle2, KeyRound, Smartphone, XCircle, UserPlus, ShieldCheck, ShieldX } from "lucide-react";
 import { formatDate } from "@/lib/utils";
+import { Modal } from "@/components/ui/Modal";
 
 type Row = {
   id: string;
@@ -24,8 +25,15 @@ export function UsersTable({ users }: { users: Row[] }) {
   const [openApprove, setOpenApprove] = useState<Row | null>(null);
   const [openCreate, setOpenCreate] = useState(false);
   const [busy, setBusy] = useState<string | null>(null);
-  const [toast, setToast] = useState<string | null>(null);
+  const [toast, setToast] = useState<{ text: string; secret?: string } | null>(null);
+  const [secretRevealed, setSecretRevealed] = useState(false);
   const router = useRouter();
+
+  function showToast(text: string, secret?: string, ms = 5000) {
+    setToast({ text, secret });
+    setSecretRevealed(false);
+    setTimeout(() => setToast(null), ms);
+  }
 
   async function post(path: string, body?: unknown) {
     setBusy(path);
@@ -37,8 +45,7 @@ export function UsersTable({ users }: { users: Row[] }) {
     const data = await res.json().catch(() => ({}));
     setBusy(null);
     if (!res.ok) {
-      setToast(data.error ?? "Error");
-      setTimeout(() => setToast(null), 3500);
+      showToast(data.error ?? "No pudimos completar la acción. Probá de nuevo.");
       return null;
     }
     router.refresh();
@@ -78,7 +85,7 @@ export function UsersTable({ users }: { users: Row[] }) {
                 {u.status === "PENDING_APPROVAL" && <span className="badge-accent">pendiente</span>}
                 {u.status === "ACTIVE" && <span className="badge-success">activo</span>}
                 {u.status === "DISABLED" && <span className="badge-danger">deshabilitado</span>}
-                {u.mustChangePassword && <span className="badge-primary ml-1">pwd temp</span>}
+                {u.mustChangePassword && <span className="badge-primary ml-1">clave temporal</span>}
               </td>
               <td className="px-3 py-3">
                 {u.hasDevice ? (
@@ -102,6 +109,7 @@ export function UsersTable({ users }: { users: Row[] }) {
                           <button
                             className="btn-success"
                             title="Aprobar dispositivo"
+                            disabled={busy !== null}
                             onClick={() => post(`/api/admin/users/${u.id}/approve-device`)}
                           >
                             <ShieldCheck className="h-4 w-4" /> Aprobar disp.
@@ -109,7 +117,12 @@ export function UsersTable({ users }: { users: Row[] }) {
                           <button
                             className="btn-ghost"
                             title="Rechazar dispositivo (borra la credencial)"
-                            onClick={() => post(`/api/admin/users/${u.id}/reject-device`)}
+                            disabled={busy !== null}
+                            onClick={() => {
+                              if (confirm("¿Seguro que querés rechazar este dispositivo? Se borra la credencial registrada y el empleado va a tener que volver a registrarlo.")) {
+                                post(`/api/admin/users/${u.id}/reject-device`);
+                              }
+                            }}
                           >
                             <ShieldX className="h-4 w-4" />
                           </button>
@@ -118,12 +131,12 @@ export function UsersTable({ users }: { users: Row[] }) {
                       <button
                         className="btn-ghost"
                         title="Resetear contraseña"
+                        disabled={busy !== null}
                         onClick={async () => {
                           const data = await post(`/api/admin/users/${u.id}/reset-password`);
                           if (data?.tempPassword) {
                             await navigator.clipboard.writeText(data.tempPassword).catch(() => {});
-                            setToast(`Contraseña temporal: ${data.tempPassword} (copiada)`);
-                            setTimeout(() => setToast(null), 9000);
+                            showToast("Clave temporal generada y copiada al portapapeles.", data.tempPassword, 12000);
                           }
                         }}
                       >
@@ -133,7 +146,12 @@ export function UsersTable({ users }: { users: Row[] }) {
                         <button
                           className="btn-ghost"
                           title="Resetear dispositivo"
-                          onClick={() => post(`/api/admin/users/${u.id}/reset-device`)}
+                          disabled={busy !== null}
+                          onClick={() => {
+                            if (confirm("¿Seguro que querés resetear el dispositivo? El empleado va a tener que volver a registrarlo.")) {
+                              post(`/api/admin/users/${u.id}/reset-device`);
+                            }
+                          }}
                         >
                           <Smartphone className="h-4 w-4" />
                         </button>
@@ -141,14 +159,19 @@ export function UsersTable({ users }: { users: Row[] }) {
                       <button
                         className="btn-danger"
                         title="Deshabilitar"
-                        onClick={() => post(`/api/admin/users/${u.id}/disable`)}
+                        disabled={busy !== null}
+                        onClick={() => {
+                          if (confirm("¿Seguro que querés deshabilitar a este usuario? No va a poder ingresar hasta que lo reactives.")) {
+                            post(`/api/admin/users/${u.id}/disable`);
+                          }
+                        }}
                       >
                         <XCircle className="h-4 w-4" />
                       </button>
                     </>
                   )}
                   {u.status === "DISABLED" && (
-                    <button className="btn-success" onClick={() => post(`/api/admin/users/${u.id}/enable`)}>
+                    <button className="btn-success" disabled={busy !== null} onClick={() => post(`/api/admin/users/${u.id}/enable`)}>
                       Reactivar
                     </button>
                   )}
@@ -168,8 +191,23 @@ export function UsersTable({ users }: { users: Row[] }) {
 
       {openApprove && <ApproveDialog user={openApprove} onClose={() => setOpenApprove(null)} />}
       {toast && (
-        <div className="fixed bottom-24 left-4 right-4 md:bottom-6 md:left-auto md:right-6 md:max-w-md rounded-xl border border-primary/30 bg-primary/10 px-4 py-3 text-sm text-primary shadow-glow z-50">
-          {toast}
+        <div className="fixed bottom-24 left-4 right-4 md:bottom-6 md:left-auto md:right-6 md:max-w-md rounded-xl border border-primary/30 bg-primary/10 px-4 py-3 text-sm text-[hsl(var(--primary-text))] shadow-glow z-50">
+          <div>{toast.text}</div>
+          {toast.secret && (
+            <div className="mt-2 flex items-center gap-2">
+              <span className="mono text-sm">{secretRevealed ? toast.secret : "••••••••••"}</span>
+              <button type="button" className="btn-ghost text-xs" onClick={() => setSecretRevealed((v) => !v)}>
+                {secretRevealed ? "Ocultar" : "Ver"}
+              </button>
+              <button
+                type="button"
+                className="btn-ghost text-xs"
+                onClick={() => { if (toast.secret) navigator.clipboard.writeText(toast.secret).catch(() => {}); }}
+              >
+                Copiar
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>
@@ -179,8 +217,7 @@ export function UsersTable({ users }: { users: Row[] }) {
         onCreated={(tempPassword, email) => {
           setOpenCreate(false);
           navigator.clipboard.writeText(tempPassword).catch(() => {});
-          setToast(`Usuario ${email} creado. Contraseña temporal: ${tempPassword} (copiada al portapapeles)`);
-          setTimeout(() => setToast(null), 15000);
+          showToast(`Usuario ${email} creado. Clave temporal copiada al portapapeles.`, tempPassword, 20000);
           router.refresh();
         }}
       />
@@ -222,41 +259,41 @@ function CreateUserDialog({ onClose, onCreated }: { onClose: () => void; onCreat
   }
 
   return (
-    <div className="fixed inset-0 z-50 grid place-items-center bg-black/60 p-4" onClick={onClose}>
-      <form onSubmit={submit} className="panel w-full max-w-md p-6 max-h-[calc(100vh-2rem)] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-        <h3 className="text-lg font-bold">Nuevo usuario</h3>
+    <Modal onClose={onClose} labelledBy="create-user-title">
+      <form onSubmit={submit}>
+        <h3 id="create-user-title" className="text-lg font-bold">Nuevo usuario</h3>
         <p className="mt-1 text-sm text-muted-foreground">La cuenta queda activa de entrada. Vas a recibir una contraseña temporal para pasarle al usuario; el sistema lo fuerza a cambiarla en el primer login.</p>
         <div className="mt-4 space-y-3">
           <div>
-            <label className="eyebrow">Email</label>
-            <input type="email" required className="surface-control mt-1" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="off" />
+            <label htmlFor="cu-email" className="eyebrow">Email</label>
+            <input id="cu-email" type="email" required className="surface-control mt-1" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="off" />
           </div>
           <div>
-            <label className="eyebrow">Rol</label>
-            <select className="surface-select mt-1" value={role} onChange={(e) => setRole(e.target.value as "EMPLOYEE" | "ADMIN")}>
+            <label htmlFor="cu-role" className="eyebrow">Rol</label>
+            <select id="cu-role" className="surface-select mt-1" value={role} onChange={(e) => setRole(e.target.value as "EMPLOYEE" | "ADMIN")}>
               <option value="EMPLOYEE">Empleado</option>
               <option value="ADMIN">Administrador</option>
             </select>
           </div>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div>
-              <label className="eyebrow">Nombre (opcional)</label>
-              <input className="surface-control mt-1" value={firstName} onChange={(e) => setFirstName(e.target.value)} />
+              <label htmlFor="cu-first" className="eyebrow">Nombre (opcional)</label>
+              <input id="cu-first" className="surface-control mt-1" value={firstName} onChange={(e) => setFirstName(e.target.value)} />
             </div>
             <div>
-              <label className="eyebrow">Apellido (opcional)</label>
-              <input className="surface-control mt-1" value={lastName} onChange={(e) => setLastName(e.target.value)} />
+              <label htmlFor="cu-last" className="eyebrow">Apellido (opcional)</label>
+              <input id="cu-last" className="surface-control mt-1" value={lastName} onChange={(e) => setLastName(e.target.value)} />
             </div>
           </div>
           {role === "EMPLOYEE" && (
             <>
               <div>
-                <label className="eyebrow">Legajo (opcional)</label>
-                <input className="surface-control mt-1" value={legajo} onChange={(e) => setLegajo(e.target.value)} placeholder="Ej: L-00421" />
+                <label htmlFor="cu-legajo" className="eyebrow">Legajo (opcional)</label>
+                <input id="cu-legajo" className="surface-control mt-1" value={legajo} onChange={(e) => setLegajo(e.target.value)} placeholder="Ej: L-00421" />
               </div>
               <div>
-                <label className="eyebrow">Fecha de ingreso (opcional)</label>
-                <input type="date" className="surface-control mt-1" value={hireDate} onChange={(e) => setHireDate(e.target.value)} />
+                <label htmlFor="cu-hire" className="eyebrow">Fecha de ingreso (opcional)</label>
+                <input id="cu-hire" type="date" className="surface-control mt-1" value={hireDate} onChange={(e) => setHireDate(e.target.value)} />
               </div>
             </>
           )}
@@ -269,7 +306,7 @@ function CreateUserDialog({ onClose, onCreated }: { onClose: () => void; onCreat
           </div>
         </div>
       </form>
-    </div>
+    </Modal>
   );
 }
 
@@ -290,34 +327,32 @@ function ApproveDialog({ user, onClose }: { user: Row; onClose: () => void }) {
     });
     const data = await res.json();
     setBusy(false);
-    if (!res.ok) return setErr(data.error ?? "Error");
+    if (!res.ok) return setErr(data.error ?? "No pudimos aprobar al usuario. Probá de nuevo.");
     onClose();
     router.refresh();
   }
 
   return (
-    <div className="fixed inset-0 z-50 grid place-items-center bg-black/60 p-4" onClick={onClose}>
-      <div className="panel w-full max-w-md p-6" onClick={(e) => e.stopPropagation()}>
-        <h3 className="text-lg font-semibold">Aprobar empleado</h3>
-        <p className="mt-1 text-sm text-muted-foreground">{user.email}</p>
-        <div className="mt-4 space-y-3">
-          <div>
-            <label className="eyebrow">Legajo</label>
-            <input className="surface-control mt-1" value={legajo} onChange={(e) => setLegajo(e.target.value)} placeholder="Ej: L-00421" />
-          </div>
-          <div>
-            <label className="eyebrow">Fecha de ingreso</label>
-            <input type="date" className="surface-control mt-1" value={hireDate} onChange={(e) => setHireDate(e.target.value)} />
-          </div>
-          {err && <div className="rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-2 text-sm text-destructive">{err}</div>}
-          <div className="flex justify-end gap-2 pt-2">
-            <button className="btn-ghost" onClick={onClose}>Cancelar</button>
-            <button className="btn-primary" onClick={save} disabled={busy || !legajo}>
-              {busy ? "Aprobando…" : "Aprobar y habilitar"}
-            </button>
-          </div>
+    <Modal onClose={onClose} labelledBy="approve-user-title">
+      <h3 id="approve-user-title" className="text-lg font-semibold">Aprobar empleado</h3>
+      <p className="mt-1 text-sm text-muted-foreground">{user.email}</p>
+      <div className="mt-4 space-y-3">
+        <div>
+          <label htmlFor="ap-legajo" className="eyebrow">Legajo</label>
+          <input id="ap-legajo" className="surface-control mt-1" value={legajo} onChange={(e) => setLegajo(e.target.value)} placeholder="Ej: L-00421" />
+        </div>
+        <div>
+          <label htmlFor="ap-hire" className="eyebrow">Fecha de ingreso</label>
+          <input id="ap-hire" type="date" className="surface-control mt-1" value={hireDate} onChange={(e) => setHireDate(e.target.value)} />
+        </div>
+        {err && <div className="rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-2 text-sm text-destructive">{err}</div>}
+        <div className="flex justify-end gap-2 pt-2">
+          <button className="btn-ghost" onClick={onClose}>Cancelar</button>
+          <button className="btn-primary" onClick={save} disabled={busy || !legajo}>
+            {busy ? "Aprobando…" : "Aprobar y habilitar"}
+          </button>
         </div>
       </div>
-    </div>
+    </Modal>
   );
 }

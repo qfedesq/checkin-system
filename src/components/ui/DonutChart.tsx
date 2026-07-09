@@ -13,10 +13,12 @@ export function DonutChart({ segments, centerLabel, size = 132 }: {
   const r = 42;
   const c = 2 * Math.PI * r;
   let offset = 0;
+  const summary = segments.map((s) => `${s.label}: ${s.value}`).join(", ");
+  const chartLabel = `${centerLabel ? `${centerLabel} — ` : ""}${summary || "sin datos"}`;
 
   return (
     <div className="flex items-center gap-4">
-      <svg width={size} height={size} viewBox="0 0 100 100" role="img">
+      <svg width={size} height={size} viewBox="0 0 100 100" role="img" aria-label={chartLabel}>
         <circle cx="50" cy="50" r={r} fill="none" stroke="hsl(var(--border))" strokeWidth="12" opacity="0.4" />
         {total > 0 &&
           segments.filter((s) => s.value > 0).map((s, i) => {

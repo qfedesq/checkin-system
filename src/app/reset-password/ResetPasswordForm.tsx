@@ -38,16 +38,16 @@ export function ResetPasswordForm() {
   return (
     <form onSubmit={onSubmit} className="space-y-4">
       <div>
-        <label className="eyebrow">Contraseña actual</label>
-        <input type="password" required value={current} onChange={(e) => setCurrent(e.target.value)} className="surface-control mt-1" autoComplete="current-password" />
+        <label htmlFor="reset-current" className="eyebrow">Contraseña actual</label>
+        <input id="reset-current" type="password" required value={current} onChange={(e) => setCurrent(e.target.value)} className="surface-control mt-1" autoComplete="current-password" />
       </div>
       <div>
-        <label className="eyebrow">Nueva contraseña</label>
-        <input type="password" required value={pwd} onChange={(e) => setPwd(e.target.value)} className="surface-control mt-1" autoComplete="new-password" />
+        <label htmlFor="reset-new" className="eyebrow">Nueva contraseña</label>
+        <input id="reset-new" type="password" required value={pwd} onChange={(e) => setPwd(e.target.value)} className="surface-control mt-1" autoComplete="new-password" />
       </div>
       <div>
-        <label className="eyebrow">Confirmar nueva contraseña</label>
-        <input type="password" required value={pwd2} onChange={(e) => setPwd2(e.target.value)} className="surface-control mt-1" autoComplete="new-password" />
+        <label htmlFor="reset-new2" className="eyebrow">Confirmar nueva contraseña</label>
+        <input id="reset-new2" type="password" required value={pwd2} onChange={(e) => setPwd2(e.target.value)} className="surface-control mt-1" autoComplete="new-password" />
       </div>
       {err && <div className="rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-2 text-sm text-destructive">{err}</div>}
       <button type="submit" disabled={busy} className="btn-primary w-full disabled:opacity-60">

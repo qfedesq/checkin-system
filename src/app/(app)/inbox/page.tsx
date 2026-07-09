@@ -50,11 +50,13 @@ export default async function InboxPage({ searchParams }: { searchParams: Promis
       <PageHeader eyebrow="recibidos" title="Documentos para vos" description="Hacé click para descargar. Al abrirlo, se firma automáticamente con tu firma digital." />
 
       <div className="mb-4 flex flex-wrap items-center gap-2">
-        {TABS.map((t) => (
-          <Link key={t.key} href={`/inbox${qs(t.key, month)}`} className={type === t.key ? "btn-primary" : "btn-ghost"}>
-            {t.label}
-          </Link>
-        ))}
+        <div role="tablist" className="flex items-center gap-2">
+          {TABS.map((t) => (
+            <Link key={t.key} href={`/inbox${qs(t.key, month)}`} role="tab" aria-selected={type === t.key} className={type === t.key ? "btn-primary" : "btn-ghost"}>
+              {t.label}
+            </Link>
+          ))}
+        </div>
         <form action="/inbox" method="get" className="ml-auto flex items-center gap-2">
           {type && <input type="hidden" name="type" value={type} />}
           <input type="month" name="month" defaultValue={month} className="surface-control" />

@@ -93,8 +93,8 @@ export function CalendarClient() {
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_380px]">
       <section className="panel p-6">
         <div className="mb-4 flex items-center gap-2">
-          <button className={tab === "VACATION" ? "btn-primary" : "btn-ghost"} onClick={() => setTab("VACATION")}>Vacaciones</button>
-          <button className={tab === "DAY_OFF" ? "btn-primary" : "btn-ghost"} onClick={() => setTab("DAY_OFF")}>Franco</button>
+          <button aria-pressed={tab === "VACATION"} className={tab === "VACATION" ? "btn-primary" : "btn-ghost"} onClick={() => setTab("VACATION")}>Vacaciones</button>
+          <button aria-pressed={tab === "DAY_OFF"} className={tab === "DAY_OFF" ? "btn-primary" : "btn-ghost"} onClick={() => setTab("DAY_OFF")}>Franco</button>
         </div>
 
         {data && tab === "VACATION" && (
@@ -143,9 +143,9 @@ export function CalendarClient() {
         {tab === "VACATION" && canRequestVacation && (
           <div className="mt-4 flex items-center gap-2">
             <span className="eyebrow">Duración</span>
-            <button className={duration === 7 ? "btn-primary" : "btn-ghost"} onClick={() => setDuration(7)}>7 días</button>
+            <button aria-pressed={duration === 7} className={duration === 7 ? "btn-primary" : "btn-ghost"} onClick={() => setDuration(7)}>7 días</button>
             {leftDays >= 14 && (
-              <button className={duration === 14 ? "btn-primary" : "btn-ghost"} onClick={() => setDuration(14)}>14 días</button>
+              <button aria-pressed={duration === 14} className={duration === 14 ? "btn-primary" : "btn-ghost"} onClick={() => setDuration(14)}>14 días</button>
             )}
           </div>
         )}

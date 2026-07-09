@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Eraser, RotateCcw } from "lucide-react";
+import { Eraser, RotateCcw, Upload } from "lucide-react";
 
 /**
  * Pad de firma: el empleado firma con el dedo/mouse en el canvas y se guarda como PNG
@@ -13,6 +13,7 @@ export function SignaturePad({ url, onUploaded, onError }: {
   onError: (text: string) => void;
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const drawing = useRef(false);
   const dirty = useRef(false);
   const [editing, setEditing] = useState(!url);
@@ -99,6 +100,19 @@ export function SignaturePad({ url, onUploaded, onError }: {
     }, "image/png");
   }
 
+  async function uploadImage(file: File) {
+    setBusy(true);
+    const form = new FormData();
+    form.set("file", file);
+    form.set("kind", "signature");
+    const res = await fetch("/api/profile/uploads", { method: "POST", body: form });
+    const out = await res.json();
+    setBusy(false);
+    if (!res.ok) return onError(out.error ?? "No pudimos subir la imagen de firma");
+    onUploaded(out.url);
+    setEditing(false);
+  }
+
   if (!editing) {
     return (
       <div className="flex items-center gap-4">
@@ -117,21 +131,36 @@ export function SignaturePad({ url, onUploaded, onError }: {
     <div>
       <canvas
         ref={canvasRef}
+        aria-label="Área para dibujar tu firma con el dedo o el mouse"
         className="h-40 w-full max-w-md touch-none rounded-xl border border-dashed border-border/80 bg-white"
         onPointerDown={start}
         onPointerMove={move}
         onPointerUp={end}
         onPointerLeave={end}
       />
-      <div className="mt-2 flex items-center gap-2">
+      <div className="mt-2 flex flex-wrap items-center gap-2">
         <button type="button" className="btn-primary" onClick={save} disabled={busy || !hasStrokes}>
           {busy ? "Guardando…" : "Guardar firma"}
         </button>
         <button type="button" className="btn-ghost" onClick={clear} disabled={busy}>
           <Eraser className="h-4 w-4" /> Borrar
         </button>
+        <button type="button" className="btn-ghost" onClick={() => fileInputRef.current?.click()} disabled={busy}>
+          <Upload className="h-4 w-4" /> Subir imagen de firma
+        </button>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            e.target.value = "";
+            if (file) uploadImage(file);
+          }}
+        />
       </div>
-      <p className="mt-1 text-xs text-muted-foreground">Firmá con el dedo dentro del recuadro y tocá “Guardar firma”.</p>
+      <p className="mt-1 text-xs text-muted-foreground">Firmá con el dedo dentro del recuadro y tocá “Guardar firma”, o subí una imagen si no podés dibujar.</p>
     </div>
   );
 }
