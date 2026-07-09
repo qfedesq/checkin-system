@@ -30,3 +30,21 @@ Branch `qa/full-audit-2026-07-08` (sin push). Fixers en Sonnet 5, review + commi
 WS-1b, WS-3b, WS-5, WS-6, WS-7, WS-8, WS-9, WS-10, WS-11a.
 
 ## Ola 3 (MINOR + COSMETIC) — PENDIENTE
+
+
+## Ola 2 (MAJOR) — EN PROGRESO
+| WS | Findings | Estado | Commit |
+|---|---|---|---|
+| WS-3b | QA-007, QA-008 | ✅ FIXED | dfc60aa |
+| WS-5 | QA-010, QA-011 | ✅ FIXED | 29a2646 |
+| WS-9+10 | QA-023,024,025,026,052,027,028,029,030 | ✅ FIXED | f83a664 |
+| WS-11a | QA-018,019,020 (cron/imágenes/paginación) | ⏳ pendiente | — |
+| WS-1b | QA-006,022 (device copy / rate-limit) | ⏳ pendiente | — |
+| WS-7 | QA-015,021,044,045,053,017 (eslint/CI/deps/cron-secret/logging/coverage) | ⏳ pendiente | — |
+| WS-8 | QA-016,032 + índice único parcial jornada (migraciones/índices) | ⏳ pendiente | — |
+| WS-6 | QA-012,013 (try/catch en ~38 handlers) — correr último | ⏳ pendiente | — |
+
+Regresión Ola 2 (parcial): `pnpm test` 9/9 · `pnpm build` exit 0 tras cada WS.
+
+## Ola 3 (MINOR + COSMETIC) — pendiente
+QA-031..058 (los no cubiertos): loading/error boundaries, índices restantes, seguridad menor (magic-bytes, filename, enumeración, headers/CSP, excel audit), dedup ImageSlot/profile-logic, funcional menor (auto-disable admin, reset loop, idempotencia recibo, colisión unicidad→409), targets 44px, push standalone iOS, manifest 192/maskable, cosméticos.
