@@ -11,13 +11,22 @@ export const dynamic = "force-dynamic";
 const PLACEHOLDER_YEAR = 2098; // libretas "2099-12-31" = sin dato
 
 export default async function AdminHome() {
-  const now = new Date();
-  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const todayEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+  // QA-010: "hoy"/mes deben calcularse en America/Argentina/Buenos_Aires (UTC-3, sin DST),
+  // no con getters locales del proceso (en Vercel el proceso corre en UTC y desalinea
+  // el día ~21:00-00:00 ART). Se obtiene el día-calendario ART restando el offset fijo.
+  const artNow = new Date(Date.now() - 3 * 3600 * 1000);
+  const y = artNow.getUTCFullYear();
+  const m = artNow.getUTCMonth();
+  const d = artNow.getUTCDate();
+  // Asistencia de hoy: checkInAt es timestamp real -> comparar contra 00:00 ART / 00:00 ART del día siguiente.
+  const todayStart = new Date(Date.UTC(y, m, d, 3, 0, 0));
+  const todayEnd = new Date(Date.UTC(y, m, d + 1, 3, 0, 0));
+  // Licencias de hoy: startDate/endDate se guardan como medianoche UTC del día-calendario.
+  const todayCal = new Date(Date.UTC(y, m, d));
   // Ventana amplia para el calendario: mes anterior hasta +3 meses, así al navegar
   // se ven las vacaciones y francos aprobados de otros meses (no sólo el actual).
-  const monthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-  const monthEnd = new Date(now.getFullYear(), now.getMonth() + 4, 0, 23, 59, 59);
+  const monthStart = new Date(Date.UTC(y, m - 1, 1));
+  const monthEnd = new Date(Date.UTC(y, m + 4, 0, 23, 59, 59));
 
   const [pendingUsers, pendingLeaves, pendingDocs, pendingProfileChanges, openAttendance, activeEmployees, todayAttendances, todayLeaves, profiles, monthLeaves] = await Promise.all([
     prisma.user.count({ where: { status: "PENDING_APPROVAL" } }),
@@ -27,7 +36,7 @@ export default async function AdminHome() {
     prisma.attendance.count({ where: { checkOutAt: null } }),
     prisma.user.findMany({ where: { role: "EMPLOYEE", status: "ACTIVE" }, select: { id: true } }),
     prisma.attendance.findMany({ where: { checkInAt: { gte: todayStart, lt: todayEnd } }, select: { userId: true, checkOutAt: true } }),
-    prisma.leaveRequest.findMany({ where: { status: "APPROVED", startDate: { lte: todayEnd }, endDate: { gte: todayStart } }, select: { userId: true } }),
+    prisma.leaveRequest.findMany({ where: { status: "APPROVED", startDate: { lte: todayCal }, endDate: { gte: todayCal } }, select: { userId: true } }),
     prisma.employeeProfile.findMany({
       where: { user: { status: "ACTIVE", role: "EMPLOYEE" } },
       select: { userId: true, firstName: true, lastName: true, category: true, professionalLicenseExpiry: true, healthCardExpiry: true },
@@ -64,11 +73,13 @@ export default async function AdminHome() {
       expiries.push({ name, userId: p.userId, label: "Libreta sanitaria", date: p.healthCardExpiry });
     }
   }
+  // professionalLicenseExpiry/healthCardExpiry son fechas-calendario (medianoche UTC), no timestamps:
+  // se comparan contra todayCal (mismo criterio que las licencias), no contra todayStart.
   const upcoming = expiries
-    .filter((e) => e.date >= todayStart)
+    .filter((e) => e.date >= todayCal)
     .sort((a, b) => a.date.getTime() - b.date.getTime())
     .slice(0, 5);
-  const expired = expiries.filter((e) => e.date < todayStart).length;
+  const expired = expiries.filter((e) => e.date < todayCal).length;
 
   // --- Calendario del mes ---
   const vacations = monthLeaves
