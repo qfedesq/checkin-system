@@ -48,3 +48,16 @@ Regresión Ola 2 (parcial): `pnpm test` 9/9 · `pnpm build` exit 0 tras cada WS.
 
 ## Ola 3 (MINOR + COSMETIC) — pendiente
 QA-031..058 (los no cubiertos): loading/error boundaries, índices restantes, seguridad menor (magic-bytes, filename, enumeración, headers/CSP, excel audit), dedup ImageSlot/profile-logic, funcional menor (auto-disable admin, reset loop, idempotencia recibo, colisión unicidad→409), targets 44px, push standalone iOS, manifest 192/maskable, cosméticos.
+
+
+## Ola 2 — COMPLETA
+| WS | Commit |
+|---|---|
+| WS-11a (QA-018,019,020) | 4dc0123 |
+| WS-7 (QA-044,045,021,053,017,015p) | 5cdf301 |
+| WS-1b (QA-006,022) | dc1ed1b |
+| WS-8 (QA-016,032,índice parcial) | 02ada13 |
+| WS-6 (QA-013) | b506a17 |
+
+Regresión final Ola 1+2: tests 13/13 · lint OK · build exit 0.
+Ver 05_FINAL_REPORT.md. Ola 3 (MINOR/COSMETIC) pendiente.
