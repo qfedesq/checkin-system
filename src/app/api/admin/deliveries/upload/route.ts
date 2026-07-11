@@ -25,6 +25,14 @@ export const POST = route("admin.deliveries.upload", async (req: NextRequest) =>
   if (!recipientId || !title) return NextResponse.json({ error: "Datos incompletos" }, { status: 400 });
   if (!["PAYSLIP", "INTERNAL_DOC", "OTHER"].includes(type)) return NextResponse.json({ error: "Tipo inválido" }, { status: 400 });
 
+  // El recipientId venía sin validar: un id inexistente tiraba 500 por violación de FK
+  // recién al hacer el create, y encima ya se había subido el blob y se intentaba notificar
+  // a un usuario que no existe. Validamos antes de tocar blob storage.
+  const recipient = await prisma.user.findUnique({ where: { id: recipientId }, select: { status: true, role: true } });
+  if (!recipient || recipient.status !== "ACTIVE" || recipient.role !== "EMPLOYEE") {
+    return NextResponse.json({ error: "Destinatario inválido" }, { status: 400 });
+  }
+
   const url = await uploadBlob(`deliveries/${recipientId}`, file, file.name, file.type);
 
   const d = await prisma.deliveredDocument.create({

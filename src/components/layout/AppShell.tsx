@@ -13,6 +13,7 @@ import {
   Users,
   ShieldCheck,
   Clock,
+  ScrollText,
   BookOpen,
   LogOut,
   Send,
@@ -48,6 +49,7 @@ const ADMIN_NAV: NavItem[] = [
   { href: "/admin/documents", icon: ShieldCheck, label: "Documentación" },
   { href: "/admin/deliveries", icon: Send, label: "Entregas" },
   { href: "/admin/attendance", icon: Clock, label: "Jornadas" },
+  { href: "/admin/audit", icon: ScrollText, label: "Auditoría" },
   { href: "/help", icon: BookOpen, label: "Ayuda" },
 ];
 

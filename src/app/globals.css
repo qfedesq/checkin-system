@@ -346,6 +346,14 @@
     /* targets táctiles: mínimo 44px recomendado (WCAG 2.5.5 / Apple HIG).
        .rail-icon-button ya es 44x44 (h-11 w-11); sólo .btn queda corto (h-10=40px). */
     .btn { min-height: 44px; }
+
+    /* botones de día del calendario (react-day-picker v9, clases .rdp-day/.rdp-day_button):
+       la celda (.rdp-day) ya mide 44px por variable propia de la librería, pero el botón
+       clickeable adentro quedaba en 2.25rem (36px) de alto — por debajo del target táctil.
+       Subimos a 44x44 sin tocar el ancho relativo (100% de la celda) para no romper la grilla;
+       el número queda centrado por el flex justify/align-items que ya trae rdp por defecto. */
+    .rdp-day_button { width: 100%; min-width: 44px; height: 44px; min-height: 44px; font-size: 0.82rem; }
+    .rdp-day { min-height: 44px; }
   }
 
   /* safe area en modales full-height */

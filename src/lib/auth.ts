@@ -38,7 +38,12 @@ type AppJWT = {
 };
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
-  session: { strategy: "jwt" },
+  // maxAge fija el techo absoluto del JWT (antes quedaba en el default implícito de
+  // Auth.js, ~30 días). La revocación real de cuentas deshabilitadas o cambios de rol
+  // la sigue haciendo requireActiveUser (revalida contra la DB en cada request sensible);
+  // esto sólo acota cuánto puede vivir un token sin pasar por ahí. No bajar este valor:
+  // los empleados fichan a diario y un maxAge corto generaría deslogueos sorpresa.
+  session: { strategy: "jwt", maxAge: 30 * 24 * 60 * 60 },
   trustHost: true,
   pages: { signIn: "/login" },
   providers: [

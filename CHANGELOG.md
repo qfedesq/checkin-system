@@ -2,6 +2,15 @@
 
 Cada release sube la versión en `+0.01`. El número visible abajo a la izquierda en la app coincide con este archivo.
 
+## v0.35 — 2026-07-11
+
+**QA: targets táctiles del calendario, visor de auditoría, validación de destinatario y sesión.**
+
+- **Calendario más fácil de tocar en el celular**: los botones de día pasaron de 36px a 44px de alto, el estándar recomendado para no fallar el tap.
+- **Nueva pantalla de Auditoría** (`/admin/audit`): los administradores ahora pueden ver los últimos 100 registros de actividad (quién, qué y cuándo) en vez de que quedaran sólo en la base de datos.
+- **Entregas más robustas**: si se intentaba enviar un recibo/documento a un destinatario inválido, el sistema ahora avisa con un mensaje claro en vez de fallar con un error genérico.
+- **Sesión**: se fijó explícitamente el tiempo de vida máximo del inicio de sesión (30 días, sin cambios para el usuario) — antes quedaba en un valor implícito de la librería.
+
 ## v0.34 — 2026-07-11
 
 **Auditoría QA (2ª ronda): seguridad, subida de fotos y varios ajustes.**
