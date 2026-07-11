@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Upload } from "lucide-react";
 import { SignaturePad } from "./SignaturePad";
 import { formatCalendarDate } from "@/lib/utils";
+import { compressImage } from "@/lib/image-compress";
 
 const REQUIRED: [keyof Initial, string][] = [
   ["lastName", "Apellido"],
@@ -274,8 +275,9 @@ function ImageSlot({ label, kind, url, onUploaded, onError, contain }: {
   async function upload(file: File) {
     setBusy(true);
     try {
+      const toSend = await compressImage(file);
       const form = new FormData();
-      form.set("file", file);
+      form.set("file", toSend);
       form.set("kind", kind);
       const res = await fetch("/api/profile/uploads", { method: "POST", body: form });
       const out = await res.json().catch(() => ({}));

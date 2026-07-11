@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Upload } from "lucide-react";
+import { compressImage } from "@/lib/image-compress";
 
 type Doc = {
   key: "health" | "license";
@@ -91,8 +92,9 @@ function ImageSlot({ label, kind, url, onError }: { label: string; kind: string;
   async function upload(file: File) {
     setBusy(true);
     try {
+      const toSend = await compressImage(file);
       const form = new FormData();
-      form.set("file", file);
+      form.set("file", toSend);
       form.set("kind", kind);
       const res = await fetch("/api/profile/uploads", { method: "POST", body: form });
       // Si la respuesta no es JSON (413 de Vercel, 5xx con HTML), .json() tira:

@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { FileText, Upload, ExternalLink } from "lucide-react";
 import { daysUntil, formatDate, formatCalendarDate } from "@/lib/utils";
+import { compressImage } from "@/lib/image-compress";
 
 type Doc = {
   id: string;
@@ -33,8 +34,10 @@ export function DocumentsClient({ documents }: { documents: Doc[] }) {
     setBusy(true);
     setErr(null);
     try {
+      // Los PDF pasan tal cual: compressImage sólo actúa sobre archivos "image/*".
+      const toSend = file.type.startsWith("image/") ? await compressImage(file) : file;
       const fd = new FormData();
-      fd.append("file", file);
+      fd.append("file", toSend);
       fd.append("type", "OTHER");
       fd.append("expiresAt", expires);
       const res = await fetch("/api/documents/upload", { method: "POST", body: fd });

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { KeyRound, Lock, LockOpen, Smartphone, Send, Upload } from "lucide-react";
 import { formatDate } from "@/lib/utils";
+import { compressImage } from "@/lib/image-compress";
 
 const CLOTHING_SIZES = ["XS", "S", "M", "L", "XL", "XXL", "XXXL"];
 const SHOE_SIZES = Array.from({ length: 48 - 36 + 1 }, (_, i) => String(36 + i));
@@ -302,8 +303,9 @@ function ImageSlot({ userId, kind, label, url, onUploaded }: {
     setBusy(true);
     setErr(null);
     try {
+      const toSend = await compressImage(file);
       const form = new FormData();
-      form.set("file", file);
+      form.set("file", toSend);
       form.set("kind", kind);
       const res = await fetch(`/api/admin/employees/${userId}/uploads`, { method: "POST", body: form });
       const out = await res.json().catch(() => ({}));
