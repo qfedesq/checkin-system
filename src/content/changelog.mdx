@@ -2,6 +2,18 @@
 
 Cada release sube la versión en `+0.01`. El número visible abajo a la izquierda en la app coincide con este archivo.
 
+## v0.34 — 2026-07-11
+
+**Auditoría QA (2ª ronda): seguridad, subida de fotos y varios ajustes.**
+
+- **Fotos que fallaban al subir**: las fotos de iPhone suelen pesar más que el límite del servidor y fallaban. Ahora se **achican y enderezan solas en el teléfono** antes de subir, así entran siempre (carnet, libreta, DNI, foto de cara y "Otros documentos").
+- **Biometría más segura al fichar**: el check-in/out ahora **valida la biometría del lado del servidor** en el mismo paso (antes se podía, técnicamente, saltear). Para vos no cambia nada: seguís confirmando con tu huella/rostro.
+- **Cerrar sesión en el login**: si la biometría fallaba durante el ingreso, la sesión podía quedar abierta; ahora se cierra bien.
+- **Cuentas deshabilitadas**: si el administrador te deshabilita, deja de tener efecto al instante en más lugares (solicitudes, apertura de documentos, registro de dispositivo).
+- **Calendario legible en modo claro**: las vacaciones y francos ahora se ven bien tanto en modo claro como oscuro.
+- **Check-in en español**: los avisos de permiso de ubicación y de biometría ahora salen en español.
+- **Menos errores confusos**: subir fotos ya no queda "colgado" en ningún lado; las jornadas y aprobaciones evitan pisarse cuando hay clicks simultáneos; la pantalla de Jornadas usa la misma fecha (hora Argentina) que el Excel; y avisos más claros ante conflictos.
+
 ## v0.33 — 2026-07-11
 
 **Feedback: destinatario de recibos sin confusión + vista previa de imágenes.**
