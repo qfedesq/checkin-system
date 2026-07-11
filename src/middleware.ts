@@ -25,6 +25,9 @@ export default auth((req) => {
   }
 
   if (session.user.status === "PENDING_APPROVAL") {
+    if (pathname.startsWith("/api/")) {
+      return NextResponse.json({ error: "Cuenta pendiente de aprobación" }, { status: 403 });
+    }
     if (pathname !== "/pending") {
       const url = req.nextUrl.clone();
       url.pathname = "/pending";

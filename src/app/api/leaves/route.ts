@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { auth } from "@/lib/auth";
+import { requireActiveUser } from "@/lib/session-guard";
 import { prisma } from "@/lib/prisma";
 import { parseLocalDate, validateVacationRange, monthBounds, checkVacationApprovable } from "@/lib/leaves";
 import { recordAudit } from "@/lib/audit";
@@ -15,8 +15,8 @@ const body = z.object({
 });
 
 export const POST = route("leaves.create", async (req: NextRequest) => {
-  const session = await auth();
-  if (!session?.user) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+  const { session, error: guardError } = await requireActiveUser();
+  if (guardError) return guardError;
 
   const parsed = body.safeParse(await req.json().catch(() => ({})));
   if (!parsed.success) return NextResponse.json({ error: "Datos inválidos" }, { status: 400 });

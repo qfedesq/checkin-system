@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { requireActiveUser } from "@/lib/session-guard";
 import { prisma } from "@/lib/prisma";
 import { signPdf } from "@/lib/pdf-sign";
 import { uploadBlob } from "@/lib/blob";
@@ -7,8 +7,8 @@ import { recordAudit } from "@/lib/audit";
 import { route } from "@/lib/route";
 
 export const GET = route("deliveries.open", async (_req: NextRequest, ctx: { params: Promise<{ id: string }> }) => {
-  const session = await auth();
-  if (!session?.user) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+  const { session, user, error } = await requireActiveUser();
+  if (error) return error;
   const { id } = await ctx.params;
 
   const doc = await prisma.deliveredDocument.findUnique({
@@ -16,7 +16,7 @@ export const GET = route("deliveries.open", async (_req: NextRequest, ctx: { par
     include: { recipient: { include: { profile: true } } },
   });
   if (!doc) return NextResponse.json({ error: "No encontrado" }, { status: 404 });
-  if (doc.recipientId !== session.user.id && session.user.role !== "ADMIN") {
+  if (doc.recipientId !== session.user.id && user.role !== "ADMIN") {
     return NextResponse.json({ error: "No autorizado" }, { status: 403 });
   }
 

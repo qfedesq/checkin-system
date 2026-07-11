@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifyRegistrationResponse } from "@simplewebauthn/server";
-import { auth } from "@/lib/auth";
+import { requireActiveUser } from "@/lib/session-guard";
 import { prisma } from "@/lib/prisma";
 import { origin, rpID, deviceHashFromCredentialId } from "@/lib/webauthn";
 import { recordAudit } from "@/lib/audit";
@@ -8,8 +8,8 @@ import { notifyAdmins } from "@/lib/notify";
 import { route } from "@/lib/route";
 
 export const POST = route("webauthn.register.verify", async (req: NextRequest) => {
-  const session = await auth();
-  if (!session?.user) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+  const { session, user, error } = await requireActiveUser();
+  if (error) return error;
 
   const { attestation } = await req.json();
   const challenge = await prisma.webAuthnChallenge.findFirst({
@@ -41,7 +41,7 @@ export const POST = route("webauthn.register.verify", async (req: NextRequest) =
 
   // Los dispositivos de empleados quedan pendientes de aprobación del admin;
   // los de administradores se auto-aprueban.
-  const isAdmin = session.user.role === "ADMIN";
+  const isAdmin = user.role === "ADMIN";
 
   await prisma.$transaction([
     prisma.webAuthnCredential.create({
