@@ -34,6 +34,8 @@ export default async function EmployeeDashboard() {
     const d = daysUntil(doc.expiresAt);
     if (d !== null && d <= 30) warnings.push({ label: doc.type === "DRIVER_LICENSE" ? "Carnet de conducir" : doc.type === "HEALTH_CARD" ? "Libreta sanitaria (upload)" : "Documento", days: d });
   }
+  // Primero lo más próximo a vencer (menos días restantes).
+  warnings.sort((a, b) => a.days - b.days);
 
   const name = profile ? `${profile.firstName} ${profile.lastName}`.trim() : "";
 

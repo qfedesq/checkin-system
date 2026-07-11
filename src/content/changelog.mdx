@@ -2,6 +2,12 @@
 
 Cada release sube la versión en `+0.01`. El número visible abajo a la izquierda en la app coincide con este archivo.
 
+## v0.30 — 2026-07-11
+
+**Feedback: alertas de vencimiento ordenadas por proximidad.**
+
+- En el inicio del empleado, las **"Alertas de vencimiento"** ahora se ordenan mostrando **primero lo más próximo a vencer** (antes el orden era fijo, así que podía aparecer un documento a 20 días arriba de otro a 19).
+
 ## v0.29 — 2026-07-11
 
 **Feedback: fecha de ingreso en formato local.**
