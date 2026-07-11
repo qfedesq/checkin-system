@@ -24,7 +24,7 @@ export default async function AdminLeavesPage() {
   }));
   return (
     <>
-      <PageHeader eyebrow="admin · vacaciones / francos" title="Solicitudes" description="Aprobá o rechazá solicitudes de vacaciones (7/14 días, inicio lunes) y francos diarios (máx 1 por día)." />
+      <PageHeader eyebrow="admin · vacaciones / francos" title="Solicitudes" description="Aprobá o rechazá solicitudes de vacaciones (7/14 días de corrido, inicio lunes) y francos (máx 1 por mes por empleado)." />
       <AdminLeavesTable leaves={rows} />
     </>
   );

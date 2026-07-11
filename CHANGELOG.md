@@ -2,6 +2,15 @@
 
 Cada release sube la versión en `+0.01`. El número visible abajo a la izquierda en la app coincide con este archivo.
 
+## v0.27 — 2026-07-11
+
+**Feedback: cerrar sesión, menús desplegables legibles, cambiar rol y textos.**
+
+- **Cerrar sesión**: el botón no cerraba la sesión (quedaba abierta). Ahora cierra correctamente y te lleva al login.
+- **Menús desplegables en modo oscuro**: al elegir "Categoría" (ficha de empleado) o "Rol" (nuevo usuario), las opciones se veían **blanco sobre blanco** y parecía que no había opciones. Ahora se leen bien en modo claro y oscuro.
+- **Cambiar rol**: en **Usuarios**, cada usuario activo tiene ahora el botón **"Hacer admin" / "Hacer empleado"** para pasar de empleado a administrador y viceversa (no se puede quitar el rol al único admin activo ni cambiarte el tuyo).
+- **Texto**: en el panel de solicitudes decía "francos diarios (máx 1 por día)"; ahora dice **"francos (máx 1 por mes por empleado)"**, que es la regla real.
+
 ## v0.26 — 2026-07-09
 
 **Ajustes de feedback: calendario más claro y subida de fotos más robusta.**

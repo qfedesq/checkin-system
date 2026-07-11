@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { CheckCircle2, KeyRound, Smartphone, XCircle, UserPlus, ShieldCheck, ShieldX } from "lucide-react";
+import { CheckCircle2, KeyRound, Smartphone, XCircle, UserPlus, ShieldCheck, ShieldX, UserCog } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 import { Modal } from "@/components/ui/Modal";
 
@@ -21,7 +21,7 @@ type Row = {
   hireDate: string | null;
 };
 
-export function UsersTable({ users }: { users: Row[] }) {
+export function UsersTable({ users, currentUserId }: { users: Row[]; currentUserId: string }) {
   const [openApprove, setOpenApprove] = useState<Row | null>(null);
   const [openCreate, setOpenCreate] = useState(false);
   const [busy, setBusy] = useState<string | null>(null);
@@ -154,6 +154,24 @@ export function UsersTable({ users }: { users: Row[] }) {
                           }}
                         >
                           <Smartphone className="h-4 w-4" />
+                        </button>
+                      )}
+                      {u.id !== currentUserId && (
+                        <button
+                          className="btn-ghost"
+                          title={u.role === "ADMIN" ? "Convertir en empleado" : "Convertir en administrador"}
+                          disabled={busy !== null}
+                          onClick={() => {
+                            const toEmployee = u.role === "ADMIN";
+                            const msg = toEmployee
+                              ? "¿Convertir a este administrador en empleado? Va a perder el acceso al panel de administración."
+                              : "¿Convertir a este empleado en administrador? Va a tener acceso completo al panel de administración.";
+                            if (confirm(msg)) {
+                              post(`/api/admin/users/${u.id}/role`, { role: toEmployee ? "EMPLOYEE" : "ADMIN" });
+                            }
+                          }}
+                        >
+                          <UserCog className="h-4 w-4" /> {u.role === "ADMIN" ? "Hacer empleado" : "Hacer admin"}
                         </button>
                       )}
                       <button

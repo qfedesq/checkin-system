@@ -25,6 +25,7 @@ import { VersionBadge } from "@/components/ui/VersionBadge";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { PushProvider } from "@/components/providers/PushProvider";
 import { cn } from "@/lib/utils";
+import { signOutAction } from "@/app/actions/session";
 
 type NavItem = { href: string; icon: React.ComponentType<{ className?: string }>; label: string };
 
@@ -155,7 +156,7 @@ export function AppShell({
               </div>
               <div className="flex items-center gap-1">
                 <ThemeToggle />
-                <form action="/api/auth/signout" method="post">
+                <form action={signOutAction}>
                   <button className="rail-icon-button" title="Cerrar sesión">
                     <LogOut className="h-4 w-4" />
                   </button>
@@ -257,7 +258,7 @@ export function AppShell({
                   {role === "ADMIN" ? "administrador" : "empleado"}
                 </div>
               </div>
-              <form action="/api/auth/signout" method="post">
+              <form action={signOutAction}>
                 <button className="btn-ghost w-full">
                   <LogOut className="h-4 w-4" /> Cerrar sesión
                 </button>

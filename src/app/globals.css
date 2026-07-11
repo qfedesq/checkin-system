@@ -214,6 +214,16 @@
   }
   .surface-control:focus-visible { @apply border-primary/50 ring-2 ring-primary/25; }
 
+  /* Opciones nativas del <select>: en dark el fondo del <select> es casi
+     transparente, así que el popup del SO quedaba con fondo claro y texto claro
+     (blanco sobre blanco, no se veían las opciones). Forzamos bg/texto sólidos
+     por tema — background/foreground se resuelven por :root (light) y .dark. */
+  select option,
+  select optgroup {
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+  }
+
   .surface-select {
     @apply surface-control appearance-none pr-10;
     background-image:

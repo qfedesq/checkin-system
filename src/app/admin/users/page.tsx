@@ -1,10 +1,12 @@
 import { prisma } from "@/lib/prisma";
+import { auth } from "@/lib/auth";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { UsersTable } from "./UsersTable";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminUsersPage() {
+  const session = await auth();
   // Cota defensiva: prioriza pendientes (status asc) y más recientes. TODO: paginación real si el headcount crece.
   const users = await prisma.user.findMany({
     orderBy: [{ status: "asc" }, { createdAt: "desc" }],
@@ -30,7 +32,7 @@ export default async function AdminUsersPage() {
   return (
     <>
       <PageHeader eyebrow="admin · usuarios" title="Usuarios" description="Aprobar altas, asignar legajo y fecha de ingreso, resetear contraseñas o dispositivo." />
-      <UsersTable users={serializable} />
+      <UsersTable users={serializable} currentUserId={session?.user?.id ?? ""} />
     </>
   );
 }
