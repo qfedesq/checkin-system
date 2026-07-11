@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Upload } from "lucide-react";
 import { SignaturePad } from "./SignaturePad";
+import { formatCalendarDate } from "@/lib/utils";
 
 const REQUIRED: [keyof Initial, string][] = [
   ["lastName", "Apellido"],
@@ -148,7 +149,7 @@ export function ProfileForm({ initial, email, pendingFields }: { initial: Initia
           <Field label="Nombre"><input className="surface-control" required value={data.firstName} onChange={(e) => set("firstName", e.target.value)} /></Field>
           <Field label="Fecha de nacimiento"><input type="date" className="surface-control" required value={data.dob} onChange={(e) => set("dob", e.target.value)} /></Field>
           <Field label="CUIL (lo carga el admin)"><input className="surface-control" required disabled={locked} value={data.cuil} onChange={(e) => set("cuil", e.target.value)} placeholder="20-12345678-9" /></Field>
-          <Field label="Fecha de ingreso (asignada por admin)"><input disabled className="surface-control" value={data.hireDate || "—"} /></Field>
+          <Field label="Fecha de ingreso (asignada por admin)"><input disabled className="surface-control" value={data.hireDate ? formatCalendarDate(data.hireDate) : "—"} /></Field>
           <Field label="Categoría">
             <select className="surface-select" value={data.category} onChange={(e) => set("category", e.target.value as "DRIVER" | "HELPER")}>
               <option value="HELPER">Ayudante</option>

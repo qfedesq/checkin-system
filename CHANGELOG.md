@@ -2,6 +2,13 @@
 
 Cada release sube la versión en `+0.01`. El número visible abajo a la izquierda en la app coincide con este archivo.
 
+## v0.29 — 2026-07-11
+
+**Feedback: fecha de ingreso en formato local.**
+
+- **Mi perfil**: la "Fecha de ingreso" se mostraba como `2026-07-07` (formato técnico). Ahora se ve en formato local: **07/07/2026**.
+- Recordatorio (sin cambios, ya funcionaba así): los avisos de vencimiento de carnet/libreta empiezan **30 días antes**, se repiten **todos los días** y, si el documento vence, la cuenta se **bloquea automáticamente** hasta que el administrador la reactive.
+
 ## v0.28 — 2026-07-11
 
 **Feedback: envío de documentos con confirmación y calendario admin completo.**
