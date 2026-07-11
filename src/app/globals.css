@@ -318,15 +318,18 @@
      modifiersStyles con HSL fijo — ese hardcodeo pensaba en fondo oscuro y en
      modo claro quedaba casi ilegible (texto claro sobre fondo claro). Los colores
      de texto usan las variables por tema definidas arriba. */
-  .cal-day-approved { background-color: hsl(var(--success) / 0.16); color: hsl(var(--success-text)); border-radius: 10px; }
-  .dark .cal-day-approved { background-color: hsl(var(--success) / 0.25); }
-  .cal-day-pending { background-color: hsl(var(--warning) / 0.16); color: hsl(var(--warning-text)); border-radius: 10px; }
-  .dark .cal-day-pending { background-color: hsl(var(--warning) / 0.2); }
-  .cal-day-taken-others { background-color: hsl(var(--destructive) / 0.14); color: hsl(var(--destructive)); border-radius: 10px; }
-  .dark .cal-day-taken-others { background-color: hsl(var(--destructive) / 0.2); }
+  /* Colores del calendario (pedido del cliente): aprobados = verde fuerte, pendientes =
+     amarillo/ámbar, francos de otros = rojo, selección actual = azul. Rellenos más
+     saturados que antes, con texto legible en claro y oscuro. */
+  .cal-day-approved { background-color: hsl(142 60% 40% / 0.42); color: hsl(142 70% 20%); border-radius: 10px; }
+  .dark .cal-day-approved { background-color: hsl(142 60% 45% / 0.45); color: hsl(142 65% 82%); }
+  .cal-day-pending { background-color: hsl(43 96% 50% / 0.55); color: hsl(38 92% 24%); border-radius: 10px; }
+  .dark .cal-day-pending { background-color: hsl(43 96% 55% / 0.35); color: hsl(43 96% 78%); }
+  .cal-day-taken-others { background-color: hsl(0 75% 55% / 0.35); color: hsl(0 72% 38%); border-radius: 10px; }
+  .dark .cal-day-taken-others { background-color: hsl(0 75% 60% / 0.35); color: hsl(0 80% 82%); }
   .cal-day-dayoff { background-color: hsl(var(--info) / 0.16); color: hsl(var(--info-text)); border-radius: 10px; }
   .dark .cal-day-dayoff { background-color: hsl(var(--info) / 0.25); }
-  .cal-day-selected { background-color: hsl(var(--warning)); color: #fff; border-radius: 10px; }
+  .cal-day-selected { background-color: hsl(var(--primary)); color: #fff; border-radius: 10px; }
 
   /* react-day-picker responsive */
   .rdp-root {

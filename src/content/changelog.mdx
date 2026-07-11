@@ -2,6 +2,12 @@
 
 Cada release sube la versión en `+0.01`. El número visible abajo a la izquierda en la app coincide con este archivo.
 
+## v0.38 — 2026-07-11
+
+**Feedback: colores del calendario más claros de leer.**
+
+- En el calendario de vacaciones/francos, los días se distinguen mejor: **aprobados en verde más fuerte**, **solicitudes pendientes en amarillo/ámbar**, **francos o semanas de otros empleados en rojo**, y la **selección actual en azul**. La referencia de colores de abajo quedó actualizada para que coincida.
+
 ## v0.37 — 2026-07-11
 
 **Feedback: campos de fecha más prolijos y solicitudes pendientes en amarillo.**

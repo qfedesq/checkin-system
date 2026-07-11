@@ -181,10 +181,10 @@ export function CalendarClient() {
         </div>
 
         <div className="mt-6 grid grid-cols-1 gap-2 text-xs text-muted-foreground sm:grid-cols-2">
-          <Legend color="hsl(142 72% 45% / 0.35)" label="Mis días aprobados" />
-          <Legend color="hsl(19 95% 53% / 0.3)" label="Mis solicitudes pendientes" />
-          <Legend color="hsl(1 79% 64% / 0.25)" label="Francos de otros empleados (no disponibles)" />
-          <Legend color="hsl(19 95% 53%)" label="Selección actual" />
+          <Legend color="hsl(142 60% 40% / 0.6)" label="Mis días aprobados" />
+          <Legend color="hsl(43 96% 50% / 0.7)" label="Mis solicitudes pendientes" />
+          <Legend color="hsl(0 75% 55% / 0.55)" label="Francos de otros empleados (no disponibles)" />
+          <Legend color="hsl(var(--primary))" label="Selección actual" />
         </div>
       </section>
 
