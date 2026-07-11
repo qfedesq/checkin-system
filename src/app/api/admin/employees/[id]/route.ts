@@ -33,6 +33,12 @@ const schema = z.object({
   emergencyContact: z.string(),
   emergencyPhone: z.string(),
   vacationWeeksPerYear: z.number().int().min(0).max(10),
+  checkinLat: z.number().min(-90).max(90).nullable().optional(),
+  checkinLng: z.number().min(-180).max(180).nullable().optional(),
+  checkinRadiusM: z.number().int().min(20).optional(),
+}).refine((d) => (d.checkinLat == null) === (d.checkinLng == null), {
+  message: "La zona de check-in necesita latitud y longitud (o ninguna de las dos)",
+  path: ["checkinLat"],
 });
 
 export const GET = route("admin.employees.get", async (_req: NextRequest, ctx: { params: Promise<{ id: string }> }) => {
@@ -136,6 +142,9 @@ export const PUT = route("admin.employees.put", async (req: NextRequest, ctx: { 
     emergencyContact: d.emergencyContact,
     emergencyPhone: d.emergencyPhone,
     vacationWeeksPerYear: d.vacationWeeksPerYear,
+    checkinLat: d.checkinLat ?? null,
+    checkinLng: d.checkinLng ?? null,
+    checkinRadiusM: d.checkinRadiusM ?? 100,
   };
 
   try {

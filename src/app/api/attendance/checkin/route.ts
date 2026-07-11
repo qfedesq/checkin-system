@@ -4,6 +4,7 @@ import { requireActiveUser } from "@/lib/session-guard";
 import { prisma } from "@/lib/prisma";
 import { recordAudit } from "@/lib/audit";
 import { verifyUserAssertion } from "@/lib/webauthn-verify";
+import { distanceMeters } from "@/lib/geo";
 import { route } from "@/lib/route";
 
 const schema = z.object({ lat: z.number(), lng: z.number(), assertion: z.unknown() });
@@ -25,6 +26,23 @@ export const POST = route("attendance.checkin", async (req: NextRequest) => {
   // con una sesión válida se podía fichar salteando la biometría pegándole directo a esta ruta.
   const bio = await verifyUserAssertion(session.user.id, parsed.data.assertion);
   if (!bio.ok) return NextResponse.json({ error: bio.error }, { status: bio.status });
+
+  // Geocerca de check-in: si el admin fijó una zona (checkinLat/Lng) en el perfil, sólo se
+  // puede fichar dentro de checkinRadiusM metros de ese punto. Sin zona seteada, se permite
+  // desde cualquier lado (compatibilidad con perfiles existentes).
+  const profile = await prisma.employeeProfile.findUnique({
+    where: { userId: session.user.id },
+    select: { checkinLat: true, checkinLng: true, checkinRadiusM: true },
+  });
+  if (profile?.checkinLat != null && profile?.checkinLng != null) {
+    const distance = distanceMeters(profile.checkinLat, profile.checkinLng, parsed.data.lat, parsed.data.lng);
+    if (distance > profile.checkinRadiusM) {
+      return NextResponse.json(
+        { error: `Estás fuera de la zona permitida para fichar (a ${Math.round(distance)}m de la zona). Acercate al lugar de trabajo.` },
+        { status: 403 }
+      );
+    }
+  }
 
   // Verificar + crear en la misma transacción (QA-008): reduce la ventana de carrera de dos
   // check-ins casi simultáneos generando dos Attendance abiertas para el mismo usuario. No es

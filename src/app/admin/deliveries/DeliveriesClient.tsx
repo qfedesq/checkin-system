@@ -5,8 +5,15 @@ import { Upload, Send, FileText, X } from "lucide-react";
 import { formatDateTime } from "@/lib/utils";
 
 type Row = { id: string; title: string; type: "PAYSLIP" | "INTERNAL_DOC" | "OTHER"; recipient: string; openedAt: string | null; createdAt: string };
+type SignAnchor = "bottom-left" | "bottom-right" | "top-left" | "top-right";
 
 const TYPE_LABEL = { PAYSLIP: "Recibo de sueldo", INTERNAL_DOC: "Documento interno", OTHER: "Otro" };
+const ANCHOR_LABEL: Record<SignAnchor, string> = {
+  "bottom-left": "Abajo izquierda",
+  "bottom-right": "Abajo derecha",
+  "top-left": "Arriba izquierda",
+  "top-right": "Arriba derecha",
+};
 
 export function DeliveriesClient({ employees, rows, initialRecipientId }: { employees: { id: string; label: string }[]; rows: Row[]; initialRecipientId?: string }) {
   const router = useRouter();
@@ -15,6 +22,8 @@ export function DeliveriesClient({ employees, rows, initialRecipientId }: { empl
   );
   const [type, setType] = useState<Row["type"]>("PAYSLIP");
   const [title, setTitle] = useState("");
+  const [signAnchor, setSignAnchor] = useState<SignAnchor>("bottom-left");
+  const [signPage, setSignPage] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
@@ -38,10 +47,13 @@ export function DeliveriesClient({ employees, rows, initialRecipientId }: { empl
       fd.append("recipientId", recipientId);
       fd.append("type", type);
       fd.append("title", title);
+      fd.append("signAnchor", signAnchor);
+      if (signPage.trim()) fd.append("signPage", signPage.trim());
       const res = await fetch("/api/admin/deliveries/upload", { method: "POST", body: fd });
       const out = await res.json().catch(() => ({}));
       if (!res.ok) return setErr(out.error ?? "No pudimos enviar el documento. Probá de nuevo.");
       setTitle("");
+      setSignPage("");
       clearFile();
       router.refresh();
     } catch {
@@ -75,6 +87,26 @@ export function DeliveriesClient({ employees, rows, initialRecipientId }: { empl
           <span className="eyebrow">Título</span>
           <input className="surface-control mt-1" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Recibo de sueldo · Abril 2026" />
         </label>
+        <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-[1fr_1fr]">
+          <label className="block">
+            <span className="eyebrow">Posición de la firma</span>
+            <select className="surface-select mt-1" value={signAnchor} onChange={(e) => setSignAnchor(e.target.value as SignAnchor)}>
+              {(Object.keys(ANCHOR_LABEL) as SignAnchor[]).map((a) => <option key={a} value={a}>{ANCHOR_LABEL[a]}</option>)}
+            </select>
+          </label>
+          <label className="block">
+            <span className="eyebrow">Página (dejá vacío = última)</span>
+            <input
+              className="surface-control mt-1"
+              type="number"
+              min={1}
+              step={1}
+              value={signPage}
+              onChange={(e) => setSignPage(e.target.value)}
+              placeholder="Última página"
+            />
+          </label>
+        </div>
         <div className="mt-4">
           <input ref={fileRef} type="file" accept="application/pdf" className="hidden" onChange={(e) => { setErr(null); setFile(e.target.files?.[0] ?? null); }} />
           {!file ? (

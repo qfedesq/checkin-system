@@ -12,8 +12,13 @@ export default async function EmployeeLayout({ children }: { children: React.Rea
   if (!currentUser || currentUser.status !== "ACTIVE") redirect("/login");
   if (currentUser.role === "ADMIN") redirect("/admin");
 
+  // Badge de "Recibidos": documentos entregados que el empleado todavía no abrió.
+  const unreadDeliveries = await prisma.deliveredDocument.count({
+    where: { recipientId: session.user.id, openedAt: null },
+  });
+
   return (
-    <AppShell role="EMPLOYEE" userName={session.user.name ?? session.user.email}>
+    <AppShell role="EMPLOYEE" userName={session.user.name ?? session.user.email} adminBadges={{ "/inbox": unreadDeliveries }}>
       {children}
     </AppShell>
   );

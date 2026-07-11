@@ -2,6 +2,15 @@
 
 Cada release sube la versión en `+0.01`. El número visible abajo a la izquierda en la app coincide con este archivo.
 
+## v0.36 — 2026-07-11
+
+**Feedback: check-in por zona, posición de la firma, descarga de documentos y avisos.**
+
+- **Check-in por zona (geocerca)**: el administrador puede fijar, en la ficha de cada empleado, la **zona donde puede fichar** (con un botón "usar mi ubicación actual" o cargando las coordenadas) y un **radio en metros** (por defecto 100). Si el empleado intenta fichar fuera de esa zona, el sistema lo rechaza con un aviso. Si no se define zona, puede fichar desde cualquier lado (como hasta ahora).
+- **Dónde firma el documento**: al enviar un recibo/documento, el administrador ahora elige **en qué esquina y página** se estampa la firma (abajo izquierda/derecha, arriba izquierda/derecha).
+- **Documentos: descarga en vez de quedar trabado**: al abrir un documento recibido, ahora se **descarga** (con la firma ya estampada) en lugar de abrirse en una vista de la que no se podía volver.
+- **Aviso de documento nuevo**: cuando te llega un recibo o notificación, además del aviso al dispositivo, ahora aparece un **contador de no leídos** en "Recibidos".
+
 ## v0.35 — 2026-07-11
 
 **QA: targets táctiles del calendario, visor de auditoría, validación de destinatario y sesión.**

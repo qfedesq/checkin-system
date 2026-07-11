@@ -45,6 +45,9 @@ type Profile = {
   emergencyContact: string;
   emergencyPhone: string;
   vacationWeeksPerYear: number;
+  checkinLat: number | null;
+  checkinLng: number | null;
+  checkinRadiusM: number;
   dniFrontBlobUrl: string | null;
   dniBackBlobUrl: string | null;
   licenseFrontBlobUrl: string | null;
@@ -72,9 +75,40 @@ export function EmployeeDetailClient({ initial }: {
   const [p, setP] = useState<Profile>(initial.profile);
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<{ kind: "ok" | "err"; text: string } | null>(null);
+  const [geoBusy, setGeoBusy] = useState(false);
+  const [geoErr, setGeoErr] = useState<string | null>(null);
 
   const set = (field: keyof Profile) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
     setP((prev) => ({ ...prev, [field]: e.target.value }));
+
+  const setNullableNumber = (field: "checkinLat" | "checkinLng") => (e: React.ChangeEvent<HTMLInputElement>) => {
+    const raw = e.target.value;
+    setP((prev) => ({ ...prev, [field]: raw === "" ? null : Number(raw) }));
+  };
+
+  function useMyLocation() {
+    setGeoErr(null);
+    if (!navigator.geolocation) {
+      setGeoErr("Tu navegador no soporta geolocalización.");
+      return;
+    }
+    setGeoBusy(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setGeoBusy(false);
+        setP((prev) => ({ ...prev, checkinLat: pos.coords.latitude, checkinLng: pos.coords.longitude }));
+      },
+      (err) => {
+        setGeoBusy(false);
+        if (err.code === err.PERMISSION_DENIED) {
+          setGeoErr("Denegaste el permiso de ubicación. Habilitalo en el navegador para usar esta opción.");
+        } else {
+          setGeoErr("No pudimos obtener tu ubicación. Intentá de nuevo.");
+        }
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+  }
 
   async function save() {
     setBusy(true);
@@ -108,6 +142,9 @@ export function EmployeeDetailClient({ initial }: {
         emergencyContact: p.emergencyContact,
         emergencyPhone: p.emergencyPhone,
         vacationWeeksPerYear: Number(p.vacationWeeksPerYear),
+        checkinLat: p.checkinLat,
+        checkinLng: p.checkinLng,
+        checkinRadiusM: Number(p.checkinRadiusM) || 100,
       }),
     });
     const out = await res.json();
@@ -196,6 +233,59 @@ export function EmployeeDetailClient({ initial }: {
             <Field label="Contacto de emergencia"><input className="surface-control" value={p.emergencyContact} onChange={set("emergencyContact")} /></Field>
             <Field label="Tel. de emergencia"><input className="surface-control" value={p.emergencyPhone} onChange={set("emergencyPhone")} /></Field>
           </div>
+        </section>
+
+        {/* Zona de check-in */}
+        <section className="panel p-6">
+          <h2 className="text-lg font-semibold">Zona de check-in</h2>
+          <p className="mt-1 text-xs text-muted-foreground">Si dejás la zona vacía, el empleado puede fichar desde cualquier lugar.</p>
+          <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <Field label="Latitud">
+              <input
+                type="number"
+                step="any"
+                className="surface-control"
+                value={p.checkinLat ?? ""}
+                onChange={setNullableNumber("checkinLat")}
+                placeholder="Sin zona seteada"
+              />
+            </Field>
+            <Field label="Longitud">
+              <input
+                type="number"
+                step="any"
+                className="surface-control"
+                value={p.checkinLng ?? ""}
+                onChange={setNullableNumber("checkinLng")}
+                placeholder="Sin zona seteada"
+              />
+            </Field>
+            <Field label="Radio permitido (metros)">
+              <input
+                type="number"
+                min={20}
+                step={10}
+                className="surface-control"
+                value={p.checkinRadiusM}
+                onChange={set("checkinRadiusM")}
+              />
+            </Field>
+          </div>
+          <div className="mt-3 flex flex-wrap items-center gap-3">
+            <button type="button" className="btn-ghost" disabled={geoBusy} onClick={useMyLocation}>
+              {geoBusy ? "Obteniendo ubicación…" : "Usar mi ubicación actual"}
+            </button>
+            {p.checkinLat != null && p.checkinLng != null && (
+              <button
+                type="button"
+                className="btn-ghost text-xs"
+                onClick={() => setP((prev) => ({ ...prev, checkinLat: null, checkinLng: null }))}
+              >
+                Quitar zona
+              </button>
+            )}
+          </div>
+          {geoErr && <div className="mt-2 text-[11px] text-destructive">{geoErr}</div>}
         </section>
 
         {/* Imágenes */}

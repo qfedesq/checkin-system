@@ -168,6 +168,12 @@ model EmployeeProfile {
   vacationWeeksPerYear      Int       @default(2)
   notifiedLicenseExpiryAt   DateTime?
   notifiedHealthExpiryAt    DateTime?
+  // Geocerca de check-in: si checkinLat/Lng están seteados, el empleado sólo puede
+  // fichar dentro de checkinRadiusM metros de ese punto. Sin zona seteada, se permite
+  // desde cualquier lado (compatibilidad con perfiles existentes).
+  checkinLat                Float?
+  checkinLng                Float?
+  checkinRadiusM            Int       @default(100)
   updatedAt                 DateTime  @updatedAt
 }
 
@@ -221,6 +227,10 @@ model DeliveredDocument {
   signedBlobUrl   String?
   originalHash    String?
   openedAt        DateTime?
+  // Dónde estampar la firma al abrir: esquina (bottom-left/bottom-right/top-left/top-right)
+  // y página (1-based; null = última). Lo elige el admin al cargar el documento.
+  signAnchor      String?
+  signPage        Int?
   createdAt       DateTime         @default(now())
 
   @@index([recipientId])

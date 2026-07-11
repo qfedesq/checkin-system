@@ -16,6 +16,8 @@ export const POST = route("admin.deliveries.upload", async (req: NextRequest) =>
   const recipientId = String(form.get("recipientId") ?? "");
   const type = String(form.get("type") ?? "OTHER");
   const title = String(form.get("title") ?? "").trim();
+  const signAnchorRaw = String(form.get("signAnchor") ?? "bottom-left");
+  const signPageRaw = String(form.get("signPage") ?? "").trim();
 
   if (!(file instanceof File)) return NextResponse.json({ error: "Archivo requerido" }, { status: 400 });
   if (file.type !== "application/pdf") return NextResponse.json({ error: "Sólo PDF" }, { status: 400 });
@@ -24,6 +26,17 @@ export const POST = route("admin.deliveries.upload", async (req: NextRequest) =>
   if (!(await matchesDeclaredType(file))) return NextResponse.json({ error: "El archivo no coincide con el formato declarado" }, { status: 400 });
   if (!recipientId || !title) return NextResponse.json({ error: "Datos incompletos" }, { status: 400 });
   if (!["PAYSLIP", "INTERNAL_DOC", "OTHER"].includes(type)) return NextResponse.json({ error: "Tipo inválido" }, { status: 400 });
+  const SIGN_ANCHORS = ["bottom-left", "bottom-right", "top-left", "top-right"] as const;
+  if (!SIGN_ANCHORS.includes(signAnchorRaw as (typeof SIGN_ANCHORS)[number])) {
+    return NextResponse.json({ error: "Posición de firma inválida" }, { status: 400 });
+  }
+  const signAnchor = signAnchorRaw as (typeof SIGN_ANCHORS)[number];
+  let signPage: number | null = null;
+  if (signPageRaw !== "") {
+    const parsed = Number(signPageRaw);
+    if (!Number.isInteger(parsed) || parsed < 1) return NextResponse.json({ error: "Página de firma inválida" }, { status: 400 });
+    signPage = parsed;
+  }
 
   // El recipientId venía sin validar: un id inexistente tiraba 500 por violación de FK
   // recién al hacer el create, y encima ya se había subido el blob y se intentaba notificar
@@ -42,6 +55,8 @@ export const POST = route("admin.deliveries.upload", async (req: NextRequest) =>
       type: type as "PAYSLIP" | "INTERNAL_DOC" | "OTHER",
       title,
       originalBlobUrl: url,
+      signAnchor,
+      signPage,
     },
   });
 

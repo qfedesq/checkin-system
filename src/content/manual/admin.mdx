@@ -33,6 +33,7 @@ En **Empleados** ves el listado alfabético por apellido, con buscador. Al entra
 - Cargar las **imágenes**: DNI (frente y dorso), carnet profesional si es chofer (frente y dorso), libreta sanitaria (frente y dorso), foto de frente de cara y firma digital.
 - Definir las **semanas de vacaciones por año** que le corresponden.
 - **Resetear contraseña** (vuelve a la clave temporaria), **resetear dispositivo**, **bloquear/desbloquear** al usuario.
+- Definir la **zona de check-in**: la ubicación (podés usar "usar mi ubicación actual" parado en el lugar de trabajo, o cargar las coordenadas) y un **radio en metros** (por defecto 100). El empleado sólo puede fichar dentro de esa zona. Si la dejás vacía, puede fichar desde cualquier lado.
 - Ver los documentos que le enviaste (con estado abierto/firmado) y enviarle uno nuevo.
 
 ## Cambios de perfil
@@ -78,11 +79,11 @@ Usá el ícono de X para deshabilitar. El empleado no puede ingresar hasta que l
 
 En `/admin/deliveries`:
 
-1. Elegí el destinatario y el tipo (recibo de sueldo, documento interno, otro).
+1. Elegí el destinatario (aparece **nombre · legajo · email** para no confundir empleados con el mismo nombre) y el tipo (recibo de sueldo, documento interno, otro).
 2. Poné un título descriptivo (ej: "Recibo · Abril 2026").
-3. Subí el PDF.
+3. Elegí **dónde va la firma** (esquina y, opcional, página) y tocá **Elegir PDF** → **Enviar**.
 
-Cuando el empleado lo abra, el sistema lo firma automáticamente con la firma digital que él cargó, su nombre, CUIL, timestamp y un hash SHA-256 del original. Vas a ver cuándo lo abrió.
+Cuando el empleado lo abra, el sistema lo firma automáticamente en esa posición con la firma digital que él cargó, su nombre, CUIL, timestamp y un hash SHA-256 del original. Vas a ver cuándo lo abrió.
 
 ## Exportar jornadas a Excel
 

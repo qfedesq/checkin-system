@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireActiveUser } from "@/lib/session-guard";
 import { prisma } from "@/lib/prisma";
-import { signPdf } from "@/lib/pdf-sign";
+import { signPdf, type SignAnchor } from "@/lib/pdf-sign";
 import { uploadBlob } from "@/lib/blob";
 import { recordAudit } from "@/lib/audit";
 import { route } from "@/lib/route";
@@ -20,8 +20,16 @@ export const GET = route("deliveries.open", async (_req: NextRequest, ctx: { par
     return NextResponse.json({ error: "No autorizado" }, { status: 403 });
   }
 
+  // content-disposition: attachment → el navegador DESCARGA el PDF en vez de reemplazar la
+  // vista actual. Antes se abría "inline" y en el PWA/móvil quedabas trabado sin poder volver.
+  const dispositionName = `${doc.title.replace(/[^a-z0-9áéíóúñ _-]/gi, "_")}.pdf`;
   const pdfHeaders = (extra?: Record<string, string>) =>
-    new Headers({ "content-type": "application/pdf", "cache-control": "private, max-age=60", ...extra });
+    new Headers({
+      "content-type": "application/pdf",
+      "cache-control": "private, max-age=60",
+      "content-disposition": `attachment; filename="${dispositionName}"`,
+      ...extra,
+    });
 
   // Si ya firmamos, servimos el firmado streameando los bytes (sin exponer la URL del blob).
   if (doc.signedBlobUrl) {
@@ -48,7 +56,15 @@ export const GET = route("deliveries.open", async (_req: NextRequest, ctx: { par
   const name = profile ? `${profile.firstName} ${profile.lastName}`.trim() : doc.recipient.email;
   const cuil = profile?.cuil && !profile.cuil.startsWith("PENDING-") ? profile.cuil : "—";
 
-  const { bytes, hash } = await signPdf(originalBytes, signatureBytes, { name, cuil, email: doc.recipient.email });
+  // signAnchor viene de un campo String? libre en el schema; validamos contra los valores
+  // conocidos y si no matchea (dato viejo/corrupto) dejamos que signPdf use su default.
+  const SIGN_ANCHORS = ["bottom-left", "bottom-right", "top-left", "top-right"] as const;
+  const anchor = SIGN_ANCHORS.includes(doc.signAnchor as SignAnchor) ? (doc.signAnchor as SignAnchor) : undefined;
+
+  const { bytes, hash } = await signPdf(originalBytes, signatureBytes, { name, cuil, email: doc.recipient.email }, {
+    anchor,
+    page: doc.signPage ?? undefined,
+  });
 
   const filename = `${doc.title.replace(/[^a-z0-9áéíóúñ _-]/gi, "_")}-firmado.pdf`;
   const signedUrl = await uploadBlob(`deliveries/${doc.recipientId}/signed`, Buffer.from(bytes), filename, "application/pdf");
@@ -62,6 +78,6 @@ export const GET = route("deliveries.open", async (_req: NextRequest, ctx: { par
   // Servimos los bytes recién firmados directo (ya los tenemos en memoria); no exponemos la URL del blob.
   return new NextResponse(Buffer.from(bytes), {
     status: 200,
-    headers: pdfHeaders({ "content-disposition": `inline; filename="${filename}"` }),
+    headers: pdfHeaders({ "content-disposition": `attachment; filename="${filename}"` }),
   });
 });
