@@ -2,6 +2,13 @@
 
 Cada release sube la versión en `+0.01`. El número visible abajo a la izquierda en la app coincide con este archivo.
 
+## v0.37 — 2026-07-11
+
+**Feedback: campos de fecha más prolijos y solicitudes pendientes en amarillo.**
+
+- **Campos de fecha**: la fecha de nacimiento y las de vencimiento ya no ocupan todo el ancho (se mostraban centradas en un recuadro enorme); ahora tienen un ancho acorde al contenido.
+- **Pendientes en amarillo**: los estados **"pendiente" / "sin abrir"** (solicitudes de vacaciones/francos, documentos por validar, dispositivos y recibos sin abrir) ahora se muestran en **ámbar/amarillo** para diferenciarse mejor de lo aprobado (verde).
+
 ## v0.36 — 2026-07-11
 
 **Feedback: check-in por zona, posición de la firma, descarga de documentos y avisos.**

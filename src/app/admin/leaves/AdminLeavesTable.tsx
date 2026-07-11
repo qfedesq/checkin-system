@@ -53,7 +53,7 @@ export function AdminLeavesTable({ leaves }: { leaves: Row[] }) {
               <td className="px-3 py-3">{formatCalendarDate(l.endDate)}</td>
               <td className="px-3 py-3">{l.days}</td>
               <td className="px-3 py-3">
-                {l.status === "PENDING" && <span className="badge-accent">pendiente</span>}
+                {l.status === "PENDING" && <span className="badge-warning">pendiente</span>}
                 {l.status === "APPROVED" && <span className="badge-success">aprobado</span>}
                 {l.status === "REJECTED" && <span className="badge-danger">rechazado</span>}
               </td>

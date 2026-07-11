@@ -61,7 +61,7 @@ export function AdminDocuments({ docs }: { docs: Row[] }) {
               <td className="px-3 py-3">{LABEL[d.type]}</td>
               <td className="px-3 py-3">{formatCalendarDate(d.expiresAt)}</td>
               <td className="px-3 py-3">
-                {d.status === "PENDING_REVIEW" && <span className="badge-accent">pendiente</span>}
+                {d.status === "PENDING_REVIEW" && <span className="badge-warning">pendiente</span>}
                 {d.status === "APPROVED" && <span className="badge-success">aprobado</span>}
                 {d.status === "REJECTED" && <span className="badge-danger">rechazado</span>}
                 {d.note && <div className="text-xs text-muted-foreground">{d.note}</div>}

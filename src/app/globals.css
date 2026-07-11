@@ -296,6 +296,8 @@
   .badge-accent { @apply badge border-accent/30 bg-accent/10 text-[hsl(var(--accent-text))]; }
   .badge-danger { @apply badge border-destructive/30 bg-destructive/10 text-destructive; }
   .badge-success { @apply badge border-[hsl(var(--success))]/30 bg-[hsl(var(--success))]/10 text-[hsl(var(--success-text))]; }
+  /* Estados "pendientes" (por aprobar / sin abrir): ámbar/amarillo, legible en claro y oscuro. */
+  .badge-warning { @apply badge border-amber-500/40 bg-amber-400/20 text-amber-700 dark:border-amber-400/30 dark:bg-amber-400/10 dark:text-amber-300; }
 
   .prose-doc h1 { @apply text-3xl font-bold mt-6 mb-4; }
   .prose-doc h2 { @apply text-2xl font-bold mt-8 mb-3 text-primary; }

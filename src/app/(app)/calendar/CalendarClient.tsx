@@ -201,7 +201,7 @@ export function CalendarClient() {
                     {formatCalendarDate(l.startDate)}{l.days > 1 ? ` → ${formatCalendarDate(l.endDate)}` : ""}
                   </div>
                 </div>
-                {l.status === "PENDING" && <span className="badge-accent">pendiente</span>}
+                {l.status === "PENDING" && <span className="badge-warning">pendiente</span>}
                 {l.status === "APPROVED" && <span className="badge-success">aprobado</span>}
                 {l.status === "REJECTED" && <span className="badge-danger">rechazado</span>}
               </div>

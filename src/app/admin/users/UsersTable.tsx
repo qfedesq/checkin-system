@@ -82,14 +82,14 @@ export function UsersTable({ users, currentUserId }: { users: Row[]; currentUser
               </td>
               <td className="px-3 py-3 mono text-xs">{u.legajo ?? "—"}</td>
               <td className="px-3 py-3">
-                {u.status === "PENDING_APPROVAL" && <span className="badge-accent">pendiente</span>}
+                {u.status === "PENDING_APPROVAL" && <span className="badge-warning">pendiente</span>}
                 {u.status === "ACTIVE" && <span className="badge-success">activo</span>}
                 {u.status === "DISABLED" && <span className="badge-danger">deshabilitado</span>}
                 {u.mustChangePassword && <span className="badge-primary ml-1">clave temporal</span>}
               </td>
               <td className="px-3 py-3">
                 {u.hasDevice ? (
-                  u.devicePending ? <span className="badge-accent">pendiente de aprobación</span> : <span className="badge-primary">aprobado</span>
+                  u.devicePending ? <span className="badge-warning">pendiente de aprobación</span> : <span className="badge-primary">aprobado</span>
                 ) : (
                   <span className="badge">sin dispositivo</span>
                 )}

@@ -67,7 +67,7 @@ function DocRow({ doc }: { doc: Doc }) {
       <div className="mt-3 flex flex-wrap items-end gap-2">
         <label className="block">
           <span className="eyebrow">Vence</span>
-          <input type="date" className="surface-control mt-1" value={date} onChange={(e) => setDate(e.target.value)} />
+          <input type="date" className="surface-control mt-1 max-w-[220px]" value={date} onChange={(e) => setDate(e.target.value)} />
         </label>
         <button type="button" className="btn-primary" onClick={saveDate} disabled={busy}>{busy ? "Guardando…" : "Guardar fecha"}</button>
       </div>

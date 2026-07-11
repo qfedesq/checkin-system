@@ -150,7 +150,7 @@ export function DeliveriesClient({ employees, rows, initialRecipientId }: { empl
                 <td className="px-3 py-3">{TYPE_LABEL[r.type]}</td>
                 <td className="px-3 py-3">{r.recipient}</td>
                 <td className="px-3 py-3 text-xs text-muted-foreground">{formatDateTime(r.createdAt)}</td>
-                <td className="px-3 py-3 text-xs">{r.openedAt ? <span className="badge-success">firmado {formatDateTime(r.openedAt)}</span> : <span className="badge-accent">sin abrir</span>}</td>
+                <td className="px-3 py-3 text-xs">{r.openedAt ? <span className="badge-success">firmado {formatDateTime(r.openedAt)}</span> : <span className="badge-warning">sin abrir</span>}</td>
               </tr>
             ))}
             {rows.length === 0 && <tr><td colSpan={5} className="px-5 py-8 text-center text-muted-foreground">Sin entregas todavía.</td></tr>}

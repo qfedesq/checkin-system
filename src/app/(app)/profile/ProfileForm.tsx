@@ -148,7 +148,7 @@ export function ProfileForm({ initial, email, pendingFields }: { initial: Initia
           <Field label="Legajo (asignado por admin)"><input disabled className="surface-control" value={data.legajo || "—"} /></Field>
           <Field label="Apellido"><input className="surface-control" required value={data.lastName} onChange={(e) => set("lastName", e.target.value)} /></Field>
           <Field label="Nombre"><input className="surface-control" required value={data.firstName} onChange={(e) => set("firstName", e.target.value)} /></Field>
-          <Field label="Fecha de nacimiento"><input type="date" className="surface-control" required value={data.dob} onChange={(e) => set("dob", e.target.value)} /></Field>
+          <Field label="Fecha de nacimiento"><input type="date" className="surface-control max-w-[220px]" required value={data.dob} onChange={(e) => set("dob", e.target.value)} /></Field>
           <Field label="CUIL (lo carga el admin)"><input className="surface-control" required disabled={locked} value={data.cuil} onChange={(e) => set("cuil", e.target.value)} placeholder="20-12345678-9" /></Field>
           <Field label="Fecha de ingreso (asignada por admin)"><input disabled className="surface-control" value={data.hireDate ? formatCalendarDate(data.hireDate) : "—"} /></Field>
           <Field label="Categoría">

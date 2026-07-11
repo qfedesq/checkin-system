@@ -88,7 +88,7 @@ export default async function InboxPage({ searchParams }: { searchParams: Promis
                 <td className="px-3 py-3">{TYPE_LABEL[d.type]}</td>
                 <td className="px-3 py-3 text-xs text-muted-foreground">{formatDateTime(d.createdAt)}</td>
                 <td className="px-3 py-3 text-xs">
-                  {d.openedAt ? <span className="badge-success">firmado {formatDateTime(d.openedAt)}</span> : <span className="badge-accent">sin abrir</span>}
+                  {d.openedAt ? <span className="badge-success">firmado {formatDateTime(d.openedAt)}</span> : <span className="badge-warning">sin abrir</span>}
                 </td>
                 <td className="px-5 py-3 text-right">
                   <a className="btn-primary" href={`/api/deliveries/${d.id}/open`} target="_blank" rel="noreferrer">

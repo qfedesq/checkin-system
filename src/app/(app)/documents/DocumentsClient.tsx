@@ -110,7 +110,7 @@ export function DocumentsClient({ documents }: { documents: Doc[] }) {
                   </td>
                   <td className="px-3 py-3">
                     {d.status === "APPROVED" && <span className="badge-success">aprobado</span>}
-                    {d.status === "PENDING_REVIEW" && <span className="badge-accent">pendiente</span>}
+                    {d.status === "PENDING_REVIEW" && <span className="badge-warning">pendiente</span>}
                     {d.status === "REJECTED" && <span className="badge-danger">rechazado</span>}
                     {d.note && <div className="mt-1 text-xs text-muted-foreground">{d.note}</div>}
                   </td>
