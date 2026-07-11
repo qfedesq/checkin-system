@@ -2,6 +2,13 @@
 
 Cada release sube la versión en `+0.01`. El número visible abajo a la izquierda en la app coincide con este archivo.
 
+## v0.31 — 2026-07-11
+
+**Feedback: calendario en español y recuadro de "Otros documentos".**
+
+- **Calendario en español**: el mes y las abreviaturas de los días ahora se muestran en español (**julio 2026**, **dom lun mar mié jue vie sáb**) en el calendario del empleado y en el del panel admin. Antes salían en inglés.
+- **"Otros documentos"**: el bloque de vencimiento + "Seleccionar archivo" quedó en un recuadro más claro y prolijo (borde definido y botón a lo ancho).
+
 ## v0.30 — 2026-07-11
 
 **Feedback: alertas de vencimiento ordenadas por proximidad.**

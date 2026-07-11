@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { DayPicker } from "react-day-picker";
+import { es } from "date-fns/locale";
 import "react-day-picker/style.css";
 import { useRouter } from "next/navigation";
 import { formatCalendarDate, isoToCalendarDate, toCalendarISODate } from "@/lib/utils";
@@ -126,6 +127,7 @@ export function CalendarClient() {
 
         <DayPicker
           mode="single"
+          locale={es}
           weekStartsOn={0}
           selected={selected}
           onSelect={setSelected}

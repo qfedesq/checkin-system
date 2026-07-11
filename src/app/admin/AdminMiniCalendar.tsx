@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { DayPicker } from "react-day-picker";
+import { es } from "date-fns/locale";
 import "react-day-picker/style.css";
 import { isoToCalendarDate } from "@/lib/utils";
 
@@ -26,6 +27,7 @@ export function AdminMiniCalendar({ vacations, dayOffs }: { vacations: Range[]; 
     <>
       <DayPicker
         mode="single"
+        locale={es}
         weekStartsOn={0}
         month={month}
         onMonthChange={setMonth}
