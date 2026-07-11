@@ -23,10 +23,10 @@ export default async function AdminHome() {
   const todayEnd = new Date(Date.UTC(y, m, d + 1, 3, 0, 0));
   // Licencias de hoy: startDate/endDate se guardan como medianoche UTC del día-calendario.
   const todayCal = new Date(Date.UTC(y, m, d));
-  // Ventana amplia para el calendario: mes anterior hasta +3 meses, así al navegar
-  // se ven las vacaciones y francos aprobados de otros meses (no sólo el actual).
+  // Calendario: desde el mes anterior en adelante, SIN tope superior. Antes se cortaba
+  // en +3 meses y las vacaciones/francos aprobados más lejanos (ej. noviembre) no se
+  // veían al navegar. Las licencias aprobadas futuras están acotadas en la práctica.
   const monthStart = new Date(Date.UTC(y, m - 1, 1));
-  const monthEnd = new Date(Date.UTC(y, m + 4, 0, 23, 59, 59));
 
   const [pendingUsers, pendingLeaves, pendingDocs, pendingProfileChanges, openAttendance, activeEmployees, todayAttendances, todayLeaves, profiles, monthLeaves] = await Promise.all([
     prisma.user.count({ where: { status: "PENDING_APPROVAL" } }),
@@ -42,7 +42,8 @@ export default async function AdminHome() {
       select: { userId: true, firstName: true, lastName: true, category: true, professionalLicenseExpiry: true, healthCardExpiry: true },
     }),
     prisma.leaveRequest.findMany({
-      where: { status: "APPROVED", startDate: { lte: monthEnd }, endDate: { gte: monthStart } },
+      where: { status: "APPROVED", endDate: { gte: monthStart } },
+      orderBy: { startDate: "asc" },
       include: { user: { include: { profile: true } } },
     }),
   ]);

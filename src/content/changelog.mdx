@@ -2,6 +2,13 @@
 
 Cada release sube la versión en `+0.01`. El número visible abajo a la izquierda en la app coincide con este archivo.
 
+## v0.28 — 2026-07-11
+
+**Feedback: envío de documentos con confirmación y calendario admin completo.**
+
+- **Enviar documentos**: antes, al elegir el PDF se enviaba solo. Ahora primero se **selecciona** el archivo (queda a la vista, con opción de quitarlo) y recién se entrega al tocar **"Enviar"** — así no se manda nada sin confirmar.
+- **Calendario del panel (admin)**: las vacaciones y francos aprobados de meses más adelante (por ejemplo noviembre) **no aparecían**. Ahora se cargan sin límite de meses, el calendario navega por mes y la lista de abajo muestra lo del mes que estás viendo.
+
 ## v0.27 — 2026-07-11
 
 **Feedback: cerrar sesión, menús desplegables legibles, cambiar rol y textos.**

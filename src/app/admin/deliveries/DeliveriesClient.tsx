@@ -1,7 +1,7 @@
 "use client";
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Upload } from "lucide-react";
+import { Upload, Send, FileText, X } from "lucide-react";
 import { formatDateTime } from "@/lib/utils";
 
 type Row = { id: string; title: string; type: "PAYSLIP" | "INTERNAL_DOC" | "OTHER"; recipient: string; openedAt: string | null; createdAt: string };
@@ -15,26 +15,40 @@ export function DeliveriesClient({ employees, rows, initialRecipientId }: { empl
   );
   const [type, setType] = useState<Row["type"]>("PAYSLIP");
   const [title, setTitle] = useState("");
+  const [file, setFile] = useState<File | null>(null);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
-  async function onUpload(file: File) {
-    if (!recipientId) return setErr("Elegí un destinatario");
-    if (!title) return setErr("Indicá un título");
-    setBusy(true); setErr(null);
-    const fd = new FormData();
-    fd.append("file", file);
-    fd.append("recipientId", recipientId);
-    fd.append("type", type);
-    fd.append("title", title);
-    const res = await fetch("/api/admin/deliveries/upload", { method: "POST", body: fd });
-    const out = await res.json();
-    setBusy(false);
+  function clearFile() {
+    setFile(null);
     if (fileRef.current) fileRef.current.value = "";
-    if (!res.ok) return setErr(out.error ?? "No pudimos subir el archivo");
-    setTitle("");
-    router.refresh();
+  }
+
+  // Enviar es un paso explícito: primero se elige el PDF (queda a la vista) y recién
+  // al tocar "Enviar" se sube y se entrega. Antes se enviaba solo al elegir el archivo.
+  async function send() {
+    if (!recipientId) return setErr("Elegí un destinatario");
+    if (!title.trim()) return setErr("Indicá un título");
+    if (!file) return setErr("Elegí el PDF a enviar");
+    setBusy(true); setErr(null);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      fd.append("recipientId", recipientId);
+      fd.append("type", type);
+      fd.append("title", title);
+      const res = await fetch("/api/admin/deliveries/upload", { method: "POST", body: fd });
+      const out = await res.json().catch(() => ({}));
+      if (!res.ok) return setErr(out.error ?? "No pudimos enviar el documento. Probá de nuevo.");
+      setTitle("");
+      clearFile();
+      router.refresh();
+    } catch {
+      setErr("No pudimos enviar el documento. Revisá tu conexión e intentá de nuevo.");
+    } finally {
+      setBusy(false);
+    }
   }
 
   return (
@@ -62,10 +76,26 @@ export function DeliveriesClient({ employees, rows, initialRecipientId }: { empl
           <input className="surface-control mt-1" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Recibo de sueldo · Abril 2026" />
         </label>
         <div className="mt-4">
-          <input ref={fileRef} type="file" accept="application/pdf" className="hidden" onChange={(e) => e.target.files?.[0] && onUpload(e.target.files[0])} />
-          <button className="btn-primary" disabled={busy} onClick={() => fileRef.current?.click()}>
-            <Upload className="h-4 w-4" /> {busy ? "Subiendo…" : "Subir PDF"}
-          </button>
+          <input ref={fileRef} type="file" accept="application/pdf" className="hidden" onChange={(e) => { setErr(null); setFile(e.target.files?.[0] ?? null); }} />
+          {!file ? (
+            <button type="button" className="btn-ghost" disabled={busy} onClick={() => fileRef.current?.click()}>
+              <Upload className="h-4 w-4" /> Elegir PDF
+            </button>
+          ) : (
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+              <div className="surface-card flex min-w-0 flex-1 items-center gap-2 p-3 text-sm">
+                <FileText className="h-4 w-4 shrink-0 text-primary" />
+                <span className="truncate">{file.name}</span>
+                <button type="button" className="rail-icon-button ml-auto shrink-0" onClick={clearFile} aria-label="Quitar archivo" disabled={busy}>
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+              <button type="button" className="btn-primary shrink-0 justify-center" disabled={busy} onClick={send}>
+                <Send className="h-4 w-4" /> {busy ? "Enviando…" : "Enviar"}
+              </button>
+            </div>
+          )}
+          <p className="mt-2 text-xs text-muted-foreground">Sólo PDF. El envío se confirma con el botón &quot;Enviar&quot;.</p>
         </div>
         {err && <div className="mt-3 rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-2 text-sm text-destructive">{err}</div>}
       </section>
