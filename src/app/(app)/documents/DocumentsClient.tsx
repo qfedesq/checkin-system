@@ -55,7 +55,7 @@ export function DocumentsClient({ documents }: { documents: Doc[] }) {
       <section className="panel p-6">
         <h2 className="text-lg font-semibold">Otros documentos</h2>
         <p className="mt-1 text-sm text-muted-foreground">Para libreta y carnet usá el bloque de arriba. Acá podés adjuntar cualquier otro documento.</p>
-        <div className="mt-4 rounded-2xl border border-border/70 bg-secondary/30 p-4">
+        <div className="mt-4 space-y-3">
           <label className="block">
             <span className="eyebrow">Vencimiento (opcional)</span>
             <input type="date" className="surface-control mt-1 w-full" value={expires} onChange={(e) => setExpires(e.target.value)} />
@@ -67,10 +67,10 @@ export function DocumentsClient({ documents }: { documents: Doc[] }) {
             className="hidden"
             onChange={(e) => e.target.files?.[0] && onUpload(e.target.files[0])}
           />
-          <button type="button" className="btn-primary mt-3 w-full justify-center" disabled={busy} onClick={() => fileRef.current?.click()}>
+          <button type="button" className="btn-primary w-full justify-center" disabled={busy} onClick={() => fileRef.current?.click()}>
             <Upload className="h-4 w-4" /> {busy ? "Subiendo…" : "Seleccionar archivo"}
           </button>
-          <p className="mt-3 text-xs text-muted-foreground">PDF, JPG o PNG · máx 10 MB</p>
+          <p className="text-xs text-muted-foreground">PDF, JPG o PNG · máx 10 MB</p>
         </div>
         {err && <div className="mt-3 rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-2 text-sm text-destructive">{err}</div>}
       </section>

@@ -2,6 +2,12 @@
 
 Cada release sube la versión en `+0.01`. El número visible abajo a la izquierda en la app coincide con este archivo.
 
+## v0.32 — 2026-07-11
+
+**Feedback: recuadro de "Otros documentos" sin solapamientos.**
+
+- Se sacó la caja anidada que se superponía visualmente con el campo de fecha. Ahora el vencimiento y el botón "Seleccionar archivo" van directo en la tarjeta, con espaciado prolijo y sin bordes encimados.
+
 ## v0.31 — 2026-07-11
 
 **Feedback: calendario en español y recuadro de "Otros documentos".**
