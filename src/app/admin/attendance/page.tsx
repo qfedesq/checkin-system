@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { toCalendarISODate } from "@/lib/utils";
 import { AttendanceClient } from "./AttendanceClient";
 
 export const dynamic = "force-dynamic";
@@ -7,16 +8,29 @@ export const dynamic = "force-dynamic";
 export default async function AdminAttendancePage({ searchParams }: { searchParams: Promise<{ from?: string; to?: string; userId?: string }> }) {
   const sp = await searchParams;
   const now = new Date();
-  const defaultFrom = new Date(now.getFullYear(), now.getMonth(), 1);
-  const defaultTo = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
-  const from = sp.from ? new Date(sp.from) : defaultFrom;
-  const to = sp.to ? new Date(sp.to + "T23:59:59") : defaultTo;
+  const defaultFromISO = toCalendarISODate(new Date(now.getFullYear(), now.getMonth(), 1));
+  const defaultToISO = toCalendarISODate(new Date(now.getFullYear(), now.getMonth() + 1, 0));
+  const fromISO = sp.from || defaultFromISO;
+  const toISO = sp.to || defaultToISO;
+
+  // Mismos límites de día-calendario ART (UTC-3) que usa el export (src/app/api/attendance/export/route.ts):
+  // antes la pantalla parseaba "from"/"to" naive en UTC mientras el export usaba 03:00 UTC como
+  // frontera del día ART, así que pantalla y Excel podían mostrar jornadas distintas para el mismo filtro.
+  const parseArtDay = (value: string) => {
+    const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+    if (!match) return null;
+    return { y: Number(match[1]), m: Number(match[2]) - 1, d: Number(match[3]) };
+  };
+  const fromParts = parseArtDay(fromISO);
+  const toParts = parseArtDay(toISO);
+  const from = fromParts ? new Date(Date.UTC(fromParts.y, fromParts.m, fromParts.d, 3, 0, 0)) : new Date(0);
+  const to = toParts ? new Date(Date.UTC(toParts.y, toParts.m, toParts.d + 1, 3, 0, 0)) : new Date();
 
   const [employees, attendance] = await Promise.all([
     prisma.user.findMany({ where: { role: "EMPLOYEE" }, include: { profile: true }, orderBy: { email: "asc" } }),
     prisma.attendance.findMany({
       where: {
-        checkInAt: { gte: from, lte: to },
+        checkInAt: { gte: from, lt: to },
         ...(sp.userId ? { userId: sp.userId } : {}),
       },
       orderBy: { checkInAt: "desc" },
@@ -43,7 +57,7 @@ export default async function AdminAttendancePage({ searchParams }: { searchPara
     <>
       <PageHeader eyebrow="admin · jornadas" title="Jornadas trabajadas" description="Sólo el administrador ve las duraciones. Exportá a Excel filtrando por fecha y/o empleado." />
       <AttendanceClient
-        initial={{ from: from.toISOString().slice(0, 10), to: to.toISOString().slice(0, 10), userId: sp.userId ?? "" }}
+        initial={{ from: fromISO, to: toISO, userId: sp.userId ?? "" }}
         employees={employeeOpts}
         rows={rows}
       />

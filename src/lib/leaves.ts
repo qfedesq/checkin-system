@@ -1,4 +1,5 @@
 import type { Category, Prisma, PrismaClient } from "@prisma/client";
+import { artTodayCalendarDate } from "./utils";
 
 // Todas las fechas-calendario (vacaciones, francos) se manejan como medianoche UTC del
 // día elegido, independientes de la zona horaria del servidor o del cliente.
@@ -26,11 +27,18 @@ export function parseLocalDate(input: string): Date | null {
   return new Date(Date.UTC(Number(y), Number(mo) - 1, Number(d)));
 }
 
+/** Fecha-calendario (medianoche UTC) < hoy ART: usado para rechazar inicios en el pasado
+ *  tanto en vacaciones como en franco. */
+export function isPastCalendarDate(date: Date): boolean {
+  return date.getTime() < artTodayCalendarDate().getTime();
+}
+
 export function validateVacationRange(startISO: string, days: 7 | 14): { ok: true; start: Date; end: Date } | { ok: false; error: string } {
   const start = parseLocalDate(startISO);
   if (!start) return { ok: false, error: "Fecha inicial inválida" };
   if (start.getUTCDay() !== 1) return { ok: false, error: "Las vacaciones deben comenzar un lunes" };
   if (days !== 7 && days !== 14) return { ok: false, error: "Las vacaciones son de 7 o 14 días" };
+  if (isPastCalendarDate(start)) return { ok: false, error: "La fecha de inicio no puede ser en el pasado" };
   const end = addDays(start, days - 1);
   return { ok: true, start, end };
 }

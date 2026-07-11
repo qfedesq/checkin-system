@@ -50,6 +50,12 @@ export const POST = route("attendance.checkin", async (req: NextRequest) => {
     if (typeof e === "object" && e !== null && "code" in e && (e as { code?: string }).code === "P2034") {
       return NextResponse.json({ error: "Ya tenés una jornada abierta" }, { status: 409 });
     }
+    // Índice único parcial "attendance_one_open_per_user" (1_indexes migration): si dos
+    // check-ins concurrentes pasan el SELECT de la tx antes de que la primera confirme, el
+    // segundo INSERT choca acá en vez de dejar dos jornadas abiertas para el mismo usuario.
+    if (typeof e === "object" && e !== null && "code" in e && (e as { code?: string }).code === "P2002") {
+      return NextResponse.json({ error: "Ya tenés una jornada abierta" }, { status: 409 });
+    }
     throw e;
   }
   await recordAudit({ actorId: session.user.id, action: "attendance.checkin", subjectId: att.id });

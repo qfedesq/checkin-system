@@ -105,6 +105,12 @@ export const PUT = route("admin.employees.put", async (req: NextRequest, ctx: { 
   const hireDate = d.hireDate ? new Date(d.hireDate) : null;
   const licenseExpiry = d.professionalLicenseExpiry ? new Date(d.professionalLicenseExpiry) : null;
 
+  // Un chofer sin vencimiento de carnet queda fuera del monitoreo del cron de vencimientos
+  // (src/app/api/cron/expiry-check/route.ts sólo chequea DRIVER con professionalLicenseExpiry).
+  if (d.category === "DRIVER" && !licenseExpiry && !user.profile?.professionalLicenseExpiry) {
+    return NextResponse.json({ error: "Un chofer necesita fecha de vencimiento del carnet profesional" }, { status: 400 });
+  }
+
   const profileData = {
     legajo: d.legajo || null,
     lastName: d.lastName,

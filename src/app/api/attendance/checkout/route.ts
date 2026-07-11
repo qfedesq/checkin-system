@@ -19,8 +19,11 @@ export const POST = route("attendance.checkout", async (req: NextRequest) => {
   const now = new Date();
   const durationMin = Math.max(0, Math.round((now.getTime() - open.checkInAt.getTime()) / 60000));
 
-  const updated = await prisma.attendance.update({
-    where: { id: open.id },
+  // Guard de idempotencia (mismo espíritu que el índice único de check-in): el WHERE con
+  // checkOutAt:null hace que, si dos checkout casi simultáneos leen la misma jornada abierta,
+  // sólo uno la cierre — el otro ve count===0 en vez de pisar los datos del primero.
+  const result = await prisma.attendance.updateMany({
+    where: { id: open.id, checkOutAt: null },
     data: {
       checkOutAt: now,
       checkOutLat: parsed.data.lat,
@@ -28,7 +31,8 @@ export const POST = route("attendance.checkout", async (req: NextRequest) => {
       durationMin,
     },
   });
-  await recordAudit({ actorId: session.user.id, action: "attendance.checkout", subjectId: updated.id, metadata: { durationMin } });
+  if (result.count === 0) return NextResponse.json({ error: "La jornada ya fue cerrada" }, { status: 409 });
+  await recordAudit({ actorId: session.user.id, action: "attendance.checkout", subjectId: open.id, metadata: { durationMin } });
   // La duración queda en DB (visible sólo al admin); al empleado sólo le confirmamos el cierre.
   return NextResponse.json({ ok: true });
 });

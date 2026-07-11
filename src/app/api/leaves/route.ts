@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { requireActiveUser } from "@/lib/session-guard";
 import { prisma } from "@/lib/prisma";
-import { parseLocalDate, validateVacationRange, monthBounds, checkVacationApprovable } from "@/lib/leaves";
+import { parseLocalDate, validateVacationRange, monthBounds, checkVacationApprovable, isPastCalendarDate } from "@/lib/leaves";
 import { recordAudit } from "@/lib/audit";
 import { notifyAdmins } from "@/lib/notify";
 import { formatCalendarDate } from "@/lib/utils";
@@ -59,6 +59,7 @@ export const POST = route("leaves.create", async (req: NextRequest) => {
   } else {
     const local = parseLocalDate(parsed.data.startDate);
     if (!local) return NextResponse.json({ error: "Fecha inválida" }, { status: 400 });
+    if (isPastCalendarDate(local)) return NextResponse.json({ error: "La fecha de inicio no puede ser en el pasado" }, { status: 400 });
     startDate = local;
     endDate = local;
     daysInt = 1;
@@ -68,6 +69,19 @@ export const POST = route("leaves.create", async (req: NextRequest) => {
       where: { type: "DAY_OFF", status: "APPROVED", startDate: local },
     });
     if (taken) return NextResponse.json({ error: "Ya hay un franco aprobado para ese día" }, { status: 409 });
+
+    // No pedir franco un día que ya cae dentro de vacaciones propias (PENDING o APPROVED):
+    // sin este chequeo, un empleado podía tener vacaciones y franco superpuestos el mismo día.
+    const ownVacationOverlap = await prisma.leaveRequest.findFirst({
+      where: {
+        userId: session.user.id,
+        type: "VACATION",
+        status: { in: ["PENDING", "APPROVED"] },
+        startDate: { lte: local },
+        endDate: { gte: local },
+      },
+    });
+    if (ownVacationOverlap) return NextResponse.json({ error: "Ese día ya está dentro de tu período de vacaciones" }, { status: 409 });
 
     const mine = await prisma.leaveRequest.findFirst({
       where: { userId: session.user.id, type: "DAY_OFF", startDate: local, status: { in: ["PENDING", "APPROVED"] } },

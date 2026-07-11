@@ -107,13 +107,15 @@ async function runExpiryCheck() {
     }
   });
 
-  // Documentos subidos con vencimiento
+  // Documentos subidos con vencimiento (sólo de usuarios ACTIVE: antes se notificaba
+  // igual a empleados deshabilitados/pendientes, que ni siquiera pueden entrar a renovar).
   const docs = await prisma.documentUpload.findMany({
     where: { expiresAt: { not: null }, status: "APPROVED" },
-    include: { user: { select: { email: true, profile: { select: { firstName: true, lastName: true } } } } },
+    include: { user: { select: { email: true, status: true, profile: { select: { firstName: true, lastName: true } } } } },
   });
 
   await processInBatches(docs, async (doc) => {
+    if (doc.user.status !== "ACTIVE") return;
     if (!doc.expiresAt) return;
     const d = daysUntil(doc.expiresAt);
     if (d === null || d > 30 || d < 0) return;
@@ -122,6 +124,7 @@ async function runExpiryCheck() {
     const name = doc.user.profile ? `${doc.user.profile.firstName} ${doc.user.profile.lastName}`.trim() : "";
     const label = doc.type === "DRIVER_LICENSE" ? "carnet de conducir" : doc.type === "HEALTH_CARD" ? "libreta sanitaria" : "documento";
     await sendEmail(doc.user.email, `Tu ${label} vence pronto`, expiryEmailHtml(name, label, doc.expiresAt, d));
+    await sendPushToUser(doc.userId, { title: `${label[0].toUpperCase()}${label.slice(1)} por vencer`, body: `Vence el ${formatCalendarDate(doc.expiresAt)} (en ${d} día${d === 1 ? "" : "s"}). Renovalo para no quedar bloqueado.`, url: "/documents" });
     await prisma.documentUpload.update({ where: { id: doc.id }, data: { notifiedAt: now } });
     results.docsNotified++;
   });

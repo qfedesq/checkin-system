@@ -53,24 +53,32 @@ test("isMonday reconoce lunes", () => {
   assert.equal(isMonday(new Date(2026, 3, 21)), false);
 });
 
+// Lunes futuro fijo (respecto a cualquier "hoy" real de test run): valida el caso feliz sin
+// pisar la nueva regla de "no puede ser en el pasado".
 test("validateVacationRange: lunes + 7 días", () => {
-  const r = validateVacationRange("2026-04-20", 7);
+  const r = validateVacationRange("2026-08-03", 7);
   assert.equal(r.ok, true);
   if (r.ok) {
     // leaves.ts maneja fechas-calendario en UTC (getUTCDay), así que el test debe leerlas en UTC.
     assert.equal(r.start.getUTCDay(), 1);
-    assert.equal(r.end.getUTCDate(), 26);
+    assert.equal(r.end.getUTCDate(), 9);
   }
 });
 
 test("validateVacationRange: martes rechazado", () => {
-  const r = validateVacationRange("2026-04-21", 7);
+  const r = validateVacationRange("2026-08-04", 7);
   assert.equal(r.ok, false);
 });
 
 test("validateVacationRange: duración inválida rechazada", () => {
-  const r = validateVacationRange("2026-04-20", 10 as 7);
+  const r = validateVacationRange("2026-08-03", 10 as 7);
   assert.equal(r.ok, false);
+});
+
+test("validateVacationRange: fecha de inicio en el pasado rechazada", () => {
+  const r = validateVacationRange("2020-01-06", 7); // 2020-01-06 es lunes, pero muy en el pasado
+  assert.equal(r.ok, false);
+  if (!r.ok) assert.match(r.error, /no puede ser en el pasado/);
 });
 
 test("addDays 14", () => {

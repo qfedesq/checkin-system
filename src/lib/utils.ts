@@ -68,6 +68,14 @@ export function minutesToHhmm(min: number | null | undefined) {
   return `${h}h ${m.toString().padStart(2, "0")}m`;
 }
 
+/** "Hoy" como fecha-calendario (medianoche UTC) en día ART. Mismo criterio que artNow en
+ *  src/app/admin/page.tsx: restar el offset fijo evita que el día se corra en un proceso que
+ *  corre en UTC (Vercel) cuando son ~21:00-00:00 ART. */
+export function artTodayCalendarDate(): Date {
+  const artNow = new Date(Date.now() - 3 * 3600 * 1000);
+  return new Date(Date.UTC(artNow.getUTCFullYear(), artNow.getUTCMonth(), artNow.getUTCDate()));
+}
+
 export function daysUntil(date: Date | string | null | undefined): number | null {
   if (!date) return null;
   const d = typeof date === "string" ? new Date(date) : date;

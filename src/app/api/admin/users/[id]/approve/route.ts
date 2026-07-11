@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/admin-guard";
 import { recordAudit } from "@/lib/audit";
@@ -23,7 +24,8 @@ export const POST = route("admin.users.approve", async (req: NextRequest, ctx: {
   const hireDate = new Date(parsed.data.hireDate);
   if (Number.isNaN(hireDate.getTime())) return NextResponse.json({ error: "Fecha inválida" }, { status: 400 });
 
-  await prisma.$transaction(async (tx) => {
+  try {
+    await prisma.$transaction(async (tx) => {
     await tx.user.update({
       where: { id },
       data: { status: "ACTIVE", approvedAt: new Date(), approvedById: session.user.id },
@@ -60,7 +62,22 @@ export const POST = route("admin.users.approve", async (req: NextRequest, ctx: {
         },
       });
     }
-  });
+    });
+  } catch (e) {
+    // QA: defensa ante colisión de legajo por carrera (el pre-check de arriba no es atómico
+    // con el create/update de acá adentro) — sin esto, el 500 genérico del wrapper `route`
+    // ocultaba que el conflicto era simplemente un legajo duplicado.
+    if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002") {
+      const field = String(e.meta?.target ?? "");
+      const message = field.includes("legajo")
+        ? "Legajo ya utilizado"
+        : field.includes("cuil")
+          ? "Ese CUIL ya está registrado"
+          : "Ya existe un registro con ese valor";
+      return NextResponse.json({ error: message }, { status: 409 });
+    }
+    throw e;
+  }
 
   await recordAudit({ actorId: session.user.id, action: "user.approve", subjectId: id, metadata: { legajo: parsed.data.legajo } });
   return NextResponse.json({ ok: true });

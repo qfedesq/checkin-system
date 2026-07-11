@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/admin-guard";
 import { recordAudit } from "@/lib/audit";
@@ -16,7 +17,8 @@ export const POST = route("admin.leaves.approve", async (_req: Request, ctx: { p
 
   let outcome: { kind: "notfound" } | { kind: "conflict" } | { kind: "ok"; leave: Awaited<ReturnType<typeof prisma.leaveRequest.findUnique>> };
   try {
-    outcome = await prisma.$transaction(async (tx) => {
+    outcome = await prisma.$transaction(
+      async (tx) => {
       // Releer el estado dentro de la tx (QA-007): si ya no está PENDING, otro admin (o esta
       // misma request duplicada) ya la resolvió — abortar sin re-aplicar ni notificar.
       const current = await tx.leaveRequest.findUnique({ where: { id } });
@@ -55,9 +57,16 @@ export const POST = route("admin.leaves.approve", async (_req: Request, ctx: { p
       });
       if (result.count === 0) return { kind: "conflict" as const };
       return { kind: "ok" as const, leave: current };
-    });
+      },
+      { isolationLevel: Prisma.TransactionIsolationLevel.Serializable }
+    );
   } catch (e) {
     if (e instanceof ApprovalConflictError) return NextResponse.json({ error: e.message }, { status: 409 });
+    // Postgres aborta transacciones serializables con conflicto de escritura (P2034): mismo
+    // patrón que checkin — pedirle al cliente que reintente en vez de un 500 crudo.
+    if (typeof e === "object" && e !== null && "code" in e && (e as { code?: string }).code === "P2034") {
+      return NextResponse.json({ error: "Conflicto al aprobar, reintentá" }, { status: 409 });
+    }
     throw e;
   }
 
