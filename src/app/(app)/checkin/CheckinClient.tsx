@@ -68,19 +68,15 @@ export function CheckinClient({ open }: { open: Open }) {
       } catch {
         throw new ExpectedError(WEBAUTHN_GENERIC_ERROR_MSG);
       }
-      const verify = await fetch("/api/webauthn/authenticate/verify", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ assertion }),
-      }).then((r) => r.json());
-      if (!verify.ok) throw new ExpectedError(verify.error ?? "Verificación biométrica fallida");
-
+      // La biometría se verifica DENTRO de /api/attendance/{kind} (un solo request atómico):
+      // mandamos la aserción junto con la ubicación para que no se pueda fichar salteándola.
       const res = await fetch(`/api/attendance/${kind}`, {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
           lat: position.coords.latitude,
           lng: position.coords.longitude,
+          assertion,
         }),
       });
       const body = await res.json();

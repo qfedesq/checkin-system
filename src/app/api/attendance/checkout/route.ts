@@ -3,15 +3,20 @@ import { z } from "zod";
 import { requireActiveUser } from "@/lib/session-guard";
 import { prisma } from "@/lib/prisma";
 import { recordAudit } from "@/lib/audit";
+import { verifyUserAssertion } from "@/lib/webauthn-verify";
 import { route } from "@/lib/route";
 
-const schema = z.object({ lat: z.number(), lng: z.number() });
+const schema = z.object({ lat: z.number(), lng: z.number(), assertion: z.unknown() });
 
 export const POST = route("attendance.checkout", async (req: NextRequest) => {
   const { session, error } = await requireActiveUser();
   if (error) return error;
   const parsed = schema.safeParse(await req.json().catch(() => ({})));
   if (!parsed.success) return NextResponse.json({ error: "Datos inválidos" }, { status: 400 });
+
+  // Biometría obligatoria verificada en el propio endpoint (ver checkin).
+  const bio = await verifyUserAssertion(session.user.id, parsed.data.assertion);
+  if (!bio.ok) return NextResponse.json({ error: bio.error }, { status: bio.status });
 
   const open = await prisma.attendance.findFirst({ where: { userId: session.user.id, checkOutAt: null }, orderBy: { checkInAt: "desc" } });
   if (!open) return NextResponse.json({ error: "No hay jornada abierta" }, { status: 404 });

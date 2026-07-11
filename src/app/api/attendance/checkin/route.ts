@@ -3,9 +3,10 @@ import { z } from "zod";
 import { requireActiveUser } from "@/lib/session-guard";
 import { prisma } from "@/lib/prisma";
 import { recordAudit } from "@/lib/audit";
+import { verifyUserAssertion } from "@/lib/webauthn-verify";
 import { route } from "@/lib/route";
 
-const schema = z.object({ lat: z.number(), lng: z.number() });
+const schema = z.object({ lat: z.number(), lng: z.number(), assertion: z.unknown() });
 
 class CheckinConflictError extends Error {}
 
@@ -19,6 +20,11 @@ export const POST = route("attendance.checkin", async (req: NextRequest) => {
   if (user?.deviceId && !user.deviceApprovedAt) {
     return NextResponse.json({ error: "Tu dispositivo está pendiente de aprobación del administrador" }, { status: 403 });
   }
+
+  // Biometría obligatoria verificada EN el propio endpoint (no en un request aparte): sin esto,
+  // con una sesión válida se podía fichar salteando la biometría pegándole directo a esta ruta.
+  const bio = await verifyUserAssertion(session.user.id, parsed.data.assertion);
+  if (!bio.ok) return NextResponse.json({ error: bio.error }, { status: bio.status });
 
   // Verificar + crear en la misma transacción (QA-008): reduce la ventana de carrera de dos
   // check-ins casi simultáneos generando dos Attendance abiertas para el mismo usuario. No es
