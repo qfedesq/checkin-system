@@ -2,6 +2,13 @@
 
 Cada release sube la versión en `+0.01`. El número visible abajo a la izquierda en la app coincide con este archivo.
 
+## v0.33 — 2026-07-11
+
+**Feedback: destinatario de recibos sin confusión + vista previa de imágenes.**
+
+- **Recibos que no llegaban**: cuando dos empleados tienen nombres casi iguales, el desplegable de destinatario mostraba sólo el nombre y era fácil enviarle el recibo a la persona equivocada (que después no lo veía). Ahora el destinatario muestra **nombre · legajo · email** para elegir sin dudas, y la tabla de enviados aclara el legajo.
+- **Imágenes "cargadas pero no se previsualizan"**: el enlace interno con el que se muestran las fotos de documentos vencía a los 5 minutos, así que al hacer scroll o quedarse un rato la vista previa desaparecía. Se extendió a 7 días (sigue siendo privado, sólo con sesión iniciada) y, si una vista previa igual falla, ahora avisa "vista previa no disponible · tocá para volver a subir" en vez de mostrar una imagen rota.
+
 ## v0.32 — 2026-07-11
 
 **Feedback: recuadro de "Otros documentos" sin solapamientos.**

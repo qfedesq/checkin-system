@@ -17,7 +17,12 @@ function sign(payloadB64: string): string {
   return crypto.createHmac("sha256", secret()).update(payloadB64).digest("base64url");
 }
 
-export function signFileToken(blobUrl: string, ttlMs = 5 * 60 * 1000): string {
+// TTL amplio (7 días) a propósito: el token se firma al renderizar la página (SSR) y las
+// imágenes usan loading="lazy", así que con 5 min vencía antes de que el usuario llegara a
+// verlas (scroll tardío, sesión larga, admin revisando varias fichas) → "imagen cargada pero
+// no se previsualiza". No es un riesgo: /api/files igual exige sesión activa; el token sólo
+// impide adivinar/manipular la URL cruda del blob, no reemplaza la autenticación.
+export function signFileToken(blobUrl: string, ttlMs = 7 * 24 * 60 * 60 * 1000): string {
   const payload = JSON.stringify({ u: blobUrl, exp: Date.now() + ttlMs });
   const payloadB64 = Buffer.from(payload, "utf8").toString("base64url");
   const sig = sign(payloadB64);

@@ -86,6 +86,7 @@ function ImageSlot({ label, kind, url, onError }: { label: string; kind: string;
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [current, setCurrent] = useState(url);
+  const [imgFailed, setImgFailed] = useState(false);
 
   async function upload(file: File) {
     setBusy(true);
@@ -98,6 +99,7 @@ function ImageSlot({ label, kind, url, onError }: { label: string; kind: string;
       // lo tratamos como error en vez de dejar el botón colgado en "Subiendo…".
       const out = await res.json().catch(() => ({}));
       if (!res.ok) return onError(out.error ?? "No pudimos subir la imagen. Probá con una foto más liviana.");
+      setImgFailed(false);
       setCurrent(out.url);
       router.refresh();
     } catch {
@@ -116,13 +118,13 @@ function ImageSlot({ label, kind, url, onError }: { label: string; kind: string;
         onClick={() => inputRef.current?.click()}
         disabled={busy}
       >
-        {current ? (
+        {current && !imgFailed ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={current} alt={label} loading="lazy" decoding="async" className="h-full w-full object-cover" />
+          <img src={current} alt={label} loading="lazy" decoding="async" className="h-full w-full object-cover" onError={() => setImgFailed(true)} />
         ) : (
-          <span className="flex flex-col items-center gap-1 text-xs text-muted-foreground">
+          <span className="flex flex-col items-center gap-1 px-2 text-center text-xs text-muted-foreground">
             <Upload className="h-4 w-4" />
-            {busy ? "Subiendo…" : "Subir"}
+            {busy ? "Subiendo…" : current ? "Vista previa no disponible · tocá para volver a subir" : "Subir"}
           </span>
         )}
       </button>

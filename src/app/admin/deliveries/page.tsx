@@ -11,13 +11,27 @@ export default async function AdminDeliveriesPage({ searchParams }: { searchPara
     prisma.deliveredDocument.findMany({ orderBy: { createdAt: "desc" }, take: 50, include: { recipient: { include: { profile: true } } } }),
   ]);
 
-  const employeeOpts = employees.map((e) => ({ id: e.id, label: e.profile ? `${e.profile.firstName} ${e.profile.lastName}` : e.email }));
+  // Etiqueta desambiguada: hay empleados con nombres casi idénticos (p. ej. dos
+  // "Maximiliano Klein"). Mostramos nombre · legajo · email para que el admin no le
+  // mande el documento al destinatario equivocado (era la causa de "mandé un recibo
+  // y el usuario no lo recibió": iba a otra cuenta con el mismo nombre).
+  const employeeOpts = employees.map((e) => {
+    const name = e.profile ? `${e.profile.firstName} ${e.profile.lastName}`.trim() : "";
+    const parts = [name || e.email];
+    if (e.profile?.legajo) parts.push(`legajo ${e.profile.legajo}`);
+    if (name) parts.push(e.email);
+    return { id: e.id, label: parts.join(" · ") };
+  });
 
   const rows = recent.map((d) => ({
     id: d.id,
     title: d.title,
     type: d.type,
-    recipient: d.recipient.profile ? `${d.recipient.profile.firstName} ${d.recipient.profile.lastName}` : d.recipient.email,
+    recipient: (() => {
+      const name = d.recipient.profile ? `${d.recipient.profile.firstName} ${d.recipient.profile.lastName}`.trim() : "";
+      if (!name) return d.recipient.email;
+      return d.recipient.profile?.legajo ? `${name} (legajo ${d.recipient.profile.legajo})` : `${name} · ${d.recipient.email}`;
+    })(),
     openedAt: d.openedAt?.toISOString() ?? null,
     createdAt: d.createdAt.toISOString(),
   }));
