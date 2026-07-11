@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { signIn } from "next-auth/react";
+import { signIn, signOut } from "next-auth/react";
 import { startAuthentication } from "@simplewebauthn/browser";
 
 export function LoginForm({ from, error }: { from?: string; error?: string }) {
@@ -53,8 +53,9 @@ export function LoginForm({ from, error }: { from?: string; error?: string }) {
 
       if (!verify.ok) {
         setErr(verify.error ?? "Verificación biométrica fallida.");
-        // sign out para limpiar sesión parcial
-        await fetch("/api/auth/signout", { method: "POST" });
+        // sign out real (limpia la cookie de sesión) para no dejar al usuario
+        // logueado tras un fallo de biometría
+        await signOut({ redirect: false });
         setBusy(false);
         return;
       }
@@ -63,7 +64,7 @@ export function LoginForm({ from, error }: { from?: string; error?: string }) {
       router.refresh();
     } catch (e) {
       setErr("No pudimos verificar tu biometría en este dispositivo.");
-      await fetch("/api/auth/signout", { method: "POST" });
+      await signOut({ redirect: false });
       setBusy(false);
     }
   }

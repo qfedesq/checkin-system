@@ -36,9 +36,9 @@ export function AdminMiniCalendar({ vacations, dayOffs }: { vacations: Range[]; 
           vacations: vacations.map((v) => ({ from: isoToCalendarDate(v.from), to: isoToCalendarDate(v.to) })),
           dayOffs: dayOffs.map((d) => isoToCalendarDate(d.from)),
         }}
-        modifiersStyles={{
-          vacations: { background: "hsl(142 72% 45% / 0.25)", color: "hsl(142 72% 55%)", borderRadius: 10 },
-          dayOffs: { background: "hsl(199 76% 52% / 0.25)", color: "hsl(199 76% 60%)", borderRadius: 10 },
+        modifiersClassNames={{
+          vacations: "cal-day-approved",
+          dayOffs: "cal-day-dayoff",
         }}
         styles={{
           caption: { color: "hsl(var(--foreground))" },

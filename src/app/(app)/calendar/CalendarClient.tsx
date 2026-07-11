@@ -137,11 +137,11 @@ export function CalendarClient() {
             minePending: mineByRange.filter((m) => m.status === "PENDING").map((m) => ({ from: m.from, to: m.to })),
             takenByOthers: data?.takenDayOffs.filter((t) => !t.byMe).map((t) => isoToCalendarDate(t.date)) ?? [],
           }}
-          modifiersStyles={{
-            mineApproved: { background: "hsl(142 72% 45% / 0.25)", color: "hsl(142 72% 65%)", borderRadius: 10 },
-            minePending: { background: "hsl(19 95% 53% / 0.2)", color: "hsl(19 95% 60%)", borderRadius: 10 },
-            takenByOthers: { background: "hsl(1 79% 64% / 0.2)", color: "hsl(1 79% 75%)", borderRadius: 10 },
-            selected: { background: "hsl(19 95% 53%)", color: "#fff", borderRadius: 10 },
+          modifiersClassNames={{
+            mineApproved: "cal-day-approved",
+            minePending: "cal-day-pending",
+            takenByOthers: "cal-day-taken-others",
+            selected: "cal-day-selected",
           }}
           styles={{
             caption: { color: "hsl(var(--foreground))" },

@@ -301,14 +301,19 @@ function ImageSlot({ userId, kind, label, url, onUploaded }: {
   async function upload(file: File) {
     setBusy(true);
     setErr(null);
-    const form = new FormData();
-    form.set("file", file);
-    form.set("kind", kind);
-    const res = await fetch(`/api/admin/employees/${userId}/uploads`, { method: "POST", body: form });
-    const out = await res.json();
-    setBusy(false);
-    if (!res.ok) return setErr(out.error ?? "Error");
-    onUploaded(out.url);
+    try {
+      const form = new FormData();
+      form.set("file", file);
+      form.set("kind", kind);
+      const res = await fetch(`/api/admin/employees/${userId}/uploads`, { method: "POST", body: form });
+      const out = await res.json().catch(() => ({}));
+      if (!res.ok) return setErr(out.error ?? "No pudimos subir el archivo");
+      onUploaded(out.url);
+    } catch {
+      setErr("No pudimos subir el archivo. Revisá tu conexión e intentá de nuevo.");
+    } finally {
+      setBusy(false);
+    }
   }
 
   return (

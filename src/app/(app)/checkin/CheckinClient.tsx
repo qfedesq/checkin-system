@@ -11,6 +11,25 @@ type Open = { id: string; checkInAt: string; lat: number; lng: number } | null;
 
 const WEBAUTHN_UNSUPPORTED_MSG =
   "Tu navegador no permite la verificación biométrica. Abrí Emmalva en Safari o Chrome (no dentro de WhatsApp) para fichar.";
+const WEBAUTHN_GENERIC_ERROR_MSG = "No pudimos verificar tu identidad. Probá de nuevo.";
+
+// Error "esperado": mensaje ya en español (propio o del servidor). Cualquier otro
+// error (geolocalización/WebAuthn nativos del navegador, network, etc.) que no
+// pase por acá muestra el mensaje genérico en vez del texto nativo en inglés.
+class ExpectedError extends Error {}
+
+function geoErrorMessage(code: number) {
+  switch (code) {
+    case 1: // PERMISSION_DENIED
+      return "Necesitamos permiso de ubicación para fichar. Activalo en los ajustes del navegador.";
+    case 2: // POSITION_UNAVAILABLE
+      return "No pudimos obtener tu ubicación. Probá de nuevo.";
+    case 3: // TIMEOUT
+      return "La ubicación tardó demasiado. Probá de nuevo.";
+    default:
+      return "No pudimos obtener tu ubicación. Probá de nuevo.";
+  }
+}
 
 export function CheckinClient({ open }: { open: Open }) {
   const router = useRouter();
@@ -32,8 +51,8 @@ export function CheckinClient({ open }: { open: Open }) {
     setBusy(true); setErr(null); setOk(null);
     try {
       const position = await new Promise<GeolocationPosition>((resolve, reject) => {
-        if (!navigator.geolocation) return reject(new Error("Geolocalización no disponible"));
-        navigator.geolocation.getCurrentPosition(resolve, (e) => reject(new Error(e.message)), { enableHighAccuracy: true, timeout: 15000 });
+        if (!navigator.geolocation) return reject(new ExpectedError("Geolocalización no disponible"));
+        navigator.geolocation.getCurrentPosition(resolve, (e) => reject(new ExpectedError(geoErrorMessage(e.code))), { enableHighAccuracy: true, timeout: 15000 });
       });
 
       // Biometría obligatoria
@@ -42,14 +61,19 @@ export function CheckinClient({ open }: { open: Open }) {
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ email: session?.user.email }),
       }).then((r) => r.json());
-      if (options.needsEnrollment) throw new Error("Registrá primero tu dispositivo.");
-      const assertion = await startAuthentication({ optionsJSON: options });
+      if (options.needsEnrollment) throw new ExpectedError("Registrá primero tu dispositivo.");
+      let assertion;
+      try {
+        assertion = await startAuthentication({ optionsJSON: options });
+      } catch {
+        throw new ExpectedError(WEBAUTHN_GENERIC_ERROR_MSG);
+      }
       const verify = await fetch("/api/webauthn/authenticate/verify", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ assertion }),
       }).then((r) => r.json());
-      if (!verify.ok) throw new Error(verify.error ?? "Verificación biométrica fallida");
+      if (!verify.ok) throw new ExpectedError(verify.error ?? "Verificación biométrica fallida");
 
       const res = await fetch(`/api/attendance/${kind}`, {
         method: "POST",
@@ -60,11 +84,11 @@ export function CheckinClient({ open }: { open: Open }) {
         }),
       });
       const body = await res.json();
-      if (!res.ok) throw new Error(body.error ?? "Error");
+      if (!res.ok) throw new ExpectedError(body.error ?? "Error");
       setOk(kind === "checkin" ? "Check-in registrado" : "Check-out registrado");
       router.refresh();
     } catch (e) {
-      setErr(e instanceof Error ? e.message : "Error");
+      setErr(e instanceof ExpectedError ? e.message : WEBAUTHN_GENERIC_ERROR_MSG);
     } finally {
       setBusy(false);
     }

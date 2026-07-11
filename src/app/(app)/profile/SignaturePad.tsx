@@ -116,29 +116,39 @@ export function SignaturePad({ url, onUploaded, onError }: {
     setBusy(true);
     canvas.toBlob(async (blob) => {
       if (!blob) { setBusy(false); return onError("No pudimos generar la firma"); }
-      const form = new FormData();
-      form.set("file", new File([blob], "firma.png", { type: "image/png" }));
-      form.set("kind", "signature");
-      const res = await fetch("/api/profile/uploads", { method: "POST", body: form });
-      const out = await res.json();
-      setBusy(false);
-      if (!res.ok) return onError(out.error ?? "No pudimos guardar la firma");
-      onUploaded(out.url);
-      setEditing(false);
+      try {
+        const form = new FormData();
+        form.set("file", new File([blob], "firma.png", { type: "image/png" }));
+        form.set("kind", "signature");
+        const res = await fetch("/api/profile/uploads", { method: "POST", body: form });
+        const out = await res.json().catch(() => ({}));
+        if (!res.ok) return onError(out.error ?? "No pudimos guardar la firma");
+        onUploaded(out.url);
+        setEditing(false);
+      } catch {
+        onError("No pudimos guardar la firma. Revisá tu conexión e intentá de nuevo.");
+      } finally {
+        setBusy(false);
+      }
     }, "image/png");
   }
 
   async function uploadImage(file: File) {
     setBusy(true);
-    const form = new FormData();
-    form.set("file", file);
-    form.set("kind", "signature");
-    const res = await fetch("/api/profile/uploads", { method: "POST", body: form });
-    const out = await res.json();
-    setBusy(false);
-    if (!res.ok) return onError(out.error ?? "No pudimos subir la imagen de firma");
-    onUploaded(out.url);
-    setEditing(false);
+    try {
+      const form = new FormData();
+      form.set("file", file);
+      form.set("kind", "signature");
+      const res = await fetch("/api/profile/uploads", { method: "POST", body: form });
+      const out = await res.json().catch(() => ({}));
+      if (!res.ok) return onError(out.error ?? "No pudimos subir la imagen de firma");
+      onUploaded(out.url);
+      setEditing(false);
+    } catch {
+      onError("No pudimos subir la imagen. Revisá tu conexión e intentá de nuevo.");
+    } finally {
+      setBusy(false);
+    }
   }
 
   if (!editing) {
