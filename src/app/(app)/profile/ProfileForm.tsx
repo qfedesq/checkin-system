@@ -166,7 +166,7 @@ export function ProfileForm({ initial, email, pendingFields }: { initial: Initia
         <p className="mt-1 text-sm text-muted-foreground">Cargá la fecha de vencimiento y adjuntá una foto de cada lado del documento.</p>
 
         <div className="mt-4">
-          <Field label="Libreta sanitaria · vence"><input type="date" className="surface-control" required value={data.healthCardExpiry} onChange={(e) => set("healthCardExpiry", e.target.value)} /></Field>
+          <Field label="Libreta sanitaria · vence"><input type="date" className="surface-control max-w-[220px]" required value={data.healthCardExpiry} onChange={(e) => set("healthCardExpiry", e.target.value)} /></Field>
           <div className="mt-3 grid grid-cols-2 gap-4 sm:max-w-md">
             <ImageSlot label="Libreta (frente)" kind="healthFront" url={data.healthCardFrontBlobUrl} onUploaded={(u) => set("healthCardFrontBlobUrl", u)} onError={(t) => setMsg({ kind: "err", text: t })} />
             <ImageSlot label="Libreta (dorso)" kind="healthBack" url={data.healthCardBackBlobUrl} onUploaded={(u) => set("healthCardBackBlobUrl", u)} onError={(t) => setMsg({ kind: "err", text: t })} />
@@ -175,7 +175,7 @@ export function ProfileForm({ initial, email, pendingFields }: { initial: Initia
 
         {isDriver && (
           <div className="mt-6">
-            <Field label="Carnet profesional · vence"><input type="date" className="surface-control" required value={data.professionalLicenseExpiry} onChange={(e) => set("professionalLicenseExpiry", e.target.value)} /></Field>
+            <Field label="Carnet profesional · vence"><input type="date" className="surface-control max-w-[220px]" required value={data.professionalLicenseExpiry} onChange={(e) => set("professionalLicenseExpiry", e.target.value)} /></Field>
             <div className="mt-3 grid grid-cols-2 gap-4 sm:max-w-md">
               <ImageSlot label="Carnet (frente)" kind="licenseFront" url={data.licenseFrontBlobUrl} onUploaded={(u) => set("licenseFrontBlobUrl", u)} onError={(t) => setMsg({ kind: "err", text: t })} />
               <ImageSlot label="Carnet (dorso)" kind="licenseBack" url={data.licenseBackBlobUrl} onUploaded={(u) => set("licenseBackBlobUrl", u)} onError={(t) => setMsg({ kind: "err", text: t })} />

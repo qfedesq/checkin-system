@@ -61,7 +61,7 @@ export function DocumentsClient({ documents }: { documents: Doc[] }) {
         <div className="mt-4 space-y-3">
           <label className="block">
             <span className="eyebrow">Vencimiento (opcional)</span>
-            <input type="date" className="surface-control mt-1 w-full" value={expires} onChange={(e) => setExpires(e.target.value)} />
+            <input type="date" className="surface-control mt-1 max-w-[220px]" value={expires} onChange={(e) => setExpires(e.target.value)} />
           </label>
           <input
             ref={fileRef}

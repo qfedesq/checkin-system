@@ -2,6 +2,14 @@
 
 Cada release sube la versión en `+0.01`. El número visible abajo a la izquierda en la app coincide con este archivo.
 
+## v0.39 — 2026-07-12
+
+**Feedback: cuadros de fecha aún sobresalían — auditoría de anchos en toda la app.**
+
+- **Campos de fecha del perfil**: las fechas de vencimiento de libreta sanitaria y carnet profesional (en "Mi perfil" y en "Otros documentos") quedaron con el mismo ancho acotado que ya tenían la fecha de nacimiento y las de Documentación — antes ocupaban todo el ancho de la tarjeta.
+- **Freno global de scroll horizontal**: el contenido de cada pantalla ya no puede desbordar hacia los costados en celulares angostos, sin afectar el scroll interno de las tablas.
+- Se repasaron todos los paneles, grillas y tablas de empleado y admin: nada quedó con ancho fijo que no se adapte a pantallas chicas.
+
 ## v0.38 — 2026-07-11
 
 **Feedback: colores del calendario más claros de leer.**
