@@ -231,6 +231,13 @@ model DeliveredDocument {
   // y página (1-based; null = última). Lo elige el admin al cargar el documento.
   signAnchor      String?
   signPage        Int?
+  // Posición exacta de la firma (normalizada 0..1 desde arriba-izquierda de la página).
+  // Si están seteadas, tienen prioridad sobre signAnchor: se estampa SÓLO la firma ahí.
+  signX           Float?
+  signY           Float?
+  // "Visto" en la bandeja del empleado (distinto de openedAt = abierto/firmado): al entrar
+  // a Recibidos se marca como visto y el contador de no leídos deja de contarlo.
+  seenAt          DateTime?
   createdAt       DateTime         @default(now())
 
   @@index([recipientId])

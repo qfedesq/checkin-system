@@ -18,6 +18,8 @@ export const POST = route("admin.deliveries.upload", async (req: NextRequest) =>
   const title = String(form.get("title") ?? "").trim();
   const signAnchorRaw = String(form.get("signAnchor") ?? "bottom-left");
   const signPageRaw = String(form.get("signPage") ?? "").trim();
+  const signXRaw = String(form.get("signX") ?? "").trim();
+  const signYRaw = String(form.get("signY") ?? "").trim();
 
   if (!(file instanceof File)) return NextResponse.json({ error: "Archivo requerido" }, { status: 400 });
   if (file.type !== "application/pdf") return NextResponse.json({ error: "Sólo PDF" }, { status: 400 });
@@ -36,6 +38,19 @@ export const POST = route("admin.deliveries.upload", async (req: NextRequest) =>
     const parsed = Number(signPageRaw);
     if (!Number.isInteger(parsed) || parsed < 1) return NextResponse.json({ error: "Página de firma inválida" }, { status: 400 });
     signPage = parsed;
+  }
+  // Punto exacto (normalizado 0..1) marcado por el admin sobre el render del PDF; opcional,
+  // si no viene se cae al modo recuadro por anchor. Ambos deben venir juntos o ninguno.
+  let signX: number | null = null;
+  let signY: number | null = null;
+  if (signXRaw !== "" || signYRaw !== "") {
+    const px = Number(signXRaw);
+    const py = Number(signYRaw);
+    if (!Number.isFinite(px) || !Number.isFinite(py) || px < 0 || px > 1 || py < 0 || py > 1) {
+      return NextResponse.json({ error: "Punto de firma inválido" }, { status: 400 });
+    }
+    signX = px;
+    signY = py;
   }
 
   // El recipientId venía sin validar: un id inexistente tiraba 500 por violación de FK
@@ -57,13 +72,17 @@ export const POST = route("admin.deliveries.upload", async (req: NextRequest) =>
       originalBlobUrl: url,
       signAnchor,
       signPage,
+      signX,
+      signY,
     },
   });
 
   await recordAudit({ actorId: session.user.id, action: "delivery.create", subjectId: d.id, metadata: { recipientId, type } });
 
   const kindLabel = type === "PAYSLIP" ? "recibo de sueldo" : "documento";
-  notifyUser(recipientId, "delivery.new", { body: `Tenés un nuevo <strong>${kindLabel}</strong> disponible: “${title}”. Al abrirlo se firma automáticamente con tu firma digital.` }).catch((e) => console.error("[notify] delivery.new", e));
+  // await (no fire-and-forget): en serverless la función puede terminar tras el return antes
+  // de enviar el push, y el aviso de "documento nuevo" no llegaba. Lo esperamos para garantizarlo.
+  await notifyUser(recipientId, "delivery.new", { body: `Tenés un nuevo <strong>${kindLabel}</strong> disponible: “${title}”. Al abrirlo se firma automáticamente con tu firma digital.` }).catch((e) => console.error("[notify] delivery.new", e));
 
   return NextResponse.json({ ok: true, id: d.id });
 });

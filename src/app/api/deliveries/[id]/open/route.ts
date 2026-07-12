@@ -64,6 +64,8 @@ export const GET = route("deliveries.open", async (_req: NextRequest, ctx: { par
   const { bytes, hash } = await signPdf(originalBytes, signatureBytes, { name, cuil, email: doc.recipient.email }, {
     anchor,
     page: doc.signPage ?? undefined,
+    x: doc.signX ?? undefined,
+    y: doc.signY ?? undefined,
   });
 
   const filename = `${doc.title.replace(/[^a-z0-9áéíóúñ _-]/gi, "_")}-firmado.pdf`;

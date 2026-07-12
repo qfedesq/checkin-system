@@ -37,6 +37,12 @@ export default async function InboxPage({ searchParams }: { searchParams: Promis
     orderBy: { createdAt: "desc" },
   });
 
+  // Entrar a la bandeja = "visto": limpia el contador de no leídos (sin abrir/firmar los PDFs).
+  await prisma.deliveredDocument.updateMany({
+    where: { recipientId: session.user.id, seenAt: null },
+    data: { seenAt: new Date() },
+  });
+
   const qs = (t: string, m: string) => {
     const p = new URLSearchParams();
     if (t) p.set("type", t);

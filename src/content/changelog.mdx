@@ -4,11 +4,12 @@ Cada release sube la versión en `+0.01`. El número visible abajo a la izquierd
 
 ## v0.39 — 2026-07-12
 
-**Feedback: cuadros de fecha aún sobresalían — auditoría de anchos en toda la app.**
+**Feedback: aviso de documentos, contador de no leídos, firma exacta y anchos responsive.**
 
-- **Campos de fecha del perfil**: las fechas de vencimiento de libreta sanitaria y carnet profesional (en "Mi perfil" y en "Otros documentos") quedaron con el mismo ancho acotado que ya tenían la fecha de nacimiento y las de Documentación — antes ocupaban todo el ancho de la tarjeta.
-- **Freno global de scroll horizontal**: el contenido de cada pantalla ya no puede desbordar hacia los costados en celulares angostos, sin afectar el scroll interno de las tablas.
-- Se repasaron todos los paneles, grillas y tablas de empleado y admin: nada quedó con ancho fijo que no se adapte a pantallas chicas.
+- **Aviso al llegar un documento**: el push de "documento nuevo" (recibo/notificación) ahora se envía de forma garantizada al subirlo (antes podía no llegar y sólo lo veías al abrir la app).
+- **Contador de "no leídos"**: el número en "Recibidos" ahora se limpia cuando entrás a la bandeja (antes seguía marcando uno sin leer aunque ya lo hubieras visto). Abrir/firmar el documento sigue siendo un paso aparte.
+- **Firma exacta en el documento**: al enviar un recibo/documento, el administrador ve una **vista previa del PDF y toca el punto exacto** donde va la firma; al abrirlo se estampa **sólo la firma** en ese lugar (ya no un recuadro con datos; el registro de validez queda en los metadatos del archivo).
+- **Campos de fecha y cuadros**: las fechas de vencimiento (perfil y "Otros documentos") quedaron con ancho acotado como el resto, y se repasó toda la app para que ningún cuadro se desborde en celulares angostos (freno global de scroll horizontal, sin afectar el scroll de las tablas).
 
 ## v0.38 — 2026-07-11
 

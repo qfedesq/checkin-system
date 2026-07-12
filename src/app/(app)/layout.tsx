@@ -12,9 +12,12 @@ export default async function EmployeeLayout({ children }: { children: React.Rea
   if (!currentUser || currentUser.status !== "ACTIVE") redirect("/login");
   if (currentUser.role === "ADMIN") redirect("/admin");
 
-  // Badge de "Recibidos": documentos entregados que el empleado todavía no abrió.
+  // Badge de "Recibidos": documentos que el empleado todavía no vio en la bandeja. "Visto"
+  // (seenAt) se marca al entrar a /inbox — distinto de "abierto/firmado" (openedAt), que
+  // requiere descargar. Antes contábamos openedAt=null, así que una notificación leída en la
+  // lista pero no descargada quedaba contada para siempre.
   const unreadDeliveries = await prisma.deliveredDocument.count({
-    where: { recipientId: session.user.id, openedAt: null },
+    where: { recipientId: session.user.id, seenAt: null },
   });
 
   return (
