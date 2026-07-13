@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Users, Calendar, FileText, Clock, Send, ShieldCheck, AlertTriangle } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { PageHeader } from "@/components/ui/PageHeader";
-import { DonutChart } from "@/components/ui/DonutChart";
+import { TodayCards } from "./TodayCards";
 import { AdminMiniCalendar } from "./AdminMiniCalendar";
 import { formatCalendarDate, daysUntil } from "@/lib/utils";
 
@@ -58,6 +58,15 @@ export default async function AdminHome() {
   // Ausente: activo, sin check-in hoy y sin licencia aprobada hoy
   const absent = activeEmployees.filter((u) => !checkedInUsers.has(u.id) && !onLeaveToday.has(u.id)).length;
 
+  // Listados de empleados por categoría (para las tarjetas clickeables del panel).
+  const nameByUser = new Map(profiles.map((p) => [p.userId, `${p.lastName}, ${p.firstName}`.trim() || "Empleado"]));
+  const nameFor = (id: string) => nameByUser.get(id) ?? "Empleado";
+  const checkinPeople = todayAttendances.map((a) => ({ name: nameFor(a.userId), detail: a.checkOutAt ? "jornada cerrada" : "jornada abierta" }));
+  const checkoutPeople = todayAttendances.filter((a) => a.checkOutAt).map((a) => ({ name: nameFor(a.userId) }));
+  const absentPeople = activeEmployees
+    .filter((u) => !checkedInUsers.has(u.id) && !onLeaveToday.has(u.id))
+    .map((u) => ({ name: nameFor(u.id) }));
+
   const cyan = "hsl(199 76% 52%)";
   const green = "hsl(142 72% 45%)";
   const red = "hsl(1 79% 64%)";
@@ -110,46 +119,45 @@ export default async function AdminHome() {
     <>
       <PageHeader eyebrow="panel admin" title="Resumen" description="El estado del día y todo lo que espera tu revisión." />
 
-      {/* Tortas del día */}
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-        <section className="panel p-5">
-          <h2 className="eyebrow">Check-in de hoy</h2>
-          <div className="mt-3">
-            <DonutChart
-              centerLabel={`${checkedIn}`}
-              segments={[
-                { value: checkedIn, color: cyan, label: "Hicieron check-in" },
-                { value: Math.max(0, totalActive - checkedIn), color: gray, label: "Sin check-in" },
-              ]}
-            />
-          </div>
-        </section>
-        <section className="panel p-5">
-          <h2 className="eyebrow">Check-out de hoy</h2>
-          <div className="mt-3">
-            <DonutChart
-              centerLabel={`${checkedOut}`}
-              segments={[
-                { value: checkedOut, color: green, label: "Hicieron check-out" },
-                { value: Math.max(0, checkedIn - checkedOut), color: gray, label: "Jornada abierta" },
-              ]}
-            />
-          </div>
-        </section>
-        <section className="panel p-5">
-          <h2 className="eyebrow">Ausentes de hoy</h2>
-          <div className="mt-3">
-            <DonutChart
-              centerLabel={`${absent}`}
-              segments={[
-                { value: absent, color: red, label: "Ausentes" },
-                { value: onLeaveToday.size, color: green, label: "Vacaciones / franco" },
-                { value: checkedIn, color: gray, label: "Presentes" },
-              ]}
-            />
-          </div>
-        </section>
-      </div>
+      {/* Tortas del día — clickeables: abren el listado de empleados de cada categoría */}
+      <TodayCards
+        cards={[
+          {
+            title: "Check-in de hoy",
+            centerLabel: `${checkedIn}`,
+            segments: [
+              { value: checkedIn, color: cyan, label: "Hicieron check-in" },
+              { value: Math.max(0, totalActive - checkedIn), color: gray, label: "Sin check-in" },
+            ],
+            listTitle: "Hicieron check-in hoy",
+            people: checkinPeople,
+            emptyText: "Nadie hizo check-in todavía.",
+          },
+          {
+            title: "Check-out de hoy",
+            centerLabel: `${checkedOut}`,
+            segments: [
+              { value: checkedOut, color: green, label: "Hicieron check-out" },
+              { value: Math.max(0, checkedIn - checkedOut), color: gray, label: "Jornada abierta" },
+            ],
+            listTitle: "Hicieron check-out hoy",
+            people: checkoutPeople,
+            emptyText: "Nadie hizo check-out todavía.",
+          },
+          {
+            title: "Ausentes de hoy",
+            centerLabel: `${absent}`,
+            segments: [
+              { value: absent, color: red, label: "Ausentes" },
+              { value: onLeaveToday.size, color: green, label: "Vacaciones / franco" },
+              { value: checkedIn, color: gray, label: "Presentes" },
+            ],
+            listTitle: "Ausentes de hoy (sin check-in ni licencia)",
+            people: absentPeople,
+            emptyText: "No hay ausentes: todos hicieron check-in o están de licencia.",
+          },
+        ]}
+      />
 
       {/* Vencimientos + calendario */}
       <div className="mt-6 grid grid-cols-1 gap-4 xl:grid-cols-2">

@@ -2,6 +2,12 @@
 
 Cada release sube la versión en `+0.01`. El número visible abajo a la izquierda en la app coincide con este archivo.
 
+## v0.43 — 2026-07-13
+
+**Feedback: los círculos del panel muestran el listado de empleados.**
+
+- En el panel de inicio (admin), las **tres tarjetas del día** (Check-in, Check-out y Ausentes) ahora son **clickeables**: al tocarlas se abre el **listado de empleados** de esa categoría — quiénes hicieron check-in, quiénes ya hicieron check-out y quiénes están ausentes (sin fichar ni de licencia).
+
 ## v0.42 — 2026-07-13
 
 **Pedido del cliente: las imágenes también pasan por aprobación del administrador.**
