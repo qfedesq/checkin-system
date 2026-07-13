@@ -6,7 +6,6 @@ import { recordAudit } from "@/lib/audit";
 import { fileUrl } from "@/lib/file-token";
 import { route } from "@/lib/route";
 import { matchesDeclaredType } from "@/lib/file-validate";
-import { isEmployeeProfileComplete } from "@/lib/profile";
 import { notifyAdmins } from "@/lib/notify";
 
 const ALLOWED = ["image/png", "image/jpeg", "image/webp"];
@@ -56,17 +55,21 @@ export const POST = route("profile.uploads", async (req: NextRequest) => {
 
   const url = await uploadBlob(`employee-docs/${session.user.id}/${kind}`, file, file.name, file.type);
 
-  // Onboarding: perfil todavía incompleto → se escribe directo para poder completarlo.
-  if (!isEmployeeProfileComplete(profile)) {
+  const rawCurrent = ((profile[field as keyof typeof profile] as unknown) as string | null) ?? "";
+
+  // Gate POR CAMPO (no por "perfil completo"): si este campo estaba VACÍO es la primera carga
+  // (parte del alta) → se escribe directo. Si YA tenía una imagen, es un CAMBIO → NO se aplica:
+  // pasa por aprobación del admin y se le avisa — aunque el resto del perfil esté incompleto.
+  // (Antes se gateaba por isEmployeeProfileComplete, y como foto+firma son obligatorias muchos
+  // perfiles quedaban "incompletos" y los cambios de libreta/carnet se guardaban sin avisar.)
+  if (!rawCurrent) {
     await prisma.employeeProfile.update({ where: { userId: session.user.id }, data: { [field]: url } });
     await recordAudit({ actorId: session.user.id, action: "profile.upload_image", subjectId: session.user.id, metadata: { kind } });
     return NextResponse.json({ ok: true, url: fileUrl(url) });
   }
 
-  // Perfil completo (edición): la imagen NO se aplica; se mergea como cambio pendiente en la
-  // solicitud del usuario (sin pisar otros campos ya pendientes) y el admin la revisa. Guardamos
-  // la URL CRUDA del blob en `to` (la misma que se setearía en el campo al aprobar).
-  const rawCurrent = ((profile[field as keyof typeof profile] as unknown) as string | null) ?? "";
+  // Cambio de una imagen existente: se mergea como cambio pendiente en la solicitud del usuario
+  // (sin pisar otros campos ya pendientes). Guardamos la URL CRUDA del blob en `to`.
   const change = { from: rawCurrent, to: url };
 
   const pending = await prisma.profileChangeRequest.findFirst({

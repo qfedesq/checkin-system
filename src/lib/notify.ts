@@ -9,12 +9,11 @@ function appUrl(path = "") {
   return base.replace(/\/$/, "") + path;
 }
 
-async function adminEmails(): Promise<string[]> {
-  const admins = await prisma.user.findMany({
+async function activeAdmins(): Promise<{ id: string; email: string }[]> {
+  return prisma.user.findMany({
     where: { role: "ADMIN", status: "ACTIVE" },
-    select: { email: true },
+    select: { id: true, email: true },
   });
-  return admins.map((a) => a.email);
 }
 
 export async function notifyAdmins(kind: "user.registered" | "leave.created" | "document.uploaded" | "profile.change.requested" | "device.pending", payload: {
@@ -22,8 +21,8 @@ export async function notifyAdmins(kind: "user.registered" | "leave.created" | "
   actorEmail: string;
   detail?: string;
 }) {
-  const to = await adminEmails();
-  if (to.length === 0) return;
+  const admins = await activeAdmins();
+  if (admins.length === 0) return;
 
   const actor = payload.actorName || payload.actorEmail;
 
@@ -67,8 +66,14 @@ export async function notifyAdmins(kind: "user.registered" | "leave.created" | "
 
   const p = presets[kind];
   const html = adminAlertHtml(p.title, p.body, appUrl(p.path), p.label);
+  const pushBody = p.body.replace(/<[^>]+>/g, "");
 
-  await Promise.all(to.map((addr) => sendEmail(addr, p.subject, html)));
+  // Email + push a cada admin. El email hoy puede estar en stub (sin GMAIL_APP_PASSWORD),
+  // así que el push es el canal que efectivamente le llega al dispositivo. Ningún fallo bloquea.
+  await Promise.allSettled([
+    ...admins.map((a) => sendEmail(a.email, p.subject, html)),
+    ...admins.map((a) => sendPushToUser(a.id, { title: p.title, body: pushBody, url: appUrl(p.path) })),
+  ]);
 }
 
 export type EmployeeEvent =

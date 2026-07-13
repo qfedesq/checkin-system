@@ -2,6 +2,13 @@
 
 Cada release sube la versión en `+0.01`. El número visible abajo a la izquierda en la app coincide con este archivo.
 
+## v0.45 — 2026-07-13
+
+**Feedback: cambiar CUALQUIER imagen ya cargada requiere aprobación + aviso al admin.**
+
+- **Cambio de imagen = aprobación**: si un empleado **reemplaza** una imagen que ya tenía cargada (libreta, carnet, DNI, foto de frente o firma), el cambio queda **pendiente de aprobación** y **no** se aplica hasta que el administrador lo apruebe. Antes esto sólo pasaba si el perfil estaba "completo", y como la foto y la firma son obligatorias, muchos cambios (p. ej. renovar la foto de la libreta) se guardaban al instante sin avisar. Ahora el criterio es por imagen: si ya había una, el reemplazo se revisa. La **primera** carga (cuando el casillero está vacío) sigue siendo directa.
+- **Aviso al admin por push**: los avisos al administrador (cambios de perfil, nuevas solicitudes, documentos, altas, dispositivos) ahora también llegan como **notificación al dispositivo**, no sólo por email — así te enterás aunque el correo no esté configurado.
+
 ## v0.44 — 2026-07-13
 
 **Feedback: "Check-in de hoy" ahora es jornada en curso; "Check-out" son los que terminaron.**
