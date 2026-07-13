@@ -1,15 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
 import { generateAuthenticationOptions } from "@simplewebauthn/server";
+import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { rpID } from "@/lib/webauthn";
 import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 import { route } from "@/lib/route";
 
 export const POST = route("webauthn.authenticate.options", async (req: NextRequest) => {
-  // Best-effort por IP: frena enumeración de emails / fuerza bruta contra
-  // este endpoint público (sin sesión). Ver src/lib/rate-limit.ts sobre la
-  // limitación en serverless multi-instancia.
-  const rl = checkRateLimit(`webauthn-auth-options:${getClientIp(req)}`);
+  // Rate-limit: si hay sesión (flujo de fichaje) keyeamos por USUARIO, no por IP — en un
+  // lugar de trabajo todos los empleados comparten la misma IP (NAT) y el límite por IP
+  // bloqueaba fichajes simultáneos legítimos. Sin sesión (login) seguimos por IP para
+  // frenar enumeración de emails / fuerza bruta.
+  const session = await auth();
+  const rlKey = session?.user?.id
+    ? `webauthn-auth-options:user:${session.user.id}`
+    : `webauthn-auth-options:ip:${getClientIp(req)}`;
+  const rl = checkRateLimit(rlKey);
   if (!rl.ok) {
     return NextResponse.json(
       { error: "Demasiados intentos. Probá de nuevo en unos minutos." },

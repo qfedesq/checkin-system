@@ -2,6 +2,16 @@
 
 Cada release sube la versión en `+0.01`. El número visible abajo a la izquierda en la app coincide con este archivo.
 
+## v0.40 — 2026-07-12
+
+**QA final (verificación Opus): 3 regresiones y 2 detalles corregidos.**
+
+- **Contador de "no leídos" que no bajaba**: ahora al entrar a Recibidos el contador se limpia de verdad (antes, al navegar dentro de la app, el número quedaba pegado aunque ya hubieras visto los documentos).
+- **Recibo que quedaba sin firma visible**: si el empleado todavía no cargó su firma y el administrador marcó el punto, el documento salía en blanco pero figuraba "firmado". Ahora, si no hay firma cargada, se estampa el recuadro de firma con los datos (nunca queda sin marca).
+- **Fichaje bloqueado en el mismo lugar de trabajo**: varios empleados fichando desde la misma conexión (misma IP) podían quedar bloqueados por el límite de intentos. Ahora, con sesión iniciada, el límite es por usuario.
+- **Calendario**: al cambiar entre "Vacaciones" y "Franco" se limpia la fecha elegida (evita un aviso de rango incorrecto al arrastrar una fecha de una pestaña a otra).
+- **Entregas (admin)**: la columna Destinatario muestra el mismo formato completo que el desplegable (nombre · legajo · email).
+
 ## v0.39 — 2026-07-12
 
 **Feedback: aviso de documentos, contador de no leídos, firma exacta y anchos responsive.**

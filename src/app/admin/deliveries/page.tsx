@@ -29,8 +29,10 @@ export default async function AdminDeliveriesPage({ searchParams }: { searchPara
     type: d.type,
     recipient: (() => {
       const name = d.recipient.profile ? `${d.recipient.profile.firstName} ${d.recipient.profile.lastName}`.trim() : "";
-      if (!name) return d.recipient.email;
-      return d.recipient.profile?.legajo ? `${name} (legajo ${d.recipient.profile.legajo})` : `${name} · ${d.recipient.email}`;
+      const parts = [name || d.recipient.email];
+      if (d.recipient.profile?.legajo) parts.push(`legajo ${d.recipient.profile.legajo}`);
+      if (name) parts.push(d.recipient.email);
+      return parts.join(" · ");
     })(),
     openedAt: d.openedAt?.toISOString() ?? null,
     createdAt: d.createdAt.toISOString(),

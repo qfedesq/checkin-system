@@ -49,23 +49,23 @@ export async function signPdf(
 
   // Punto exacto marcado por el admin (normalizado 0..1, origen arriba-izquierda) tiene
   // prioridad: se estampa SÓLO la imagen de la firma, sin recuadro ni textos.
+  // Modo "sólo firma" SÓLO si hay punto Y hay imagen de firma. Si el admin marcó un punto
+  // pero el empleado NO tiene firma cargada, caemos al recuadro para no dejar el PDF sin
+  // NINGUNA marca visible pese a quedar registrado como "firmado" (regresión detectada en QA).
   const hasPoint = typeof opts?.x === "number" && typeof opts?.y === "number";
 
-  if (hasPoint) {
-    if (sigImage) {
-      const scale = Math.min(1, SOLO_IMG_MAX_W / sigImage.width);
-      const w = sigImage.width * scale;
-      const h = sigImage.height * scale;
-      const pdfX = width * (opts!.x as number);
-      const pdfY = height * (1 - (opts!.y as number));
-      let drawX = pdfX - w / 2;
-      let drawY = pdfY - h / 2;
-      // Clamp para que la firma no quede recortada si el punto está pegado al borde.
-      drawX = Math.max(0, Math.min(width - w, drawX));
-      drawY = Math.max(0, Math.min(height - h, drawY));
-      target.drawImage(sigImage, { x: drawX, y: drawY, width: w, height: h });
-    }
-    // Sin imagen de firma: no se dibuja nada visible (igual se deja registro en metadata).
+  if (hasPoint && sigImage) {
+    const scale = Math.min(1, SOLO_IMG_MAX_W / sigImage.width);
+    const w = sigImage.width * scale;
+    const h = sigImage.height * scale;
+    const pdfX = width * (opts!.x as number);
+    const pdfY = height * (1 - (opts!.y as number));
+    let drawX = pdfX - w / 2;
+    let drawY = pdfY - h / 2;
+    // Clamp para que la firma no quede recortada si el punto está pegado al borde.
+    drawX = Math.max(0, Math.min(width - w, drawX));
+    drawY = Math.max(0, Math.min(height - h, drawY));
+    target.drawImage(sigImage, { x: drawX, y: drawY, width: w, height: h });
   } else {
     const font = await pdf.embedFont(StandardFonts.Helvetica);
     const fontBold = await pdf.embedFont(StandardFonts.HelveticaBold);

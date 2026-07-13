@@ -102,8 +102,8 @@ export function CalendarClient() {
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_380px]">
       <section className="panel p-6">
         <div className="mb-4 flex items-center gap-2">
-          <button aria-pressed={tab === "VACATION"} className={tab === "VACATION" ? "btn-primary" : "btn-ghost"} onClick={() => setTab("VACATION")}>Vacaciones</button>
-          <button aria-pressed={tab === "DAY_OFF"} className={tab === "DAY_OFF" ? "btn-primary" : "btn-ghost"} onClick={() => setTab("DAY_OFF")}>Franco</button>
+          <button aria-pressed={tab === "VACATION"} className={tab === "VACATION" ? "btn-primary" : "btn-ghost"} onClick={() => { setTab("VACATION"); setSelected(undefined); setMsg(null); }}>Vacaciones</button>
+          <button aria-pressed={tab === "DAY_OFF"} className={tab === "DAY_OFF" ? "btn-primary" : "btn-ghost"} onClick={() => { setTab("DAY_OFF"); setSelected(undefined); setMsg(null); }}>Franco</button>
         </div>
 
         {data && tab === "VACATION" && (

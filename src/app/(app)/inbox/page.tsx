@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { formatDateTime } from "@/lib/utils";
 import { Download, FileText } from "lucide-react";
+import { MarkSeen } from "./MarkSeen";
 
 export const dynamic = "force-dynamic";
 
@@ -37,11 +38,6 @@ export default async function InboxPage({ searchParams }: { searchParams: Promis
     orderBy: { createdAt: "desc" },
   });
 
-  // Entrar a la bandeja = "visto": limpia el contador de no leídos (sin abrir/firmar los PDFs).
-  await prisma.deliveredDocument.updateMany({
-    where: { recipientId: session.user.id, seenAt: null },
-    data: { seenAt: new Date() },
-  });
 
   const qs = (t: string, m: string) => {
     const p = new URLSearchParams();
@@ -53,6 +49,7 @@ export default async function InboxPage({ searchParams }: { searchParams: Promis
 
   return (
     <>
+      <MarkSeen />
       <PageHeader eyebrow="recibidos" title="Documentos para vos" description="Hacé click para descargar. Al abrirlo, se firma automáticamente con tu firma digital." />
 
       <div className="mb-4 flex flex-wrap items-center gap-2">
