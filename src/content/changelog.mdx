@@ -2,6 +2,15 @@
 
 Cada release sube la versión en `+0.01`. El número visible abajo a la izquierda en la app coincide con este archivo.
 
+## v0.44 — 2026-07-13
+
+**Feedback: "Check-in de hoy" ahora es jornada en curso; "Check-out" son los que terminaron.**
+
+- Antes, quien hacía check-in **y** check-out figuraba en las **dos** tarjetas. Ahora:
+  - **Check-in de hoy** = empleados con **jornada en curso** (entraron y todavía **no** hicieron check-out).
+  - **Check-out de hoy** = empleados que **ya terminaron** (entraron y se fueron).
+- Los listados y los números de cada tarjeta reflejan esa distinción.
+
 ## v0.43 — 2026-07-13
 
 **Feedback: los círculos del panel muestran el listado de empleados.**

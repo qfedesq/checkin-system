@@ -51,18 +51,22 @@ export default async function AdminHome() {
   // --- Tortas del día ---
   const checkedInUsers = new Set(todayAttendances.map((a) => a.userId));
   const checkedOutUsers = new Set(todayAttendances.filter((a) => a.checkOutAt).map((a) => a.userId));
+  // "En curso" = entró y todavía NO hizo check-out (jornada vigente). Distinto de "check-in":
+  // alguien que entró y ya se fue va en check-out (terminó), no en la tarjeta de en-curso.
+  const stillInUsers = new Set(todayAttendances.filter((a) => !a.checkOutAt).map((a) => a.userId));
   const onLeaveToday = new Set(todayLeaves.map((l) => l.userId));
   const totalActive = activeEmployees.length;
-  const checkedIn = checkedInUsers.size;
-  const checkedOut = checkedOutUsers.size;
+  const stillIn = stillInUsers.size;      // jornada en curso (tarjeta "Check-in de hoy")
+  const checkedOut = checkedOutUsers.size; // terminaron (tarjeta "Check-out de hoy")
+  const checkedIn = checkedInUsers.size;   // total que vino hoy (para "presentes"/ausentes)
   // Ausente: activo, sin check-in hoy y sin licencia aprobada hoy
   const absent = activeEmployees.filter((u) => !checkedInUsers.has(u.id) && !onLeaveToday.has(u.id)).length;
 
-  // Listados de empleados por categoría (para las tarjetas clickeables del panel).
+  // Listados de empleados por categoría (para las tarjetas clickeables del panel), sin duplicados.
   const nameByUser = new Map(profiles.map((p) => [p.userId, `${p.lastName}, ${p.firstName}`.trim() || "Empleado"]));
   const nameFor = (id: string) => nameByUser.get(id) ?? "Empleado";
-  const checkinPeople = todayAttendances.map((a) => ({ name: nameFor(a.userId), detail: a.checkOutAt ? "jornada cerrada" : "jornada abierta" }));
-  const checkoutPeople = todayAttendances.filter((a) => a.checkOutAt).map((a) => ({ name: nameFor(a.userId) }));
+  const checkinPeople = [...stillInUsers].map((id) => ({ name: nameFor(id) }));      // jornada en curso
+  const checkoutPeople = [...checkedOutUsers].map((id) => ({ name: nameFor(id) }));  // terminaron
   const absentPeople = activeEmployees
     .filter((u) => !checkedInUsers.has(u.id) && !onLeaveToday.has(u.id))
     .map((u) => ({ name: nameFor(u.id) }));
@@ -124,25 +128,25 @@ export default async function AdminHome() {
         cards={[
           {
             title: "Check-in de hoy",
-            centerLabel: `${checkedIn}`,
+            centerLabel: `${stillIn}`,
             segments: [
-              { value: checkedIn, color: cyan, label: "Hicieron check-in" },
-              { value: Math.max(0, totalActive - checkedIn), color: gray, label: "Sin check-in" },
+              { value: stillIn, color: cyan, label: "Jornada en curso" },
+              { value: Math.max(0, totalActive - stillIn), color: gray, label: "Sin jornada abierta" },
             ],
-            listTitle: "Hicieron check-in hoy",
+            listTitle: "Jornada en curso (entraron y todavía no salieron)",
             people: checkinPeople,
-            emptyText: "Nadie hizo check-in todavía.",
+            emptyText: "No hay jornadas en curso.",
           },
           {
             title: "Check-out de hoy",
             centerLabel: `${checkedOut}`,
             segments: [
-              { value: checkedOut, color: green, label: "Hicieron check-out" },
-              { value: Math.max(0, checkedIn - checkedOut), color: gray, label: "Jornada abierta" },
+              { value: checkedOut, color: green, label: "Terminaron la jornada" },
+              { value: stillIn, color: gray, label: "Aún en curso" },
             ],
-            listTitle: "Hicieron check-out hoy",
+            listTitle: "Terminaron la jornada (entraron y se fueron)",
             people: checkoutPeople,
-            emptyText: "Nadie hizo check-out todavía.",
+            emptyText: "Nadie terminó su jornada todavía.",
           },
           {
             title: "Ausentes de hoy",
