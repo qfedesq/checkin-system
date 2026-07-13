@@ -13,12 +13,20 @@ const REQUIRED: [keyof Initial, string][] = [
   ["dob", "Fecha de nacimiento"],
   ["phone", "Teléfono de contacto"],
   ["healthCardExpiry", "Vencimiento de libreta sanitaria"],
+  ["shirtSize", "Talle de remera"],
+  ["hoodieSize", "Talle de buzo"],
+  ["jacketSize", "Talle de campera"],
+  ["pantsSize", "Talle de pantalón"],
+  ["shoeSize", "Talle de calzado"],
   ["address", "Dirección"],
   ["addressNumber", "Numeración"],
+  ["neighborhood", "Barrio"],
   ["city", "Localidad"],
   ["postalCode", "Código postal"],
   ["emergencyContact", "Contacto de emergencia"],
   ["emergencyPhone", "Teléfono de emergencia"],
+  ["faceImageBlobUrl", "Foto de frente"],
+  ["signatureBlobUrl", "Firma"],
 ];
 
 type Initial = {
@@ -187,11 +195,11 @@ export function ProfileForm({ initial, email, pendingFields }: { initial: Initia
       <section className="panel p-6">
         <h2 className="text-lg font-semibold">Indumentaria</h2>
         <div className="mt-4 grid grid-cols-2 gap-4 md:grid-cols-5">
-          <Field label="Remera"><SizeSelect options={CLOTHING_SIZES} value={data.shirtSize} onChange={(v) => set("shirtSize", v)} /></Field>
-          <Field label="Buzo"><SizeSelect options={CLOTHING_SIZES} value={data.hoodieSize} onChange={(v) => set("hoodieSize", v)} /></Field>
-          <Field label="Campera"><SizeSelect options={CLOTHING_SIZES} value={data.jacketSize} onChange={(v) => set("jacketSize", v)} /></Field>
-          <Field label="Pantalón"><SizeSelect options={PANTS_SIZES} value={data.pantsSize} onChange={(v) => set("pantsSize", v)} /></Field>
-          <Field label="Calzado"><SizeSelect options={SHOE_SIZES} value={data.shoeSize} onChange={(v) => set("shoeSize", v)} /></Field>
+          <Field label="Remera"><SizeSelect required options={CLOTHING_SIZES} value={data.shirtSize} onChange={(v) => set("shirtSize", v)} /></Field>
+          <Field label="Buzo"><SizeSelect required options={CLOTHING_SIZES} value={data.hoodieSize} onChange={(v) => set("hoodieSize", v)} /></Field>
+          <Field label="Campera"><SizeSelect required options={CLOTHING_SIZES} value={data.jacketSize} onChange={(v) => set("jacketSize", v)} /></Field>
+          <Field label="Pantalón"><SizeSelect required options={PANTS_SIZES} value={data.pantsSize} onChange={(v) => set("pantsSize", v)} /></Field>
+          <Field label="Calzado"><SizeSelect required options={SHOE_SIZES} value={data.shoeSize} onChange={(v) => set("shoeSize", v)} /></Field>
         </div>
       </section>
 
@@ -200,7 +208,7 @@ export function ProfileForm({ initial, email, pendingFields }: { initial: Initia
         <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
           <Field label="Dirección"><input className="surface-control" required value={data.address} onChange={(e) => set("address", e.target.value)} /></Field>
           <Field label="Numeración"><input className="surface-control" required value={data.addressNumber} onChange={(e) => set("addressNumber", e.target.value)} /></Field>
-          <Field label="Barrio"><input className="surface-control" value={data.neighborhood} onChange={(e) => set("neighborhood", e.target.value)} /></Field>
+          <Field label="Barrio"><input className="surface-control" required value={data.neighborhood} onChange={(e) => set("neighborhood", e.target.value)} /></Field>
           <Field label="Localidad"><input className="surface-control" required value={data.city} onChange={(e) => set("city", e.target.value)} /></Field>
           <Field label="Código postal"><input className="surface-control" required value={data.postalCode} onChange={(e) => set("postalCode", e.target.value)} /></Field>
         </div>
@@ -216,7 +224,7 @@ export function ProfileForm({ initial, email, pendingFields }: { initial: Initia
 
       <section className="panel p-6">
         <h2 className="text-lg font-semibold">Foto de perfil</h2>
-        <p className="mt-1 text-sm text-muted-foreground">Subí una foto de frente de tu cara.</p>
+        <p className="mt-1 text-sm text-muted-foreground">Subí una foto de frente de tu cara. (obligatorio)</p>
         <div className="mt-4 w-40">
           <ImageSlot label="Foto" kind="face" url={data.faceImageBlobUrl} onUploaded={(u) => { set("faceImageBlobUrl", u); setMsg({ kind: "ok", text: "Foto guardada." }); }} onError={(t) => setMsg({ kind: "err", text: t })} contain />
         </div>
@@ -224,7 +232,7 @@ export function ProfileForm({ initial, email, pendingFields }: { initial: Initia
 
       <section className="panel p-6">
         <h2 className="text-lg font-semibold">Firma digital</h2>
-        <p className="mt-1 text-sm text-muted-foreground">Firmá en el recuadro con el dedo. Se usa automáticamente cuando abrís recibos y documentos internos.</p>
+        <p className="mt-1 text-sm text-muted-foreground">Firmá en el recuadro con el dedo. Se usa automáticamente cuando abrís recibos y documentos internos. (obligatorio)</p>
         <div className="mt-4">
           <SignaturePad url={data.signatureBlobUrl} onUploaded={(u) => { set("signatureBlobUrl", u); setMsg({ kind: "ok", text: "Firma guardada." }); }} onError={(t) => setMsg({ kind: "err", text: t })} />
         </div>
@@ -252,9 +260,9 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
   );
 }
 
-function SizeSelect({ options, value, onChange }: { options: string[]; value: string; onChange: (v: string) => void }) {
+function SizeSelect({ options, value, onChange, required }: { options: string[]; value: string; onChange: (v: string) => void; required?: boolean }) {
   return (
-    <select className="surface-select" value={value} onChange={(e) => onChange(e.target.value)}>
+    <select className="surface-select" required={required} value={value} onChange={(e) => onChange(e.target.value)}>
       <option value="">—</option>
       {options.map((o) => <option key={o} value={o}>{o}</option>)}
     </select>

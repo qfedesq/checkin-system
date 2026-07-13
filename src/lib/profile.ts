@@ -15,14 +15,24 @@ export function isEmployeeProfileComplete(p: EmployeeProfile | null | undefined)
   if (!p) return false;
   const filled = (v: string | null | undefined) => typeof v === "string" && v.trim().length > 0;
   const healthSet = !!p.healthCardExpiry && p.healthCardExpiry.getFullYear() < HEALTH_PLACEHOLDER_YEAR;
+  const licenseOk = p.category !== "DRIVER" || !!p.professionalLicenseExpiry;
   return (
     filled(p.phone) &&
     filled(p.address) &&
     filled(p.addressNumber) &&
+    filled(p.neighborhood) &&
     filled(p.city) &&
     filled(p.postalCode) &&
     filled(p.emergencyContact) &&
     filled(p.emergencyPhone) &&
-    healthSet
+    filled(p.shirtSize) &&
+    filled(p.hoodieSize) &&
+    filled(p.jacketSize) &&
+    filled(p.pantsSize) &&
+    filled(p.shoeSize) &&
+    filled(p.faceImageBlobUrl) &&
+    filled(p.signatureBlobUrl) &&
+    healthSet &&
+    licenseOk
   );
 }

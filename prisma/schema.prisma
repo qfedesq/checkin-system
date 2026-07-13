@@ -174,6 +174,11 @@ model EmployeeProfile {
   checkinLat                Float?
   checkinLng                Float?
   checkinRadiusM            Int       @default(100)
+  // Geocerca de check-OUT (independiente de la de check-in): el empleado puede fichar la
+  // salida en un lugar distinto al de entrada. Misma semántica: sin zona = libre.
+  checkoutLat               Float?
+  checkoutLng               Float?
+  checkoutRadiusM           Int       @default(100)
   updatedAt                 DateTime  @updatedAt
 }
 

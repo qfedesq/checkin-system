@@ -3,8 +3,9 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { formatDateTime } from "@/lib/utils";
-import { Download, FileText } from "lucide-react";
+import { FileText } from "lucide-react";
 import { MarkSeen } from "./MarkSeen";
+import { OpenDelivery } from "./OpenDelivery";
 
 export const dynamic = "force-dynamic";
 
@@ -94,9 +95,7 @@ export default async function InboxPage({ searchParams }: { searchParams: Promis
                   {d.openedAt ? <span className="badge-success">firmado {formatDateTime(d.openedAt)}</span> : <span className="badge-warning">sin abrir</span>}
                 </td>
                 <td className="px-5 py-3 text-right">
-                  <a className="btn-primary" href={`/api/deliveries/${d.id}/open`} target="_blank" rel="noreferrer">
-                    <Download className="h-4 w-4" /> {d.openedAt ? "Descargar firmado" : "Descargar y firmar"}
-                  </a>
+                  <OpenDelivery id={d.id} opened={Boolean(d.openedAt)} />
                 </td>
               </tr>
             ))}

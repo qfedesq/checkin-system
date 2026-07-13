@@ -36,9 +36,15 @@ const schema = z.object({
   checkinLat: z.number().min(-90).max(90).nullable().optional(),
   checkinLng: z.number().min(-180).max(180).nullable().optional(),
   checkinRadiusM: z.number().int().min(20).optional(),
+  checkoutLat: z.number().min(-90).max(90).nullable().optional(),
+  checkoutLng: z.number().min(-180).max(180).nullable().optional(),
+  checkoutRadiusM: z.number().int().min(20).optional(),
 }).refine((d) => (d.checkinLat == null) === (d.checkinLng == null), {
   message: "La zona de check-in necesita latitud y longitud (o ninguna de las dos)",
   path: ["checkinLat"],
+}).refine((d) => (d.checkoutLat == null) === (d.checkoutLng == null), {
+  message: "La zona de check-out necesita latitud y longitud (o ninguna de las dos)",
+  path: ["checkoutLat"],
 });
 
 export const GET = route("admin.employees.get", async (_req: NextRequest, ctx: { params: Promise<{ id: string }> }) => {
@@ -145,6 +151,9 @@ export const PUT = route("admin.employees.put", async (req: NextRequest, ctx: { 
     checkinLat: d.checkinLat ?? null,
     checkinLng: d.checkinLng ?? null,
     checkinRadiusM: d.checkinRadiusM ?? 100,
+    checkoutLat: d.checkoutLat ?? null,
+    checkoutLng: d.checkoutLng ?? null,
+    checkoutRadiusM: d.checkoutRadiusM ?? 100,
   };
 
   try {

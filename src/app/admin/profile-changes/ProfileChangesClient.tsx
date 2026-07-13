@@ -43,26 +43,58 @@ export function ProfileChangesClient({ rows }: { rows: Row[] }) {
   const [busy, setBusy] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
+  // Por solicitud, qué campos quedaron tildados para aprobar (por defecto, todos).
+  const [approvedByRequest, setApprovedByRequest] = useState<Record<string, Record<string, boolean>>>({});
 
-  async function act(id: string, action: "approve" | "reject") {
-    let body: BodyInit | undefined;
-    if (action === "reject") {
-      const note = window.prompt("Motivo del rechazo (opcional):");
-      if (note === null) return; // el admin canceló el prompt: no rechazar
-      body = JSON.stringify({ note });
-    }
+  function fieldsFor(r: Row): Record<string, boolean> {
+    return approvedByRequest[r.id] ?? Object.fromEntries(Object.keys(r.changes).map((f) => [f, true]));
+  }
+
+  function toggleField(r: Row, field: string) {
+    setApprovedByRequest((prev) => ({ ...prev, [r.id]: { ...fieldsFor(r), [field]: !fieldsFor(r)[field] } }));
+  }
+
+  async function reject(id: string) {
+    const note = window.prompt("Motivo del rechazo (opcional):");
+    if (note === null) return; // el admin canceló el prompt: no rechazar
     setBusy(id);
     setErr(null);
     setMsg(null);
-    const res = await fetch(`/api/admin/profile-changes/${id}/${action}`, {
+    const res = await fetch(`/api/admin/profile-changes/${id}/reject`, {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body,
+      body: JSON.stringify({ note }),
     });
     const out = await res.json();
     setBusy(null);
     if (!res.ok) return setErr(out.error ?? "No pudimos procesar el cambio de perfil. Probá de nuevo.");
-    setMsg(action === "approve" ? "Cambio aprobado." : "Cambio rechazado.");
+    setMsg("Cambio rechazado.");
+    setTimeout(() => setMsg(null), 4000);
+    router.refresh();
+  }
+
+  async function applyDecision(r: Row) {
+    const approved = fieldsFor(r);
+    const allFields = Object.keys(r.changes);
+    const approvedFields = allFields.filter((f) => approved[f]);
+    setBusy(r.id);
+    setErr(null);
+    setMsg(null);
+    const res = await fetch(`/api/admin/profile-changes/${r.id}/approve`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ approvedFields }),
+    });
+    const out = await res.json();
+    setBusy(null);
+    if (!res.ok) return setErr(out.error ?? "No pudimos procesar el cambio de perfil. Probá de nuevo.");
+    setMsg(
+      approvedFields.length === allFields.length
+        ? "Cambios aprobados."
+        : approvedFields.length === 0
+          ? "Cambios rechazados."
+          : `Decisión aplicada: ${approvedFields.length} de ${allFields.length} campo(s) aprobados.`
+    );
     setTimeout(() => setMsg(null), 4000);
     router.refresh();
   }
@@ -82,11 +114,11 @@ export function ProfileChangesClient({ rows }: { rows: Row[] }) {
             <div className="flex items-center gap-2">
               {r.status === "PENDING" && (
                 <>
-                  <button className="btn-primary text-xs" disabled={busy === r.id} onClick={() => act(r.id, "approve")}>
-                    <Check className="h-4 w-4" /> Aprobar
+                  <button className="btn-primary text-xs" disabled={busy === r.id} onClick={() => applyDecision(r)}>
+                    <Check className="h-4 w-4" /> Aplicar decisión
                   </button>
-                  <button className="btn-ghost text-xs text-destructive" disabled={busy === r.id} onClick={() => act(r.id, "reject")}>
-                    <X className="h-4 w-4" /> Rechazar
+                  <button className="btn-ghost text-xs text-destructive" disabled={busy === r.id} onClick={() => reject(r.id)}>
+                    <X className="h-4 w-4" /> Rechazar todo
                   </button>
                 </>
               )}
@@ -94,10 +126,14 @@ export function ProfileChangesClient({ rows }: { rows: Row[] }) {
               {r.status === "REJECTED" && <span className="badge-danger">rechazado</span>}
             </div>
           </div>
+          {r.status === "PENDING" && (
+            <p className="mt-2 text-xs text-muted-foreground">Tildá los campos que querés aprobar. Los destildados se rechazan al aplicar la decisión.</p>
+          )}
           <div className="mt-3 overflow-x-auto">
             <table className="w-full min-w-[480px] text-sm">
               <thead>
                 <tr className="border-b border-border/60 text-left mono text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
+                  {r.status === "PENDING" && <th className="py-2 pr-3">Aprobar</th>}
                   <th className="py-2 pr-3">Campo</th>
                   <th className="py-2 pr-3">Actual</th>
                   <th className="py-2">Propuesto</th>
@@ -106,6 +142,17 @@ export function ProfileChangesClient({ rows }: { rows: Row[] }) {
               <tbody>
                 {Object.entries(r.changes).map(([field, { from, to }]) => (
                   <tr key={field} className="border-b border-border/40 last:border-0">
+                    {r.status === "PENDING" && (
+                      <td className="py-2 pr-3">
+                        <input
+                          type="checkbox"
+                          className="h-4 w-4"
+                          checked={fieldsFor(r)[field] ?? true}
+                          onChange={() => toggleField(r, field)}
+                          aria-label={`Aprobar ${FIELD_LABELS[field] ?? field}`}
+                        />
+                      </td>
+                    )}
                     <td className="py-2 pr-3 font-medium">{FIELD_LABELS[field] ?? field}</td>
                     <td className="py-2 pr-3 text-muted-foreground">{from || "—"}</td>
                     <td className="py-2 text-[hsl(var(--primary-text))]">{to || "—"}</td>
@@ -114,7 +161,7 @@ export function ProfileChangesClient({ rows }: { rows: Row[] }) {
               </tbody>
             </table>
           </div>
-          {r.note && <div className="mt-2 text-xs text-muted-foreground">Motivo del rechazo: {r.note}</div>}
+          {r.note && <div className="mt-2 text-xs text-muted-foreground">{r.status === "REJECTED" ? "Motivo del rechazo: " : "Detalle: "}{r.note}</div>}
         </section>
       ))}
     </div>

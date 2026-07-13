@@ -5,7 +5,8 @@ import { Eraser, RotateCcw, Upload } from "lucide-react";
 
 /**
  * Pad de firma: el empleado firma con el dedo/mouse en el canvas y se guarda como PNG
- * (fondo blanco) para usarse como firma digital en recibos y documentos.
+ * con FONDO TRANSPARENTE (sólo el trazo), para que al estamparse en un recibo/documento
+ * no tape el texto de abajo. El recuadro se ve blanco en pantalla sólo por CSS (bg-white).
  */
 export function SignaturePad({ url, onUploaded, onError }: {
   url: string;
@@ -39,8 +40,8 @@ export function SignaturePad({ url, onUploaded, onError }: {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
     ctx.scale(ratio, ratio);
-    ctx.fillStyle = "#ffffff";
-    ctx.fillRect(0, 0, rect.width, rect.height);
+    // Sin relleno de fondo: el canvas queda transparente (el blanco lo pone el CSS).
+    // Así el PNG exportado sólo tiene el trazo y no tapa el texto del documento.
     ctx.strokeStyle = "#0a101c";
     ctx.lineWidth = 2.4;
     ctx.lineCap = "round";
@@ -104,8 +105,7 @@ export function SignaturePad({ url, onUploaded, onError }: {
     const ctx = canvas?.getContext("2d");
     if (!canvas || !ctx) return;
     const rect = canvas.getBoundingClientRect();
-    ctx.fillStyle = "#ffffff";
-    ctx.fillRect(0, 0, rect.width, rect.height);
+    ctx.clearRect(0, 0, rect.width, rect.height); // limpia a transparente (no a blanco)
     dirty.current = false;
     setHasStrokes(false);
   }

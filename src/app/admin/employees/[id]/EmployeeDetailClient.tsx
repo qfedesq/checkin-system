@@ -48,6 +48,9 @@ type Profile = {
   checkinLat: number | null;
   checkinLng: number | null;
   checkinRadiusM: number;
+  checkoutLat: number | null;
+  checkoutLng: number | null;
+  checkoutRadiusM: number;
   dniFrontBlobUrl: string | null;
   dniBackBlobUrl: string | null;
   licenseFrontBlobUrl: string | null;
@@ -81,10 +84,13 @@ export function EmployeeDetailClient({ initial }: {
   const set = (field: keyof Profile) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
     setP((prev) => ({ ...prev, [field]: e.target.value }));
 
-  const setNullableNumber = (field: "checkinLat" | "checkinLng") => (e: React.ChangeEvent<HTMLInputElement>) => {
+  const setNullableNumber = (field: "checkinLat" | "checkinLng" | "checkoutLat" | "checkoutLng") => (e: React.ChangeEvent<HTMLInputElement>) => {
     const raw = e.target.value;
     setP((prev) => ({ ...prev, [field]: raw === "" ? null : Number(raw) }));
   };
+
+  const [geoBusyOut, setGeoBusyOut] = useState(false);
+  const [geoErrOut, setGeoErrOut] = useState<string | null>(null);
 
   function useMyLocation() {
     setGeoErr(null);
@@ -104,6 +110,30 @@ export function EmployeeDetailClient({ initial }: {
           setGeoErr("Denegaste el permiso de ubicación. Habilitalo en el navegador para usar esta opción.");
         } else {
           setGeoErr("No pudimos obtener tu ubicación. Intentá de nuevo.");
+        }
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+  }
+
+  function useMyLocationCheckout() {
+    setGeoErrOut(null);
+    if (!navigator.geolocation) {
+      setGeoErrOut("Tu navegador no soporta geolocalización.");
+      return;
+    }
+    setGeoBusyOut(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setGeoBusyOut(false);
+        setP((prev) => ({ ...prev, checkoutLat: pos.coords.latitude, checkoutLng: pos.coords.longitude }));
+      },
+      (err) => {
+        setGeoBusyOut(false);
+        if (err.code === err.PERMISSION_DENIED) {
+          setGeoErrOut("Denegaste el permiso de ubicación. Habilitalo en el navegador para usar esta opción.");
+        } else {
+          setGeoErrOut("No pudimos obtener tu ubicación. Intentá de nuevo.");
         }
       },
       { enableHighAccuracy: true, timeout: 10000 }
@@ -145,6 +175,9 @@ export function EmployeeDetailClient({ initial }: {
         checkinLat: p.checkinLat,
         checkinLng: p.checkinLng,
         checkinRadiusM: Number(p.checkinRadiusM) || 100,
+        checkoutLat: p.checkoutLat,
+        checkoutLng: p.checkoutLng,
+        checkoutRadiusM: Number(p.checkoutRadiusM) || 100,
       }),
     });
     const out = await res.json();
@@ -286,6 +319,59 @@ export function EmployeeDetailClient({ initial }: {
             )}
           </div>
           {geoErr && <div className="mt-2 text-[11px] text-destructive">{geoErr}</div>}
+        </section>
+
+        {/* Zona de check-out */}
+        <section className="panel p-6">
+          <h2 className="text-lg font-semibold">Zona de check-out</h2>
+          <p className="mt-1 text-xs text-muted-foreground">Si dejás la zona vacía, el empleado puede hacer check-out desde cualquier lugar.</p>
+          <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <Field label="Latitud">
+              <input
+                type="number"
+                step="any"
+                className="surface-control"
+                value={p.checkoutLat ?? ""}
+                onChange={setNullableNumber("checkoutLat")}
+                placeholder="Sin zona seteada"
+              />
+            </Field>
+            <Field label="Longitud">
+              <input
+                type="number"
+                step="any"
+                className="surface-control"
+                value={p.checkoutLng ?? ""}
+                onChange={setNullableNumber("checkoutLng")}
+                placeholder="Sin zona seteada"
+              />
+            </Field>
+            <Field label="Radio permitido (metros)">
+              <input
+                type="number"
+                min={20}
+                step={10}
+                className="surface-control"
+                value={p.checkoutRadiusM}
+                onChange={set("checkoutRadiusM")}
+              />
+            </Field>
+          </div>
+          <div className="mt-3 flex flex-wrap items-center gap-3">
+            <button type="button" className="btn-ghost" disabled={geoBusyOut} onClick={useMyLocationCheckout}>
+              {geoBusyOut ? "Obteniendo ubicación…" : "Usar mi ubicación actual"}
+            </button>
+            {p.checkoutLat != null && p.checkoutLng != null && (
+              <button
+                type="button"
+                className="btn-ghost text-xs"
+                onClick={() => setP((prev) => ({ ...prev, checkoutLat: null, checkoutLng: null }))}
+              >
+                Quitar zona
+              </button>
+            )}
+          </div>
+          {geoErrOut && <div className="mt-2 text-[11px] text-destructive">{geoErrOut}</div>}
         </section>
 
         {/* Imágenes */}

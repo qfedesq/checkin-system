@@ -2,6 +2,16 @@
 
 Cada release sube la versión en `+0.01`. El número visible abajo a la izquierda en la app coincide con este archivo.
 
+## v0.41 — 2026-07-13
+
+**Pedido del cliente: firma sin fondo, zona de check-out, perfil obligatorio y aprobación campo por campo.**
+
+- **Firma sin fondo (no tapa el texto)**: la firma dibujada se guarda como PNG **transparente**, así al estamparse en el recibo sólo se ve el trazo y no un recuadro blanco sobre el texto.
+- **Zona de check-out propia**: además de la zona de check-in, el administrador puede fijar una **ubicación distinta para el check-out** en la ficha de cada empleado (con su radio). Si no se define, el check-out se puede hacer desde cualquier lado.
+- **Recibo abierto ya no figura "sin abrir"**: al descargar/firmar un documento, la fila pasa a **"firmado"** al volver a la app (antes quedaba como "sin abrir" hasta recargar).
+- **Perfil completo obligatorio**: barrio, los cinco talles, la foto de frente y la firma pasan a ser obligatorios para guardar el perfil (el carnet profesional sigue siendo obligatorio sólo para choferes).
+- **Aprobación de cambios de perfil, campo por campo**: en **Cambios de perfil** el administrador tilda qué campos aprueba y cuáles rechaza dentro de la misma solicitud (antes era todo o nada); se aplican sólo los aprobados y el empleado recibe una notificación con el detalle.
+
 ## v0.40 — 2026-07-12
 
 **QA final (verificación Opus): 3 regresiones y 2 detalles corregidos.**
