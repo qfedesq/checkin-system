@@ -72,8 +72,8 @@ function DocRow({ doc }: { doc: Doc }) {
         <button type="button" className="btn-primary" onClick={saveDate} disabled={busy}>{busy ? "Guardando…" : "Guardar fecha"}</button>
       </div>
       <div className="mt-3 grid grid-cols-2 gap-4 sm:max-w-md">
-        <ImageSlot label="Frente" kind={doc.frontKind} url={doc.front} onError={(t) => setMsg({ kind: "err", text: t })} />
-        <ImageSlot label="Dorso" kind={doc.backKind} url={doc.back} onError={(t) => setMsg({ kind: "err", text: t })} />
+        <ImageSlot label="Frente" kind={doc.frontKind} url={doc.front} onError={(t) => setMsg({ kind: "err", text: t })} onPending={(t) => setMsg({ kind: "ok", text: t })} />
+        <ImageSlot label="Dorso" kind={doc.backKind} url={doc.back} onError={(t) => setMsg({ kind: "err", text: t })} onPending={(t) => setMsg({ kind: "ok", text: t })} />
       </div>
       {msg && (
         <div className={`mt-3 rounded-xl border px-4 py-2 text-sm ${msg.kind === "ok" ? "border-[hsl(var(--success))]/30 bg-[hsl(var(--success))]/10 text-[hsl(var(--success))]" : "border-destructive/30 bg-destructive/10 text-destructive"}`}>{msg.text}</div>
@@ -82,7 +82,7 @@ function DocRow({ doc }: { doc: Doc }) {
   );
 }
 
-function ImageSlot({ label, kind, url, onError }: { label: string; kind: string; url: string; onError: (t: string) => void }) {
+function ImageSlot({ label, kind, url, onError, onPending }: { label: string; kind: string; url: string; onError: (t: string) => void; onPending?: (t: string) => void }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
   const [busy, setBusy] = useState(false);
@@ -101,6 +101,8 @@ function ImageSlot({ label, kind, url, onError }: { label: string; kind: string;
       // lo tratamos como error en vez de dejar el botón colgado en "Subiendo…".
       const out = await res.json().catch(() => ({}));
       if (!res.ok) return onError(out.error ?? "No pudimos subir la imagen. Probá con una foto más liviana.");
+      // Perfil completo: queda pendiente de aprobación → no reemplazamos la imagen actual.
+      if (out.pendingApproval) return onPending?.("Imagen enviada: queda pendiente de aprobación del administrador.");
       setImgFailed(false);
       setCurrent(out.url);
       router.refresh();

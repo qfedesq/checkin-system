@@ -8,10 +8,11 @@ import { Eraser, RotateCcw, Upload } from "lucide-react";
  * con FONDO TRANSPARENTE (sólo el trazo), para que al estamparse en un recibo/documento
  * no tape el texto de abajo. El recuadro se ve blanco en pantalla sólo por CSS (bg-white).
  */
-export function SignaturePad({ url, onUploaded, onError }: {
+export function SignaturePad({ url, onUploaded, onError, onPending }: {
   url: string;
   onUploaded: (url: string) => void;
   onError: (text: string) => void;
+  onPending?: (text: string) => void;
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -123,7 +124,9 @@ export function SignaturePad({ url, onUploaded, onError }: {
         const res = await fetch("/api/profile/uploads", { method: "POST", body: form });
         const out = await res.json().catch(() => ({}));
         if (!res.ok) return onError(out.error ?? "No pudimos guardar la firma");
-        onUploaded(out.url);
+        // Perfil completo: queda pendiente de aprobación → mantenemos la firma actual visible.
+        if (out.pendingApproval) onPending?.("Firma enviada: queda pendiente de aprobación del administrador.");
+        else onUploaded(out.url);
         setEditing(false);
       } catch {
         onError("No pudimos guardar la firma. Revisá tu conexión e intentá de nuevo.");
@@ -142,7 +145,8 @@ export function SignaturePad({ url, onUploaded, onError }: {
       const res = await fetch("/api/profile/uploads", { method: "POST", body: form });
       const out = await res.json().catch(() => ({}));
       if (!res.ok) return onError(out.error ?? "No pudimos subir la imagen de firma");
-      onUploaded(out.url);
+      if (out.pendingApproval) onPending?.("Firma enviada: queda pendiente de aprobación del administrador.");
+      else onUploaded(out.url);
       setEditing(false);
     } catch {
       onError("No pudimos subir la imagen. Revisá tu conexión e intentá de nuevo.");

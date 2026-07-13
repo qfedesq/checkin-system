@@ -26,7 +26,18 @@ const FIELD_LABELS: Record<string, string> = {
   postalCode: "Código postal",
   emergencyContact: "Contacto de emergencia",
   emergencyPhone: "Tel. de emergencia",
+  faceImageBlobUrl: "Foto de frente",
+  signatureBlobUrl: "Firma",
+  dniFrontBlobUrl: "DNI (frente)",
+  dniBackBlobUrl: "DNI (dorso)",
+  licenseFrontBlobUrl: "Carnet (frente)",
+  licenseBackBlobUrl: "Carnet (dorso)",
+  healthCardFrontBlobUrl: "Libreta (frente)",
+  healthCardBackBlobUrl: "Libreta (dorso)",
 };
+
+// Los campos de imagen ya vienen con `from`/`to` proxeados por fileUrl desde el server.
+type Change = { type: "text" | "image"; from: string; to: string };
 
 type Row = {
   id: string;
@@ -34,7 +45,7 @@ type Row = {
   userId: string;
   status: "PENDING" | "APPROVED" | "REJECTED";
   createdAt: string;
-  changes: Record<string, { from: string; to: string }>;
+  changes: Record<string, Change>;
   note: string | null;
 };
 
@@ -140,7 +151,7 @@ export function ProfileChangesClient({ rows }: { rows: Row[] }) {
                 </tr>
               </thead>
               <tbody>
-                {Object.entries(r.changes).map(([field, { from, to }]) => (
+                {Object.entries(r.changes).map(([field, c]) => (
                   <tr key={field} className="border-b border-border/40 last:border-0">
                     {r.status === "PENDING" && (
                       <td className="py-2 pr-3">
@@ -154,8 +165,12 @@ export function ProfileChangesClient({ rows }: { rows: Row[] }) {
                       </td>
                     )}
                     <td className="py-2 pr-3 font-medium">{FIELD_LABELS[field] ?? field}</td>
-                    <td className="py-2 pr-3 text-muted-foreground">{from || "—"}</td>
-                    <td className="py-2 text-[hsl(var(--primary-text))]">{to || "—"}</td>
+                    <td className="py-2 pr-3 text-muted-foreground">
+                      {c.type === "image" ? <Thumb url={c.from} alt="imagen actual" /> : c.from || "—"}
+                    </td>
+                    <td className="py-2 text-[hsl(var(--primary-text))]">
+                      {c.type === "image" ? <Thumb url={c.to} alt="imagen propuesta" /> : c.to || "—"}
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -166,4 +181,10 @@ export function ProfileChangesClient({ rows }: { rows: Row[] }) {
       ))}
     </div>
   );
+}
+
+function Thumb({ url, alt }: { url: string; alt: string }) {
+  if (!url) return <span className="text-muted-foreground">—</span>;
+  // eslint-disable-next-line @next/next/no-img-element
+  return <img src={url} alt={alt} loading="lazy" decoding="async" className="h-24 w-auto max-w-[160px] rounded-lg border border-border/60 bg-white object-contain p-1" />;
 }

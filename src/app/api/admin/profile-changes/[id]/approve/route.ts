@@ -28,6 +28,15 @@ const FIELD_LABELS: Record<string, string> = {
   postalCode: "Código postal",
   emergencyContact: "Contacto de emergencia",
   emergencyPhone: "Tel. de emergencia",
+  // Imágenes (la lógica de aplicar ya funciona para strings).
+  faceImageBlobUrl: "Foto de frente",
+  signatureBlobUrl: "Firma",
+  dniFrontBlobUrl: "DNI (frente)",
+  dniBackBlobUrl: "DNI (dorso)",
+  licenseFrontBlobUrl: "Carnet (frente)",
+  licenseBackBlobUrl: "Carnet (dorso)",
+  healthCardFrontBlobUrl: "Libreta (frente)",
+  healthCardBackBlobUrl: "Libreta (dorso)",
 };
 
 function labelsOf(fields: string[]): string {

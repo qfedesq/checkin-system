@@ -2,6 +2,14 @@
 
 Cada release sube la versión en `+0.01`. El número visible abajo a la izquierda en la app coincide con este archivo.
 
+## v0.42 — 2026-07-13
+
+**Pedido del cliente: las imágenes también pasan por aprobación del administrador.**
+
+- **Fotos con aprobación**: cuando un empleado con perfil ya completo **cambia una imagen** (foto de frente, firma, DNI, libreta o carnet), el cambio **queda pendiente de aprobación** y el administrador recibe un aviso — la imagen anterior se sigue usando hasta que la apruebe. Antes las imágenes se reemplazaban al instante, sin revisión ni aviso.
+- **Revisión visual**: en **Cambios de perfil** el administrador ve la imagen **actual y la propuesta** lado a lado y aprueba o rechaza cada una por separado (igual que los datos de texto).
+- La **primera carga** de imágenes al completar el perfil sigue siendo directa (parte del alta); la aprobación aplica a los cambios posteriores.
+
 ## v0.41 — 2026-07-13
 
 **Pedido del cliente: firma sin fondo, zona de check-out, perfil obligatorio y aprobación campo por campo.**

@@ -176,8 +176,8 @@ export function ProfileForm({ initial, email, pendingFields }: { initial: Initia
         <div className="mt-4">
           <Field label="Libreta sanitaria · vence"><input type="date" className="surface-control max-w-[220px]" required value={data.healthCardExpiry} onChange={(e) => set("healthCardExpiry", e.target.value)} /></Field>
           <div className="mt-3 grid grid-cols-2 gap-4 sm:max-w-md">
-            <ImageSlot label="Libreta (frente)" kind="healthFront" url={data.healthCardFrontBlobUrl} onUploaded={(u) => set("healthCardFrontBlobUrl", u)} onError={(t) => setMsg({ kind: "err", text: t })} />
-            <ImageSlot label="Libreta (dorso)" kind="healthBack" url={data.healthCardBackBlobUrl} onUploaded={(u) => set("healthCardBackBlobUrl", u)} onError={(t) => setMsg({ kind: "err", text: t })} />
+            <ImageSlot label="Libreta (frente)" kind="healthFront" url={data.healthCardFrontBlobUrl} onUploaded={(u) => set("healthCardFrontBlobUrl", u)} onError={(t) => setMsg({ kind: "err", text: t })} onPending={(t) => setMsg({ kind: "ok", text: t })} />
+            <ImageSlot label="Libreta (dorso)" kind="healthBack" url={data.healthCardBackBlobUrl} onUploaded={(u) => set("healthCardBackBlobUrl", u)} onError={(t) => setMsg({ kind: "err", text: t })} onPending={(t) => setMsg({ kind: "ok", text: t })} />
           </div>
         </div>
 
@@ -185,8 +185,8 @@ export function ProfileForm({ initial, email, pendingFields }: { initial: Initia
           <div className="mt-6">
             <Field label="Carnet profesional · vence"><input type="date" className="surface-control max-w-[220px]" required value={data.professionalLicenseExpiry} onChange={(e) => set("professionalLicenseExpiry", e.target.value)} /></Field>
             <div className="mt-3 grid grid-cols-2 gap-4 sm:max-w-md">
-              <ImageSlot label="Carnet (frente)" kind="licenseFront" url={data.licenseFrontBlobUrl} onUploaded={(u) => set("licenseFrontBlobUrl", u)} onError={(t) => setMsg({ kind: "err", text: t })} />
-              <ImageSlot label="Carnet (dorso)" kind="licenseBack" url={data.licenseBackBlobUrl} onUploaded={(u) => set("licenseBackBlobUrl", u)} onError={(t) => setMsg({ kind: "err", text: t })} />
+              <ImageSlot label="Carnet (frente)" kind="licenseFront" url={data.licenseFrontBlobUrl} onUploaded={(u) => set("licenseFrontBlobUrl", u)} onError={(t) => setMsg({ kind: "err", text: t })} onPending={(t) => setMsg({ kind: "ok", text: t })} />
+              <ImageSlot label="Carnet (dorso)" kind="licenseBack" url={data.licenseBackBlobUrl} onUploaded={(u) => set("licenseBackBlobUrl", u)} onError={(t) => setMsg({ kind: "err", text: t })} onPending={(t) => setMsg({ kind: "ok", text: t })} />
             </div>
           </div>
         )}
@@ -226,7 +226,7 @@ export function ProfileForm({ initial, email, pendingFields }: { initial: Initia
         <h2 className="text-lg font-semibold">Foto de perfil</h2>
         <p className="mt-1 text-sm text-muted-foreground">Subí una foto de frente de tu cara. (obligatorio)</p>
         <div className="mt-4 w-40">
-          <ImageSlot label="Foto" kind="face" url={data.faceImageBlobUrl} onUploaded={(u) => { set("faceImageBlobUrl", u); setMsg({ kind: "ok", text: "Foto guardada." }); }} onError={(t) => setMsg({ kind: "err", text: t })} contain />
+          <ImageSlot label="Foto" kind="face" url={data.faceImageBlobUrl} onUploaded={(u) => { set("faceImageBlobUrl", u); setMsg({ kind: "ok", text: "Foto guardada." }); }} onError={(t) => setMsg({ kind: "err", text: t })} onPending={(t) => setMsg({ kind: "ok", text: t })} contain />
         </div>
       </section>
 
@@ -234,7 +234,7 @@ export function ProfileForm({ initial, email, pendingFields }: { initial: Initia
         <h2 className="text-lg font-semibold">Firma digital</h2>
         <p className="mt-1 text-sm text-muted-foreground">Firmá en el recuadro con el dedo. Se usa automáticamente cuando abrís recibos y documentos internos. (obligatorio)</p>
         <div className="mt-4">
-          <SignaturePad url={data.signatureBlobUrl} onUploaded={(u) => { set("signatureBlobUrl", u); setMsg({ kind: "ok", text: "Firma guardada." }); }} onError={(t) => setMsg({ kind: "err", text: t })} />
+          <SignaturePad url={data.signatureBlobUrl} onUploaded={(u) => { set("signatureBlobUrl", u); setMsg({ kind: "ok", text: "Firma guardada." }); }} onError={(t) => setMsg({ kind: "err", text: t })} onPending={(t) => setMsg({ kind: "ok", text: t })} />
         </div>
       </section>
 
@@ -269,12 +269,13 @@ function SizeSelect({ options, value, onChange, required }: { options: string[];
   );
 }
 
-function ImageSlot({ label, kind, url, onUploaded, onError, contain }: {
+function ImageSlot({ label, kind, url, onUploaded, onError, onPending, contain }: {
   label: string;
   kind: string;
   url: string;
   onUploaded: (url: string) => void;
   onError: (text: string) => void;
+  onPending?: (text: string) => void;
   contain?: boolean;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -290,6 +291,8 @@ function ImageSlot({ label, kind, url, onUploaded, onError, contain }: {
       const res = await fetch("/api/profile/uploads", { method: "POST", body: form });
       const out = await res.json().catch(() => ({}));
       if (!res.ok) return onError(out.error ?? "No pudimos subir la imagen. Probá con una foto más liviana.");
+      // Perfil completo: la imagen queda pendiente de aprobación → no reemplazamos la actual.
+      if (out.pendingApproval) return onPending?.("Imagen enviada: queda pendiente de aprobación del administrador.");
       onUploaded(out.url);
     } catch {
       onError("No pudimos subir la imagen. Revisá tu conexión e intentá de nuevo.");
