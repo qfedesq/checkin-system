@@ -44,6 +44,8 @@ export default async function ProfilePage() {
         healthCardBackBlobUrl: fileUrl(profile.healthCardBackBlobUrl),
         licenseFrontBlobUrl: fileUrl(profile.licenseFrontBlobUrl),
         licenseBackBlobUrl: fileUrl(profile.licenseBackBlobUrl),
+        dniFrontBlobUrl: fileUrl(profile.dniFrontBlobUrl),
+        dniBackBlobUrl: fileUrl(profile.dniBackBlobUrl),
       }
     : null;
 

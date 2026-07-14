@@ -92,7 +92,14 @@ export default async function InboxPage({ searchParams }: { searchParams: Promis
                 <td className="px-3 py-3">{TYPE_LABEL[d.type]}</td>
                 <td className="px-3 py-3 text-xs text-muted-foreground">{formatDateTime(d.createdAt)}</td>
                 <td className="px-3 py-3 text-xs">
-                  {d.openedAt ? <span className="badge-success">firmado {formatDateTime(d.openedAt)}</span> : <span className="badge-warning">sin abrir</span>}
+                  {d.openedAt ? (
+                    <div className="flex flex-col gap-1">
+                      <span className="badge-success w-fit">Firmado</span>
+                      <span className="text-xs text-muted-foreground">{formatDateTime(d.openedAt)}</span>
+                    </div>
+                  ) : (
+                    <span className="badge-warning">sin abrir</span>
+                  )}
                 </td>
                 <td className="px-5 py-3 text-right">
                   <OpenDelivery id={d.id} opened={Boolean(d.openedAt)} />

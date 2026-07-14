@@ -7,9 +7,9 @@ export const dynamic = "force-dynamic";
 
 export default async function AdminUsersPage() {
   const session = await auth();
-  // Cota defensiva: prioriza pendientes (status asc) y más recientes. TODO: paginación real si el headcount crece.
+  // Cota defensiva: se ordena alfabéticamente por apellido después. TODO: paginación real si el headcount crece.
   const users = await prisma.user.findMany({
-    orderBy: [{ status: "asc" }, { createdAt: "desc" }],
+    orderBy: [{ createdAt: "desc" }],
     include: { profile: true, webauthnCredentials: { select: { id: true } } },
     take: 100,
   });
@@ -28,6 +28,16 @@ export default async function AdminUsersPage() {
     legajo: u.profile?.legajo ?? null,
     hireDate: u.profile?.hireDate?.toISOString() ?? null,
   }));
+
+  // Alfabético por apellido (los usuarios sin perfil, ej. admins, van al final por email).
+  serializable.sort((a, b) => {
+    const la = a.lastName.trim();
+    const lb = b.lastName.trim();
+    if (la && lb) return la.localeCompare(lb, "es") || a.firstName.localeCompare(b.firstName, "es");
+    if (la && !lb) return -1;
+    if (!la && lb) return 1;
+    return a.email.localeCompare(b.email, "es");
+  });
 
   return (
     <>

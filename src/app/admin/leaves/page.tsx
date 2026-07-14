@@ -20,6 +20,7 @@ export default async function AdminLeavesPage() {
     status: l.status,
     createdAt: l.createdAt.toISOString(),
     employee: l.user.profile ? `${l.user.profile.firstName} ${l.user.profile.lastName}` : l.user.email,
+    lastName: l.user.profile?.lastName ?? l.user.email,
     legajo: l.user.profile?.legajo ?? null,
   }));
   return (

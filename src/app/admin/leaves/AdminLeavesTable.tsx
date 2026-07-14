@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { formatCalendarDate } from "@/lib/utils";
 import { CheckCircle2, XCircle, ArrowUp, ArrowDown } from "lucide-react";
 
-type Row = { id: string; type: "VACATION" | "DAY_OFF"; startDate: string; endDate: string; days: number; status: "PENDING" | "APPROVED" | "REJECTED"; createdAt: string; employee: string; legajo: string | null };
+type Row = { id: string; type: "VACATION" | "DAY_OFF"; startDate: string; endDate: string; days: number; status: "PENDING" | "APPROVED" | "REJECTED"; createdAt: string; employee: string; lastName: string; legajo: string | null };
 
 type SortKey = "employee" | "type" | "startDate" | "status";
 
@@ -26,7 +26,7 @@ export function AdminLeavesTable({ leaves }: { leaves: Row[] }) {
   const [busy, setBusy] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
-  const [sortKey, setSortKey] = useState<SortKey>("status");
+  const [sortKey, setSortKey] = useState<SortKey>("employee");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
   const router = useRouter();
 
@@ -45,7 +45,7 @@ export function AdminLeavesTable({ leaves }: { leaves: Row[] }) {
       let cmp = 0;
       switch (sortKey) {
         case "employee":
-          cmp = a.employee.localeCompare(b.employee, "es");
+          cmp = a.lastName.localeCompare(b.lastName, "es");
           break;
         case "type":
           cmp = a.type.localeCompare(b.type);

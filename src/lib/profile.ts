@@ -32,6 +32,8 @@ export function isEmployeeProfileComplete(p: EmployeeProfile | null | undefined)
     filled(p.shoeSize) &&
     filled(p.faceImageBlobUrl) &&
     filled(p.signatureBlobUrl) &&
+    filled(p.dniFrontBlobUrl) &&
+    filled(p.dniBackBlobUrl) &&
     healthSet &&
     licenseOk
   );

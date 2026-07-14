@@ -81,6 +81,8 @@ export type EmployeeEvent =
   | "leave.rejected"
   | "profile.change.approved"
   | "profile.change.rejected"
+  | "document.approved"
+  | "document.rejected"
   | "delivery.new"
   | "expiry.reminder"
   | "attendance.checkout.reminder"
@@ -93,6 +95,8 @@ const EMPLOYEE_PRESETS: Record<EmployeeEvent, { subject: string; title: string; 
   "leave.rejected": { subject: "Solicitud rechazada", title: "Tu solicitud fue rechazada", path: "/calendar", label: "Ver calendario" },
   "profile.change.approved": { subject: "Cambios de perfil aprobados", title: "Tus cambios de perfil fueron aprobados", path: "/profile", label: "Ver perfil" },
   "profile.change.rejected": { subject: "Cambios de perfil rechazados", title: "Tus cambios de perfil fueron rechazados", path: "/profile", label: "Ver perfil" },
+  "document.approved": { subject: "Documento aprobado", title: "Documento aprobado", path: "/documents", label: "Ver documentación" },
+  "document.rejected": { subject: "Documento rechazado", title: "Documento rechazado", path: "/documents", label: "Ver documentación" },
   "delivery.new": { subject: "Nuevo documento disponible", title: "Tenés un documento nuevo", path: "/inbox", label: "Abrir documento" },
   "expiry.reminder": { subject: "Recordatorio de vencimiento", title: "Documentación por vencer", path: "/documents", label: "Actualizar documentación" },
   "attendance.checkout.reminder": { subject: "¿Seguís prestando servicio?", title: "¿Seguís prestando servicio?", path: "/checkin", label: "Hacer check-out" },

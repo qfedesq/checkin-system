@@ -2,6 +2,16 @@
 
 Cada release sube la versión en `+0.01`. El número visible abajo a la izquierda en la app coincide con este archivo.
 
+## v0.47 — 2026-07-13
+
+**Feedback: DNI en el perfil, Documentación ordenable, aviso de documento y orden por apellido.**
+
+- **Foto del DNI (ambos lados) en el perfil**: el empleado ahora carga **frente y dorso del DNI** desde Mi perfil (obligatorio, con aprobación del administrador como el resto de las imágenes).
+- **Aviso al aprobar/rechazar un documento**: cuando el administrador aprueba o rechaza un documento cargado por el empleado, ahora le **llega la notificación** (con el motivo, si se rechazó) — antes sólo lo veía si entraba a la app.
+- **Documentación ordenable**: la tabla de Documentación (admin) se puede **ordenar** por empleado, tipo, fecha o estado, igual que Solicitudes.
+- **Orden alfabético por apellido**: Usuarios, Solicitudes, Documentación y Cambios de perfil ahora vienen ordenados por **apellido** por defecto.
+- **Estética**: el estado "Firmado" en Recibidos quedó prolijo (un badge compacto y la fecha debajo, sin desbordar).
+
 ## v0.46 — 2026-07-13
 
 **Feedback: textos, filtros, orden y actualización de contadores.**

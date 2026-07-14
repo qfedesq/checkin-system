@@ -1,13 +1,29 @@
 "use client";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { formatCalendarDate } from "@/lib/utils";
-import { CheckCircle2, XCircle, ExternalLink } from "lucide-react";
+import { formatDate, formatCalendarDate } from "@/lib/utils";
+import { CheckCircle2, XCircle, ExternalLink, ArrowUp, ArrowDown } from "lucide-react";
 import { Modal } from "@/components/ui/Modal";
 
-type Row = { id: string; type: "DRIVER_LICENSE" | "HEALTH_CARD" | "OTHER"; blobUrl: string; expiresAt: string | null; status: "PENDING_REVIEW" | "APPROVED" | "REJECTED"; note: string; createdAt: string; employee: string; email: string };
+type Row = { id: string; type: "DRIVER_LICENSE" | "HEALTH_CARD" | "OTHER"; blobUrl: string; expiresAt: string | null; status: "PENDING_REVIEW" | "APPROVED" | "REJECTED"; note: string; createdAt: string; employee: string; lastName: string; email: string };
 
 const LABEL = { DRIVER_LICENSE: "Carnet", HEALTH_CARD: "Libreta sanitaria", OTHER: "Otro" };
+
+type SortKey = "employee" | "type" | "expiresAt" | "status";
+
+const STATUS_ORDER: Record<Row["status"], number> = { PENDING_REVIEW: 0, APPROVED: 1, REJECTED: 2 };
+
+function SortHeader({ label, sortKey, active, dir, onClick }: { label: string; sortKey: SortKey; active: SortKey; dir: "asc" | "desc"; onClick: (k: SortKey) => void }) {
+  const isActive = active === sortKey;
+  return (
+    <th className="px-3 py-3 first:px-5">
+      <button type="button" className="inline-flex items-center gap-1 uppercase tracking-[0.16em] text-[11px] hover:text-foreground" onClick={() => onClick(sortKey)}>
+        {label}
+        {isActive && (dir === "asc" ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />)}
+      </button>
+    </th>
+  );
+}
 
 export function AdminDocuments({ docs }: { docs: Row[] }) {
   const [busy, setBusy] = useState<string | null>(null);
@@ -15,7 +31,44 @@ export function AdminDocuments({ docs }: { docs: Row[] }) {
   const [note, setNote] = useState("");
   const [err, setErr] = useState<string | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
+  const [sortKey, setSortKey] = useState<SortKey>("employee");
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
   const router = useRouter();
+
+  function onSort(key: SortKey) {
+    if (key === sortKey) {
+      setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    } else {
+      setSortKey(key);
+      setSortDir("asc");
+    }
+  }
+
+  const sortedDocs = useMemo(() => {
+    const rows = [...docs];
+    rows.sort((a, b) => {
+      let cmp = 0;
+      switch (sortKey) {
+        case "employee":
+          cmp = a.lastName.localeCompare(b.lastName, "es");
+          break;
+        case "type":
+          cmp = a.type.localeCompare(b.type);
+          break;
+        case "expiresAt": {
+          const av = a.expiresAt ?? a.createdAt;
+          const bv = b.expiresAt ?? b.createdAt;
+          cmp = av.localeCompare(bv);
+          break;
+        }
+        case "status":
+          cmp = STATUS_ORDER[a.status] - STATUS_ORDER[b.status];
+          break;
+      }
+      return sortDir === "asc" ? cmp : -cmp;
+    });
+    return rows;
+  }, [docs, sortKey, sortDir]);
 
   async function act(id: string, action: "approve" | "reject", note?: string) {
     setBusy(id);
@@ -44,22 +97,22 @@ export function AdminDocuments({ docs }: { docs: Row[] }) {
       <div className="overflow-x-auto"><table className="w-full min-w-[680px] text-sm">
         <thead>
           <tr className="border-b border-border/60 text-left mono text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
-            <th className="px-5 py-3">Empleado</th>
-            <th className="px-3 py-3">Tipo</th>
-            <th className="px-3 py-3">Vence</th>
-            <th className="px-3 py-3">Estado</th>
+            <SortHeader label="Empleado" sortKey="employee" active={sortKey} dir={sortDir} onClick={onSort} />
+            <SortHeader label="Tipo" sortKey="type" active={sortKey} dir={sortDir} onClick={onSort} />
+            <SortHeader label="Vence/Subido" sortKey="expiresAt" active={sortKey} dir={sortDir} onClick={onSort} />
+            <SortHeader label="Estado" sortKey="status" active={sortKey} dir={sortDir} onClick={onSort} />
             <th className="px-5 py-3 text-right">Acciones</th>
           </tr>
         </thead>
         <tbody>
-          {docs.map((d) => (
+          {sortedDocs.map((d) => (
             <tr key={d.id} className="border-b border-border/60 last:border-0">
               <td className="px-5 py-3">
                 <div className="font-medium">{d.employee}</div>
                 <div className="text-xs text-muted-foreground">{d.email}</div>
               </td>
               <td className="px-3 py-3">{LABEL[d.type]}</td>
-              <td className="px-3 py-3">{formatCalendarDate(d.expiresAt)}</td>
+              <td className="px-3 py-3">{d.expiresAt ? formatCalendarDate(d.expiresAt) : formatDate(d.createdAt)}</td>
               <td className="px-3 py-3">
                 {d.status === "PENDING_REVIEW" && <span className="badge-warning">pendiente</span>}
                 {d.status === "APPROVED" && <span className="badge-success">aprobado</span>}

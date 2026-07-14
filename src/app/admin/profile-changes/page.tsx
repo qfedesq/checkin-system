@@ -19,7 +19,7 @@ const IMAGE_FIELDS = new Set([
 
 export default async function AdminProfileChangesPage() {
   const requests = await prisma.profileChangeRequest.findMany({
-    orderBy: [{ status: "asc" }, { createdAt: "desc" }],
+    orderBy: [{ createdAt: "desc" }],
     take: 100,
     include: { user: { include: { profile: true } } },
   });
@@ -37,12 +37,24 @@ export default async function AdminProfileChangesPage() {
     return {
       id: r.id,
       employee: r.user.profile ? `${r.user.profile.lastName}, ${r.user.profile.firstName}` : r.user.email,
+      lastName: r.user.profile?.lastName ?? "",
+      email: r.user.email,
       userId: r.userId,
       status: r.status,
       createdAt: r.createdAt.toISOString(),
       changes,
       note: r.note,
     };
+  });
+
+  // Alfabético por apellido por defecto (los usuarios sin perfil van al final por email).
+  rows.sort((a, b) => {
+    const la = a.lastName.trim();
+    const lb = b.lastName.trim();
+    if (la && lb) return la.localeCompare(lb, "es");
+    if (la && !lb) return -1;
+    if (!la && lb) return 1;
+    return a.email.localeCompare(b.email, "es");
   });
 
   return (

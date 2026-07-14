@@ -27,6 +27,8 @@ const REQUIRED: [keyof Initial, string][] = [
   ["emergencyPhone", "Teléfono de emergencia"],
   ["faceImageBlobUrl", "Foto de frente"],
   ["signatureBlobUrl", "Firma"],
+  ["dniFrontBlobUrl", "DNI (frente)"],
+  ["dniBackBlobUrl", "DNI (dorso)"],
 ];
 
 type Initial = {
@@ -58,6 +60,8 @@ type Initial = {
   healthCardBackBlobUrl: string;
   licenseFrontBlobUrl: string;
   licenseBackBlobUrl: string;
+  dniFrontBlobUrl: string;
+  dniBackBlobUrl: string;
 };
 
 const EMPTY: Initial = {
@@ -67,6 +71,7 @@ const EMPTY: Initial = {
   address: "", addressNumber: "", neighborhood: "", city: "", postalCode: "",
   emergencyContact: "", emergencyPhone: "", signatureBlobUrl: "", faceImageBlobUrl: "",
   healthCardFrontBlobUrl: "", healthCardBackBlobUrl: "", licenseFrontBlobUrl: "", licenseBackBlobUrl: "",
+  dniFrontBlobUrl: "", dniBackBlobUrl: "",
 };
 
 const CLOTHING_SIZES = ["XS", "S", "M", "L", "XL", "XXL", "XXXL"];
@@ -219,6 +224,15 @@ export function ProfileForm({ initial, email, pendingFields }: { initial: Initia
         <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
           <Field label="Nombre"><input className="surface-control" required value={data.emergencyContact} onChange={(e) => set("emergencyContact", e.target.value)} /></Field>
           <Field label="Teléfono"><input className="surface-control" required value={data.emergencyPhone} onChange={(e) => set("emergencyPhone", e.target.value)} /></Field>
+        </div>
+      </section>
+
+      <section className="panel p-6">
+        <h2 className="text-lg font-semibold">Documento de identidad (DNI)</h2>
+        <p className="mt-1 text-sm text-muted-foreground">Subí una foto de cada lado de tu DNI. (obligatorio)</p>
+        <div className="mt-4 grid grid-cols-2 gap-4 sm:max-w-md">
+          <ImageSlot label="DNI (frente)" kind="dniFront" url={data.dniFrontBlobUrl} onUploaded={(u) => set("dniFrontBlobUrl", u)} onError={(t) => setMsg({ kind: "err", text: t })} onPending={(t) => setMsg({ kind: "ok", text: t })} />
+          <ImageSlot label="DNI (dorso)" kind="dniBack" url={data.dniBackBlobUrl} onUploaded={(u) => set("dniBackBlobUrl", u)} onError={(t) => setMsg({ kind: "err", text: t })} onPending={(t) => setMsg({ kind: "ok", text: t })} />
         </div>
       </section>
 
