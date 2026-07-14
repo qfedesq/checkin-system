@@ -85,7 +85,7 @@ export function DocumentsClient({ documents }: { documents: Doc[] }) {
               <th className="px-5 py-3">Tipo</th>
               <th className="px-3 py-3">Vencimiento</th>
               <th className="px-3 py-3">Estado</th>
-              <th className="px-3 py-3">Subido</th>
+              <th className="px-3 py-3">Enviado</th>
               <th className="px-5 py-3"></th>
             </tr>
           </thead>

@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { AppShell } from "@/components/layout/AppShell";
 import { prisma } from "@/lib/prisma";
+import { AutoRefresh } from "./AutoRefresh";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const session = await auth();
@@ -30,6 +31,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         "/admin/profile-changes": pendingProfileChanges,
       }}
     >
+      <AutoRefresh />
       {children}
     </AppShell>
   );

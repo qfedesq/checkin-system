@@ -23,6 +23,7 @@ export function CalendarClient() {
   const [data, setData] = useState<Availability | null>(null);
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<{ kind: "ok" | "err"; text: string } | null>(null);
+  const [myLeavesFilter, setMyLeavesFilter] = useState<"ALL" | "VACATION" | "DAY_OFF">("ALL");
 
   useEffect(() => {
     const now = new Date();
@@ -77,6 +78,12 @@ export function CalendarClient() {
     if (!data) return [];
     return data.myLeaves.map((l) => ({ from: isoToCalendarDate(l.startDate), to: isoToCalendarDate(l.endDate), status: l.status }));
   }, [data]);
+
+  const filteredMyLeaves = useMemo(() => {
+    if (!data) return [];
+    if (myLeavesFilter === "ALL") return data.myLeaves;
+    return data.myLeaves.filter((l) => l.type === myLeavesFilter);
+  }, [data, myLeavesFilter]);
 
   async function submit() {
     if (!selected) return setMsg({ kind: "err", text: "Elegí una fecha" });
@@ -190,9 +197,14 @@ export function CalendarClient() {
 
       <section className="panel p-6">
         <h2 className="text-lg font-semibold">Mis solicitudes</h2>
+        <div className="mt-3 flex items-center gap-2">
+          <button aria-pressed={myLeavesFilter === "ALL"} className={myLeavesFilter === "ALL" ? "btn-primary" : "btn-ghost"} onClick={() => setMyLeavesFilter("ALL")}>Todas</button>
+          <button aria-pressed={myLeavesFilter === "VACATION"} className={myLeavesFilter === "VACATION" ? "btn-primary" : "btn-ghost"} onClick={() => setMyLeavesFilter("VACATION")}>Vacaciones</button>
+          <button aria-pressed={myLeavesFilter === "DAY_OFF"} className={myLeavesFilter === "DAY_OFF" ? "btn-primary" : "btn-ghost"} onClick={() => setMyLeavesFilter("DAY_OFF")}>Francos</button>
+        </div>
         <ul className="mt-4 space-y-3">
-          {data?.myLeaves.length === 0 && <li className="text-sm text-muted-foreground">Sin solicitudes.</li>}
-          {data?.myLeaves.map((l) => (
+          {filteredMyLeaves.length === 0 && <li className="text-sm text-muted-foreground">Sin solicitudes.</li>}
+          {filteredMyLeaves.map((l) => (
             <li key={l.id} className="surface-card p-3">
               <div className="flex items-center justify-between">
                 <div>

@@ -75,7 +75,7 @@ export default async function InboxPage({ searchParams }: { searchParams: Promis
             <tr className="border-b border-border/60 text-left mono text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
               <th className="px-5 py-3">Documento</th>
               <th className="px-3 py-3">Tipo</th>
-              <th className="px-3 py-3">Enviado</th>
+              <th className="px-3 py-3">Recibido</th>
               <th className="px-3 py-3">Firmado</th>
               <th className="px-5 py-3 text-right">Acciones</th>
             </tr>

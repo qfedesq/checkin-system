@@ -2,6 +2,16 @@
 
 Cada release sube la versión en `+0.01`. El número visible abajo a la izquierda en la app coincide con este archivo.
 
+## v0.46 — 2026-07-13
+
+**Feedback: textos, filtros, orden y actualización de contadores.**
+
+- **"Mis solicitudes" (empleado)**: ahora también aparecen las solicitudes **rechazadas** (antes sólo se veían las aprobadas/pendientes) y hay un **filtro Todas / Vacaciones / Francos**.
+- **Contadores del menú (admin)**: los círculos con la cantidad de pendientes ahora se **actualizan al cambiar de sección** (antes sólo al refrescar la página).
+- **Solicitudes (admin)**: la tabla es **ordenable** por empleado, tipo, fecha o estado (tocando el encabezado de la columna).
+- **Textos más claros**: en "Otros documentos" (empleado) la columna pasó de "Subido" a **"Enviado"**; en "Recibidos" pasó de "Enviado" a **"Recibido"**.
+- **Notificaciones**: los avisos son **sólo dentro de la app** (push + contadores); no se envían correos.
+
 ## v0.45 — 2026-07-13
 
 **Feedback: cambiar CUALQUIER imagen ya cargada requiere aprobación + aviso al admin.**

@@ -26,7 +26,11 @@ export const GET = route("calendar.availability", async (req: NextRequest) => {
     prisma.leaveRequest.findMany({
       where: {
         userId: session.user.id,
-        status: { in: ["PENDING", "APPROVED"] },
+        // Incluye REJECTED para que el empleado vea el historial completo en "Mis
+        // solicitudes". El coloreado del calendario (modifiers en CalendarClient)
+        // y myDayOffMonths filtran explícitamente por status más abajo, así que
+        // esto no habilita coloreado ni bloquea meses por una solicitud rechazada.
+        status: { in: ["PENDING", "APPROVED", "REJECTED"] },
         endDate: { gte: fromDate },
       },
       orderBy: { startDate: "asc" },
@@ -74,11 +78,12 @@ export const GET = route("calendar.availability", async (req: NextRequest) => {
       usedDays: balance.usedDays,
       leftDays: balance.leftDays,
     },
-    // Meses (YYYY-MM) donde ya tengo franco pedido/aprobado
+    // Meses (YYYY-MM) donde ya tengo franco pedido/aprobado (excluye rechazados:
+    // una solicitud rechazada no debe bloquear pedir franco de nuevo ese mes).
     myDayOffMonths: Array.from(
       new Set(
         myLeaves
-          .filter((l) => l.type === "DAY_OFF")
+          .filter((l) => l.type === "DAY_OFF" && l.status !== "REJECTED")
           .map((l) => l.startDate.toISOString().slice(0, 7)),
       ),
     ),
