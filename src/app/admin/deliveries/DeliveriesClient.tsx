@@ -1,15 +1,29 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Upload, Send, FileText, X } from "lucide-react";
+import { Upload, Send, FileText, X, ArrowUp, ArrowDown } from "lucide-react";
 import { formatDateTime } from "@/lib/utils";
 import type { PDFDocumentProxy } from "pdfjs-dist";
 
-type Row = { id: string; title: string; type: "PAYSLIP" | "INTERNAL_DOC" | "OTHER"; recipient: string; openedAt: string | null; createdAt: string };
+type Row = { id: string; title: string; type: "PAYSLIP" | "INTERNAL_DOC" | "OTHER"; recipient: string; lastName: string; openedAt: string | null; createdAt: string };
 type SignAnchor = "bottom-left" | "bottom-right" | "top-left" | "top-right";
 type SignPoint = { x: number; y: number };
 
 const TYPE_LABEL = { PAYSLIP: "Recibo de sueldo", INTERNAL_DOC: "Documento interno", OTHER: "Otro" };
+
+type SortKey = "recipient" | "type" | "createdAt";
+
+function SortHeader({ label, sortKey, active, dir, onClick, className }: { label: string; sortKey: SortKey; active: SortKey; dir: "asc" | "desc"; onClick: (k: SortKey) => void; className?: string }) {
+  const isActive = active === sortKey;
+  return (
+    <th className={className ?? "px-3 py-3"}>
+      <button type="button" className="inline-flex items-center gap-1 uppercase tracking-[0.16em] text-[11px] hover:text-foreground" onClick={() => onClick(sortKey)}>
+        {label}
+        {isActive && (dir === "asc" ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />)}
+      </button>
+    </th>
+  );
+}
 const ANCHOR_LABEL: Record<SignAnchor, string> = {
   "bottom-left": "Abajo izquierda",
   "bottom-right": "Abajo derecha",
@@ -156,6 +170,37 @@ export function DeliveriesClient({ employees, rows, initialRecipientId }: { empl
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  const [sortKey, setSortKey] = useState<SortKey>("recipient");
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
+
+  function onSort(key: SortKey) {
+    if (key === sortKey) {
+      setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    } else {
+      setSortKey(key);
+      setSortDir("asc");
+    }
+  }
+
+  const sortedRows = useMemo(() => {
+    const list = [...rows];
+    list.sort((a, b) => {
+      let cmp = 0;
+      switch (sortKey) {
+        case "recipient":
+          cmp = a.lastName.localeCompare(b.lastName, "es");
+          break;
+        case "type":
+          cmp = TYPE_LABEL[a.type].localeCompare(TYPE_LABEL[b.type], "es");
+          break;
+        case "createdAt":
+          cmp = a.createdAt.localeCompare(b.createdAt);
+          break;
+      }
+      return sortDir === "asc" ? cmp : -cmp;
+    });
+    return list;
+  }, [rows, sortKey, sortDir]);
 
   function clearFile() {
     setFile(null);
@@ -296,14 +341,14 @@ export function DeliveriesClient({ employees, rows, initialRecipientId }: { empl
           <thead>
             <tr className="border-b border-border/60 text-left mono text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
               <th className="px-5 py-3">Título</th>
-              <th className="px-3 py-3">Tipo</th>
-              <th className="px-3 py-3">Destinatario</th>
-              <th className="px-3 py-3">Enviado</th>
+              <SortHeader label="Tipo" sortKey="type" active={sortKey} dir={sortDir} onClick={onSort} />
+              <SortHeader label="Destinatario" sortKey="recipient" active={sortKey} dir={sortDir} onClick={onSort} />
+              <SortHeader label="Enviado" sortKey="createdAt" active={sortKey} dir={sortDir} onClick={onSort} />
               <th className="px-3 py-3">Abierto</th>
             </tr>
           </thead>
           <tbody>
-            {rows.map((r) => (
+            {sortedRows.map((r) => (
               <tr key={r.id} className="border-b border-border/60 last:border-0">
                 <td className="px-5 py-3">{r.title}</td>
                 <td className="px-3 py-3">{TYPE_LABEL[r.type]}</td>

@@ -20,7 +20,7 @@ export default async function AdminDocumentsPage() {
     status: d.status,
     note: d.note ?? "",
     createdAt: d.createdAt.toISOString(),
-    employee: d.user.profile ? `${d.user.profile.firstName} ${d.user.profile.lastName}` : d.user.email,
+    employee: d.user.profile ? `${d.user.profile.lastName}, ${d.user.profile.firstName}` : d.user.email,
     lastName: d.user.profile?.lastName ?? d.user.email,
     email: d.user.email,
   }));

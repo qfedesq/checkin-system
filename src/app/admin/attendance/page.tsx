@@ -38,18 +38,24 @@ export default async function AdminAttendancePage({ searchParams }: { searchPara
     }),
   ]);
 
-  const rows = attendance.map((a) => ({
-    id: a.id,
-    employee: a.user.profile ? `${a.user.profile.firstName} ${a.user.profile.lastName}` : a.user.email,
-    legajo: a.user.profile?.legajo ?? "—",
-    checkInAt: a.checkInAt.toISOString(),
-    checkOutAt: a.checkOutAt?.toISOString() ?? null,
-    durationMin: a.durationMin,
-    checkInLat: a.checkInLat,
-    checkInLng: a.checkInLng,
-    checkOutLat: a.checkOutLat,
-    checkOutLng: a.checkOutLng,
-  }));
+  const rows = attendance.map((a) => {
+    const lastName = a.user.profile?.lastName?.trim() ?? "";
+    const firstName = a.user.profile?.firstName?.trim() ?? "";
+    const employee = lastName && firstName ? `${lastName}, ${firstName}` : lastName || firstName || a.user.email;
+    return {
+      id: a.id,
+      employee,
+      lastName: lastName || employee,
+      legajo: a.user.profile?.legajo ?? "—",
+      checkInAt: a.checkInAt.toISOString(),
+      checkOutAt: a.checkOutAt?.toISOString() ?? null,
+      durationMin: a.durationMin,
+      checkInLat: a.checkInLat,
+      checkInLng: a.checkInLng,
+      checkOutLat: a.checkOutLat,
+      checkOutLng: a.checkOutLng,
+    };
+  });
 
   const employeeOpts = employees.map((e) => ({ id: e.id, label: e.profile ? `${e.profile.firstName} ${e.profile.lastName}` : e.email }));
 

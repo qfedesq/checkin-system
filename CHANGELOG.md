@@ -2,6 +2,16 @@
 
 Cada release sube la versión en `+0.01`. El número visible abajo a la izquierda en la app coincide con este archivo.
 
+## v0.48 — 2026-07-14
+
+**Feedback: orden por apellido asc/desc en todo el admin, fechas de solicitud/revisión, usuarios ordenables y filtro de documentos por empleado.**
+
+- **Apellido primero + orden asc/desc**: en Usuarios, Solicitudes, Documentación, Entregas y Jornadas ahora el empleado se muestra como **"Apellido, Nombre"** y todas las tablas se pueden **ordenar por apellido de la A a la Z o de la Z a la A** (tocando el encabezado).
+- **Usuarios ordenable**: la tabla de Usuarios se puede ordenar por **empleado (apellido), legajo, estado o alta**, ascendente o descendente.
+- **Vacaciones/Francos con fechas**: cada solicitud muestra la **fecha en que se solicitó** y la **fecha en que se aprobó o rechazó** (columnas "Solicitado" y "Revisado").
+- **Cambios de perfil con fechas**: ídem — cada solicitud de cambio de perfil muestra cuándo se **solicitó** y cuándo se **revisó**.
+- **Filtro de documentos por empleado**: en la ficha del empleado (admin) se pueden **filtrar los documentos enviados** por **tipo** (recibo de sueldo, documento interno, otro) y por **mes**.
+
 ## v0.47 — 2026-07-13
 
 **Feedback: DNI en el perfil, Documentación ordenable, aviso de documento y orden por apellido.**

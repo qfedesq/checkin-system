@@ -1,12 +1,12 @@
 "use client";
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { formatCalendarDate } from "@/lib/utils";
+import { formatCalendarDate, formatDateTime } from "@/lib/utils";
 import { CheckCircle2, XCircle, ArrowUp, ArrowDown } from "lucide-react";
 
-type Row = { id: string; type: "VACATION" | "DAY_OFF"; startDate: string; endDate: string; days: number; status: "PENDING" | "APPROVED" | "REJECTED"; createdAt: string; employee: string; lastName: string; legajo: string | null };
+type Row = { id: string; type: "VACATION" | "DAY_OFF"; startDate: string; endDate: string; days: number; status: "PENDING" | "APPROVED" | "REJECTED"; createdAt: string; reviewedAt: string | null; employee: string; lastName: string; legajo: string | null };
 
-type SortKey = "employee" | "type" | "startDate" | "status";
+type SortKey = "employee" | "type" | "startDate" | "status" | "createdAt";
 
 const STATUS_ORDER: Record<Row["status"], number> = { PENDING: 0, APPROVED: 1, REJECTED: 2 };
 
@@ -56,6 +56,9 @@ export function AdminLeavesTable({ leaves }: { leaves: Row[] }) {
         case "status":
           cmp = STATUS_ORDER[a.status] - STATUS_ORDER[b.status];
           break;
+        case "createdAt":
+          cmp = a.createdAt.localeCompare(b.createdAt);
+          break;
       }
       return sortDir === "asc" ? cmp : -cmp;
     });
@@ -79,7 +82,7 @@ export function AdminLeavesTable({ leaves }: { leaves: Row[] }) {
     <div className="panel p-0 overflow-hidden">
       {err && <div className="px-5 py-3 text-sm text-destructive bg-destructive/10 border-b border-destructive/20">{err}</div>}
       {msg && <div className="px-5 py-3 text-sm text-[hsl(var(--success-text))] bg-[hsl(var(--success))]/10 border-b border-[hsl(var(--success))]/20">{msg}</div>}
-      <div className="overflow-x-auto"><table className="w-full min-w-[760px] text-sm">
+      <div className="overflow-x-auto"><table className="w-full min-w-[980px] text-sm">
         <thead>
           <tr className="border-b border-border/60 text-left mono text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
             <SortHeader label="Empleado" sortKey="employee" active={sortKey} dir={sortDir} onClick={onSort} />
@@ -88,6 +91,8 @@ export function AdminLeavesTable({ leaves }: { leaves: Row[] }) {
             <th className="px-3 py-3">Fin</th>
             <th className="px-3 py-3">Días</th>
             <SortHeader label="Estado" sortKey="status" active={sortKey} dir={sortDir} onClick={onSort} />
+            <SortHeader label="Solicitado" sortKey="createdAt" active={sortKey} dir={sortDir} onClick={onSort} />
+            <th className="px-3 py-3">Revisado</th>
             <th className="px-5 py-3 text-right">Acciones</th>
           </tr>
         </thead>
@@ -107,6 +112,8 @@ export function AdminLeavesTable({ leaves }: { leaves: Row[] }) {
                 {l.status === "APPROVED" && <span className="badge-success">aprobado</span>}
                 {l.status === "REJECTED" && <span className="badge-danger">rechazado</span>}
               </td>
+              <td className="px-3 py-3 text-xs text-muted-foreground">{formatDateTime(l.createdAt)}</td>
+              <td className="px-3 py-3 text-xs text-muted-foreground">{l.reviewedAt ? formatDateTime(l.reviewedAt) : "—"}</td>
               <td className="px-5 py-3 text-right">
                 {l.status === "PENDING" && (
                   <div className="inline-flex gap-2">
@@ -117,7 +124,7 @@ export function AdminLeavesTable({ leaves }: { leaves: Row[] }) {
               </td>
             </tr>
           ))}
-          {leaves.length === 0 && <tr><td colSpan={7} className="px-5 py-8 text-center text-muted-foreground">Sin solicitudes.</td></tr>}
+          {leaves.length === 0 && <tr><td colSpan={9} className="px-5 py-8 text-center text-muted-foreground">Sin solicitudes.</td></tr>}
         </tbody>
       </table></div>
     </div>

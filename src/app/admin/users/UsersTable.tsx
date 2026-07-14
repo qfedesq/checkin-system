@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { CheckCircle2, KeyRound, Smartphone, XCircle, UserPlus, ShieldCheck, ShieldX, UserCog } from "lucide-react";
+import { CheckCircle2, KeyRound, Smartphone, XCircle, UserPlus, ShieldCheck, ShieldX, UserCog, ArrowUp, ArrowDown } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 import { Modal } from "@/components/ui/Modal";
 
@@ -21,13 +21,63 @@ type Row = {
   hireDate: string | null;
 };
 
+type SortKey = "employee" | "legajo" | "status" | "createdAt";
+
+const STATUS_ORDER: Record<Row["status"], number> = { PENDING_APPROVAL: 0, ACTIVE: 1, DISABLED: 2 };
+
+function SortHeader({ label, sortKey, active, dir, onClick }: { label: string; sortKey: SortKey; active: SortKey; dir: "asc" | "desc"; onClick: (k: SortKey) => void }) {
+  const isActive = active === sortKey;
+  return (
+    <th className="px-3 py-3 first:px-5">
+      <button type="button" className="inline-flex items-center gap-1 uppercase tracking-[0.16em] text-[11px] hover:text-foreground" onClick={() => onClick(sortKey)}>
+        {label}
+        {isActive && (dir === "asc" ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />)}
+      </button>
+    </th>
+  );
+}
+
 export function UsersTable({ users, currentUserId }: { users: Row[]; currentUserId: string }) {
   const [openApprove, setOpenApprove] = useState<Row | null>(null);
   const [openCreate, setOpenCreate] = useState(false);
   const [busy, setBusy] = useState<string | null>(null);
   const [toast, setToast] = useState<{ text: string; secret?: string } | null>(null);
   const [secretRevealed, setSecretRevealed] = useState(false);
+  const [sortKey, setSortKey] = useState<SortKey>("employee");
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
   const router = useRouter();
+
+  function onSort(key: SortKey) {
+    if (key === sortKey) {
+      setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    } else {
+      setSortKey(key);
+      setSortDir("asc");
+    }
+  }
+
+  const sortedUsers = useMemo(() => {
+    const rows = [...users];
+    rows.sort((a, b) => {
+      let cmp = 0;
+      switch (sortKey) {
+        case "employee":
+          cmp = a.lastName.localeCompare(b.lastName, "es") || a.firstName.localeCompare(b.firstName, "es");
+          break;
+        case "legajo":
+          cmp = (a.legajo ?? "").localeCompare(b.legajo ?? "", "es", { numeric: true, sensitivity: "base" });
+          break;
+        case "status":
+          cmp = STATUS_ORDER[a.status] - STATUS_ORDER[b.status];
+          break;
+        case "createdAt":
+          cmp = a.createdAt.localeCompare(b.createdAt);
+          break;
+      }
+      return sortDir === "asc" ? cmp : -cmp;
+    });
+    return rows;
+  }, [users, sortKey, sortDir]);
 
   function showToast(text: string, secret?: string, ms = 5000) {
     setToast({ text, secret });
@@ -64,19 +114,19 @@ export function UsersTable({ users, currentUserId }: { users: Row[]; currentUser
       <div className="overflow-x-auto"><table className="w-full min-w-[760px] text-sm">
         <thead>
           <tr className="border-b border-border/60 text-left mono text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
-            <th className="px-5 py-3">Empleado</th>
-            <th className="px-3 py-3">Legajo</th>
-            <th className="px-3 py-3">Estado</th>
+            <SortHeader label="Empleado" sortKey="employee" active={sortKey} dir={sortDir} onClick={onSort} />
+            <SortHeader label="Legajo" sortKey="legajo" active={sortKey} dir={sortDir} onClick={onSort} />
+            <SortHeader label="Estado" sortKey="status" active={sortKey} dir={sortDir} onClick={onSort} />
             <th className="px-3 py-3">Dispositivo</th>
-            <th className="px-3 py-3">Alta</th>
+            <SortHeader label="Alta" sortKey="createdAt" active={sortKey} dir={sortDir} onClick={onSort} />
             <th className="px-5 py-3 text-right">Acciones</th>
           </tr>
         </thead>
         <tbody>
-          {users.map((u) => (
+          {sortedUsers.map((u) => (
             <tr key={u.id} className="border-b border-border/60 last:border-0">
               <td className="px-5 py-3">
-                <div className="font-medium">{u.firstName || u.lastName ? `${u.firstName} ${u.lastName}` : "—"}</div>
+                <div className="font-medium">{u.firstName || u.lastName ? `${u.lastName}, ${u.firstName}` : "—"}</div>
                 <div className="text-xs text-muted-foreground">{u.email}</div>
                 {u.role === "ADMIN" && <span className="badge-accent mt-1">admin</span>}
               </td>

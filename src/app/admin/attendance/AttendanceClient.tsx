@@ -1,7 +1,7 @@
 "use client";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Download } from "lucide-react";
+import { Download, ArrowUp, ArrowDown } from "lucide-react";
 import { formatDate, formatDateTime, minutesToHhmm } from "@/lib/utils";
 
 async function closeAttendance(id: string) {
@@ -15,6 +15,7 @@ async function closeAttendance(id: string) {
 type Row = {
   id: string;
   employee: string;
+  lastName: string;
   legajo: string;
   checkInAt: string;
   checkOutAt: string | null;
@@ -24,6 +25,20 @@ type Row = {
   checkOutLat: number | null;
   checkOutLng: number | null;
 };
+
+type SortKey = "employee" | "checkInAt";
+
+function SortHeader({ label, sortKey, active, dir, onClick, className }: { label: string; sortKey: SortKey; active: SortKey; dir: "asc" | "desc"; onClick: (k: SortKey) => void; className?: string }) {
+  const isActive = active === sortKey;
+  return (
+    <th className={className ?? "px-3 py-3"}>
+      <button type="button" className="inline-flex items-center gap-1 uppercase tracking-[0.16em] text-[11px] hover:text-foreground" onClick={() => onClick(sortKey)}>
+        {label}
+        {isActive && (dir === "asc" ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />)}
+      </button>
+    </th>
+  );
+}
 
 export function AttendanceClient({ initial, employees, rows }: {
   initial: { from: string; to: string; userId: string };
@@ -35,6 +50,34 @@ export function AttendanceClient({ initial, employees, rows }: {
   const [to, setTo] = useState(initial.to);
   const [userId, setUserId] = useState(initial.userId);
   const [closingId, setClosingId] = useState<string | null>(null);
+  const [sortKey, setSortKey] = useState<SortKey>("employee");
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
+
+  function onSort(key: SortKey) {
+    if (key === sortKey) {
+      setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    } else {
+      setSortKey(key);
+      setSortDir("asc");
+    }
+  }
+
+  const sortedRows = useMemo(() => {
+    const list = [...rows];
+    list.sort((a, b) => {
+      let cmp = 0;
+      switch (sortKey) {
+        case "employee":
+          cmp = a.lastName.localeCompare(b.lastName, "es") || a.checkInAt.localeCompare(b.checkInAt);
+          break;
+        case "checkInAt":
+          cmp = a.checkInAt.localeCompare(b.checkInAt);
+          break;
+      }
+      return sortDir === "asc" ? cmp : -cmp;
+    });
+    return list;
+  }, [rows, sortKey, sortDir]);
 
   async function handleClose(id: string) {
     if (!confirm("¿Cerrar esta jornada huérfana? Se registrará el check-out con la hora actual.")) return;
@@ -109,8 +152,8 @@ export function AttendanceClient({ initial, employees, rows }: {
         <div className="overflow-x-auto"><table className="w-full min-w-[900px] text-sm">
           <thead>
             <tr className="border-b border-border/60 text-left mono text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
-              <th className="px-5 py-3">Empleado</th>
-              <th className="px-3 py-3">Fecha</th>
+              <SortHeader label="Empleado" sortKey="employee" active={sortKey} dir={sortDir} onClick={onSort} className="px-5 py-3" />
+              <SortHeader label="Fecha" sortKey="checkInAt" active={sortKey} dir={sortDir} onClick={onSort} />
               <th className="px-3 py-3">Check-in</th>
               <th className="px-3 py-3">Check-out</th>
               <th className="px-3 py-3">Duración</th>
@@ -120,7 +163,7 @@ export function AttendanceClient({ initial, employees, rows }: {
             </tr>
           </thead>
           <tbody>
-            {rows.map((r) => (
+            {sortedRows.map((r) => (
               <tr key={r.id} className="border-b border-border/60 last:border-0">
                 <td className="px-5 py-3">
                   <div className="font-medium">{r.employee}</div>

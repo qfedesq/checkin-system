@@ -45,6 +45,7 @@ type Row = {
   userId: string;
   status: "PENDING" | "APPROVED" | "REJECTED";
   createdAt: string;
+  reviewedAt: string | null;
   changes: Record<string, Change>;
   note: string | null;
 };
@@ -120,7 +121,7 @@ export function ProfileChangesClient({ rows }: { rows: Row[] }) {
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <Link href={`/admin/employees/${r.userId}`} className="text-sm font-semibold hover:text-[hsl(var(--primary-text))] hover:underline">{r.employee}</Link>
-              <div className="text-xs text-muted-foreground">{formatDateTime(r.createdAt)}</div>
+              <div className="text-xs text-muted-foreground">Solicitado: {formatDateTime(r.createdAt)} · Revisado: {r.reviewedAt ? formatDateTime(r.reviewedAt) : "—"}</div>
             </div>
             <div className="flex items-center gap-2">
               {r.status === "PENDING" && (

@@ -1,11 +1,23 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { KeyRound, Lock, LockOpen, Smartphone, Send, Upload } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 import { compressImage } from "@/lib/image-compress";
+
+const DELIVERY_TYPE_LABEL = { PAYSLIP: "Recibo de sueldo", INTERNAL_DOC: "Documento interno", OTHER: "Otro" } as const;
+
+/** "YYYY-MM" del createdAt (timestamp UTC) en hora ART (UTC-3 fijo), mismo criterio
+ *  que artTodayCalendarDate en @/lib/utils, para que el filtro de mes coincida con
+ *  la fecha que se ve en pantalla (formatDate usa TZ ART). */
+function artYearMonth(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  const art = new Date(d.getTime() - 3 * 3600 * 1000);
+  return `${art.getUTCFullYear()}-${String(art.getUTCMonth() + 1).padStart(2, "0")}`;
+}
 
 const CLOTHING_SIZES = ["XS", "S", "M", "L", "XL", "XXL", "XXXL"];
 const SHOE_SIZES = Array.from({ length: 48 - 36 + 1 }, (_, i) => String(36 + i));
@@ -80,6 +92,22 @@ export function EmployeeDetailClient({ initial }: {
   const [msg, setMsg] = useState<{ kind: "ok" | "err"; text: string } | null>(null);
   const [geoBusy, setGeoBusy] = useState(false);
   const [geoErr, setGeoErr] = useState<string | null>(null);
+  const [docTypeFilter, setDocTypeFilter] = useState<"ALL" | Delivery["type"]>("ALL");
+  const [docMonthFilter, setDocMonthFilter] = useState(""); // "YYYY-MM", vacío = sin filtro
+
+  const filteredDeliveries = useMemo(() => {
+    return initial.deliveries.filter((d) => {
+      if (docTypeFilter !== "ALL" && d.type !== docTypeFilter) return false;
+      if (docMonthFilter && artYearMonth(d.createdAt) !== docMonthFilter) return false;
+      return true;
+    });
+  }, [initial.deliveries, docTypeFilter, docMonthFilter]);
+
+  const hasDocFilters = docTypeFilter !== "ALL" || docMonthFilter !== "";
+  function clearDocFilters() {
+    setDocTypeFilter("ALL");
+    setDocMonthFilter("");
+  }
 
   const set = (field: keyof Profile) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
     setP((prev) => ({ ...prev, [field]: e.target.value }));
@@ -434,9 +462,28 @@ export function EmployeeDetailClient({ initial }: {
               <Send className="h-4 w-4" /> Enviar
             </Link>
           </div>
+          <div className="mt-3 flex flex-wrap items-end gap-2">
+            <label className="block">
+              <span className="eyebrow">Tipo</span>
+              <select className="surface-select mt-1" value={docTypeFilter} onChange={(e) => setDocTypeFilter(e.target.value as "ALL" | Delivery["type"])}>
+                <option value="ALL">Todos</option>
+                <option value="PAYSLIP">{DELIVERY_TYPE_LABEL.PAYSLIP}</option>
+                <option value="INTERNAL_DOC">{DELIVERY_TYPE_LABEL.INTERNAL_DOC}</option>
+                <option value="OTHER">{DELIVERY_TYPE_LABEL.OTHER}</option>
+              </select>
+            </label>
+            <label className="block">
+              <span className="eyebrow">Mes</span>
+              <input type="month" className="surface-control mt-1" value={docMonthFilter} onChange={(e) => setDocMonthFilter(e.target.value)} />
+            </label>
+            {hasDocFilters && (
+              <button type="button" className="btn-ghost text-xs" onClick={clearDocFilters}>Limpiar filtros</button>
+            )}
+          </div>
           <ul className="mt-4 space-y-2">
             {initial.deliveries.length === 0 && <li className="text-sm text-muted-foreground">Sin documentos enviados.</li>}
-            {initial.deliveries.map((d) => (
+            {initial.deliveries.length > 0 && filteredDeliveries.length === 0 && <li className="text-sm text-muted-foreground">Ningún documento coincide con el filtro.</li>}
+            {filteredDeliveries.map((d) => (
               <li key={d.id} className="surface-card p-3">
                 <div className="text-sm font-medium">{d.title}</div>
                 <div className="mt-0.5 text-xs text-muted-foreground">

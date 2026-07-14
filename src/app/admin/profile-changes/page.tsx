@@ -42,6 +42,7 @@ export default async function AdminProfileChangesPage() {
       userId: r.userId,
       status: r.status,
       createdAt: r.createdAt.toISOString(),
+      reviewedAt: r.reviewedAt?.toISOString() ?? null,
       changes,
       note: r.note,
     };

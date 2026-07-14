@@ -23,20 +23,23 @@ export default async function AdminDeliveriesPage({ searchParams }: { searchPara
     return { id: e.id, label: parts.join(" · ") };
   });
 
-  const rows = recent.map((d) => ({
-    id: d.id,
-    title: d.title,
-    type: d.type,
-    recipient: (() => {
-      const name = d.recipient.profile ? `${d.recipient.profile.firstName} ${d.recipient.profile.lastName}`.trim() : "";
-      const parts = [name || d.recipient.email];
-      if (d.recipient.profile?.legajo) parts.push(`legajo ${d.recipient.profile.legajo}`);
-      if (name) parts.push(d.recipient.email);
-      return parts.join(" · ");
-    })(),
-    openedAt: d.openedAt?.toISOString() ?? null,
-    createdAt: d.createdAt.toISOString(),
-  }));
+  const rows = recent.map((d) => {
+    const lastName = d.recipient.profile?.lastName?.trim() ?? "";
+    const firstName = d.recipient.profile?.firstName?.trim() ?? "";
+    const displayName = lastName && firstName ? `${lastName}, ${firstName}` : lastName || firstName;
+    const parts = [displayName || d.recipient.email];
+    if (d.recipient.profile?.legajo) parts.push(`legajo ${d.recipient.profile.legajo}`);
+    if (displayName) parts.push(d.recipient.email);
+    return {
+      id: d.id,
+      title: d.title,
+      type: d.type,
+      recipient: parts.join(" · "),
+      lastName: lastName || displayName || d.recipient.email,
+      openedAt: d.openedAt?.toISOString() ?? null,
+      createdAt: d.createdAt.toISOString(),
+    };
+  });
 
   return (
     <>

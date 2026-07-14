@@ -19,7 +19,8 @@ export default async function AdminLeavesPage() {
     days: l.days,
     status: l.status,
     createdAt: l.createdAt.toISOString(),
-    employee: l.user.profile ? `${l.user.profile.firstName} ${l.user.profile.lastName}` : l.user.email,
+    reviewedAt: l.reviewedAt?.toISOString() ?? null,
+    employee: l.user.profile ? `${l.user.profile.lastName}, ${l.user.profile.firstName}` : l.user.email,
     lastName: l.user.profile?.lastName ?? l.user.email,
     legajo: l.user.profile?.legajo ?? null,
   }));
