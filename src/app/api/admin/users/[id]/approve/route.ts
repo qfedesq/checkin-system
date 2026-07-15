@@ -47,6 +47,7 @@ export const POST = route("admin.users.approve", async (req: NextRequest, ctx: {
           category: "HELPER",
           phone: "",
           healthCardExpiry: new Date("2099-12-31"),
+          foodCourseExpiry: new Date("2099-12-31"),
           shirtSize: "",
           hoodieSize: "",
           jacketSize: "",

@@ -9,7 +9,7 @@ import { route } from "@/lib/route";
 
 // Actualiza sólo un vencimiento (libreta o carnet) desde la sección Documentación.
 // Misma regla que el perfil: primera carga directa, ediciones posteriores por aprobación.
-const body = z.object({ kind: z.enum(["health", "license"]), date: z.string().min(1) });
+const body = z.object({ kind: z.enum(["health", "license", "food"]), date: z.string().min(1) });
 
 export const POST = route("profile.expiry", async (req: NextRequest) => {
   const session = await auth();
@@ -18,7 +18,7 @@ export const POST = route("profile.expiry", async (req: NextRequest) => {
   const parsed = body.safeParse(await req.json().catch(() => ({})));
   if (!parsed.success) return NextResponse.json({ error: "Datos inválidos" }, { status: 400 });
   const { kind, date } = parsed.data;
-  const field = kind === "health" ? "healthCardExpiry" : "professionalLicenseExpiry";
+  const field = kind === "health" ? "healthCardExpiry" : kind === "food" ? "foodCourseExpiry" : "professionalLicenseExpiry";
 
   const profile = await prisma.employeeProfile.findUnique({ where: { userId: session.user.id } });
   if (!profile) return NextResponse.json({ error: "Completá tus datos en Mi perfil primero." }, { status: 400 });
@@ -36,7 +36,7 @@ export const POST = route("profile.expiry", async (req: NextRequest) => {
   }
 
   const currentRaw = (profile[field] as Date | null)?.toISOString().slice(0, 10) ?? "";
-  const current = field === "healthCardExpiry" && currentRaw.startsWith("2099") ? "" : currentRaw;
+  const current = (field === "healthCardExpiry" || field === "foodCourseExpiry") && currentRaw.startsWith("2099") ? "" : currentRaw;
   if (current === date) return NextResponse.json({ ok: true, unchanged: true });
 
   const pending = await prisma.profileChangeRequest.findFirst({ where: { userId: session.user.id, status: "PENDING" } });
@@ -49,7 +49,7 @@ export const POST = route("profile.expiry", async (req: NextRequest) => {
   notifyAdmins("profile.change.requested", {
     actorName: `${profile.firstName} ${profile.lastName}`.trim() || null,
     actorEmail: session.user.email ?? "",
-    detail: kind === "health" ? "vencimiento libreta" : "vencimiento carnet",
+    detail: kind === "health" ? "vencimiento libreta" : kind === "food" ? "vencimiento curso manip. alimentos" : "vencimiento carnet",
   }).catch((e) => console.error("[notify] expiry", e));
 
   return NextResponse.json({ ok: true, pendingApproval: true });

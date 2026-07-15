@@ -15,6 +15,7 @@ export function isEmployeeProfileComplete(p: EmployeeProfile | null | undefined)
   if (!p) return false;
   const filled = (v: string | null | undefined) => typeof v === "string" && v.trim().length > 0;
   const healthSet = !!p.healthCardExpiry && p.healthCardExpiry.getFullYear() < HEALTH_PLACEHOLDER_YEAR;
+  const foodSet = !!p.foodCourseExpiry && p.foodCourseExpiry.getFullYear() < HEALTH_PLACEHOLDER_YEAR;
   const licenseOk = p.category !== "DRIVER" || !!p.professionalLicenseExpiry;
   return (
     filled(p.phone) &&
@@ -35,6 +36,7 @@ export function isEmployeeProfileComplete(p: EmployeeProfile | null | undefined)
     filled(p.dniFrontBlobUrl) &&
     filled(p.dniBackBlobUrl) &&
     healthSet &&
+    foodSet &&
     licenseOk
   );
 }

@@ -2,6 +2,15 @@
 
 Cada release sube la versión en `+0.01`. El número visible abajo a la izquierda en la app coincide con este archivo.
 
+## v0.49 — 2026-07-15
+
+**Feedback: Curso de Manipulación de Alimentos en el perfil, campos obligatorios en rojo y textos.**
+
+- **Curso de Manipulación de Alimentos**: se agregó al perfil (y a toda la app) una sección nueva para el **curso de manipulación de alimentos**, con **fecha de vencimiento + foto de frente y dorso**, con las **mismas características que la Libreta Sanitaria**: aparece para todos los empleados, se ve en Documentación, el administrador la carga/edita desde la ficha, entra en los **avisos de vencimiento (30 días antes, todos los días)** y en el **bloqueo automático** cuando vence.
+- **Campos obligatorios en rojo**: al enviar el perfil, además del aviso de abajo, los **campos que falten quedan marcados en rojo** para ubicarlos enseguida.
+- **Todos los campos son obligatorios**: se aclaró en el texto de "Mi perfil" que **todos los campos son obligatorios**, y se quitó la palabra "(obligatorio)" repetida en cada ítem (foto, firma, DNI).
+- **Otros documentos**: se agregó un botón **"Limpiar"** propio junto al campo de fecha para poder borrarla de forma confiable desde la app (el botón "Restablecer" que aparece en el calendario es el nativo del teléfono y no lo controla la app).
+
 ## v0.48 — 2026-07-14
 
 **Feedback: orden por apellido asc/desc en todo el admin, fechas de solicitud/revisión, usuarios ordenables y filtro de documentos por empleado.**

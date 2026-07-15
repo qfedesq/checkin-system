@@ -20,6 +20,7 @@ const schema = z.object({
   phone: z.string(),
   professionalLicenseExpiry: z.string().optional().nullable(),
   healthCardExpiry: z.string(),
+  foodCourseExpiry: z.string(),
   shirtSize: z.string(),
   hoodieSize: z.string(),
   jacketSize: z.string(),
@@ -67,6 +68,8 @@ export const GET = route("admin.employees.get", async (_req: NextRequest, ctx: {
         licenseBackBlobUrl: fileUrl(user.profile.licenseBackBlobUrl) || null,
         healthCardFrontBlobUrl: fileUrl(user.profile.healthCardFrontBlobUrl) || null,
         healthCardBackBlobUrl: fileUrl(user.profile.healthCardBackBlobUrl) || null,
+        foodCourseFrontBlobUrl: fileUrl(user.profile.foodCourseFrontBlobUrl) || null,
+        foodCourseBackBlobUrl: fileUrl(user.profile.foodCourseBackBlobUrl) || null,
         faceImageBlobUrl: fileUrl(user.profile.faceImageBlobUrl) || null,
         signatureBlobUrl: fileUrl(user.profile.signatureBlobUrl) || null,
       }
@@ -111,7 +114,8 @@ export const PUT = route("admin.employees.put", async (req: NextRequest, ctx: { 
 
   const dob = new Date(d.dob);
   const healthCardExpiry = new Date(d.healthCardExpiry);
-  if (Number.isNaN(dob.getTime()) || Number.isNaN(healthCardExpiry.getTime())) {
+  const foodCourseExpiry = new Date(d.foodCourseExpiry);
+  if (Number.isNaN(dob.getTime()) || Number.isNaN(healthCardExpiry.getTime()) || Number.isNaN(foodCourseExpiry.getTime())) {
     return NextResponse.json({ error: "Fecha inválida" }, { status: 400 });
   }
   const hireDate = d.hireDate ? new Date(d.hireDate) : null;
@@ -135,6 +139,7 @@ export const PUT = route("admin.employees.put", async (req: NextRequest, ctx: { 
     phone: d.phone,
     professionalLicenseExpiry: licenseExpiry,
     healthCardExpiry,
+    foodCourseExpiry,
     shirtSize: d.shirtSize,
     hoodieSize: d.hoodieSize,
     jacketSize: d.jacketSize,

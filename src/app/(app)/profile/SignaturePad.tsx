@@ -8,11 +8,12 @@ import { Eraser, RotateCcw, Upload } from "lucide-react";
  * con FONDO TRANSPARENTE (sólo el trazo), para que al estamparse en un recibo/documento
  * no tape el texto de abajo. El recuadro se ve blanco en pantalla sólo por CSS (bg-white).
  */
-export function SignaturePad({ url, onUploaded, onError, onPending }: {
+export function SignaturePad({ url, onUploaded, onError, onPending, invalid }: {
   url: string;
   onUploaded: (url: string) => void;
   onError: (text: string) => void;
   onPending?: (text: string) => void;
+  invalid?: boolean;
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -182,7 +183,7 @@ export function SignaturePad({ url, onUploaded, onError, onPending }: {
       <canvas
         ref={canvasRef}
         aria-label="Área para dibujar tu firma con el dedo o el mouse"
-        className="h-40 w-full max-w-md touch-none rounded-xl border border-dashed border-border/80 bg-white"
+        className={`h-40 w-full max-w-md touch-none rounded-xl border border-dashed ${invalid ? "border-destructive" : "border-border/80"} bg-white`}
         onPointerDown={start}
         onPointerMove={move}
         onPointerUp={end}

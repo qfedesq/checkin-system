@@ -17,6 +17,8 @@ const KIND_TO_FIELD: Record<string, string> = {
   face: "faceImageBlobUrl",
   healthFront: "healthCardFrontBlobUrl",
   healthBack: "healthCardBackBlobUrl",
+  foodFront: "foodCourseFrontBlobUrl",
+  foodBack: "foodCourseBackBlobUrl",
   licenseFront: "licenseFrontBlobUrl",
   licenseBack: "licenseBackBlobUrl",
   dniFront: "dniFrontBlobUrl",
@@ -32,6 +34,8 @@ const FIELD_LABELS: Record<string, string> = {
   licenseBackBlobUrl: "Carnet (dorso)",
   healthCardFrontBlobUrl: "Libreta (frente)",
   healthCardBackBlobUrl: "Libreta (dorso)",
+  foodCourseFrontBlobUrl: "Curso manip. alimentos (frente)",
+  foodCourseBackBlobUrl: "Curso manip. alimentos (dorso)",
 };
 
 export const POST = route("profile.uploads", async (req: NextRequest) => {

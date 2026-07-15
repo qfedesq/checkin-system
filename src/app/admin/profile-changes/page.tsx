@@ -15,6 +15,8 @@ const IMAGE_FIELDS = new Set([
   "licenseBackBlobUrl",
   "healthCardFrontBlobUrl",
   "healthCardBackBlobUrl",
+  "foodCourseFrontBlobUrl",
+  "foodCourseBackBlobUrl",
 ]);
 
 export default async function AdminProfileChangesPage() {

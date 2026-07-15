@@ -18,6 +18,7 @@ const EDITABLE_FIELDS = [
   "phone",
   "professionalLicenseExpiry",
   "healthCardExpiry",
+  "foodCourseExpiry",
   "shirtSize",
   "hoodieSize",
   "jacketSize",
@@ -33,7 +34,7 @@ const EDITABLE_FIELDS = [
 ] as const;
 
 type EditableField = (typeof EDITABLE_FIELDS)[number];
-const DATE_FIELDS: EditableField[] = ["dob", "professionalLicenseExpiry", "healthCardExpiry"];
+const DATE_FIELDS: EditableField[] = ["dob", "professionalLicenseExpiry", "healthCardExpiry", "foodCourseExpiry"];
 
 const editSchema = z.object({
   lastName: z.string().min(1),
@@ -43,6 +44,7 @@ const editSchema = z.object({
   phone: z.string().min(1),
   professionalLicenseExpiry: z.string().optional().nullable(),
   healthCardExpiry: z.string(),
+  foodCourseExpiry: z.string(),
   shirtSize: z.string().min(1),
   hoodieSize: z.string().min(1),
   jacketSize: z.string().min(1),
@@ -91,7 +93,8 @@ export const PUT = route("profile.put", async (req: NextRequest) => {
     }
     const dob = asDate(d.dob);
     const healthCardExpiry = asDate(d.healthCardExpiry);
-    if (!dob || !healthCardExpiry) return NextResponse.json({ error: "Fecha inválida" }, { status: 400 });
+    const foodCourseExpiry = asDate(d.foodCourseExpiry);
+    if (!dob || !healthCardExpiry || !foodCourseExpiry) return NextResponse.json({ error: "Fecha inválida" }, { status: 400 });
 
     await prisma.employeeProfile.create({
       data: {
@@ -104,6 +107,7 @@ export const PUT = route("profile.put", async (req: NextRequest) => {
         phone: d.phone,
         professionalLicenseExpiry: asDate(d.professionalLicenseExpiry),
         healthCardExpiry,
+        foodCourseExpiry,
         shirtSize: d.shirtSize,
         hoodieSize: d.hoodieSize,
         jacketSize: d.jacketSize,
@@ -145,6 +149,7 @@ export const PUT = route("profile.put", async (req: NextRequest) => {
         phone: d.phone,
         professionalLicenseExpiry: asDate(d.professionalLicenseExpiry),
         healthCardExpiry: asDate(d.healthCardExpiry) ?? existing.healthCardExpiry,
+        foodCourseExpiry: asDate(d.foodCourseExpiry) ?? existing.foodCourseExpiry,
         shirtSize: d.shirtSize,
         hoodieSize: d.hoodieSize,
         jacketSize: d.jacketSize,
@@ -169,8 +174,8 @@ export const PUT = route("profile.put", async (req: NextRequest) => {
     const current = DATE_FIELDS.includes(field)
       ? isoDay(existing[field] as Date | null)
       : ((existing[field] as string | null) ?? "");
-    // Placeholder de libreta 2099 se muestra vacío en el form
-    const normalizedCurrent = field === "healthCardExpiry" && current.startsWith("2099") ? "" : current;
+    // Placeholder 2099 (libreta y curso) se muestra vacío en el form
+    const normalizedCurrent = (field === "healthCardExpiry" || field === "foodCourseExpiry") && current.startsWith("2099") ? "" : current;
     if (proposed !== normalizedCurrent) changes[field] = { from: normalizedCurrent, to: proposed };
   }
 

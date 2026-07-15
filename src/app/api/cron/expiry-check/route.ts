@@ -72,6 +72,19 @@ async function runExpiryCheck() {
       }
     }
 
+    if (p.foodCourseExpiry && p.foodCourseExpiry.getFullYear() <= PLACEHOLDER_YEAR) {
+      const d = daysUntil(p.foodCourseExpiry);
+      if (d !== null && d <= 30 && d >= 0) {
+        const last = p.notifiedFoodCourseExpiryAt?.toDateString();
+        if (last !== now.toDateString()) {
+          await sendEmail(p.user.email, "Tu curso de manipulación de alimentos vence pronto", expiryEmailHtml(name, "curso de manipulación de alimentos", p.foodCourseExpiry, d));
+          await sendPushToUser(p.userId, { title: "Curso de manipulación de alimentos por vencer", body: `Vence el ${formatCalendarDate(p.foodCourseExpiry)} (en ${d} día${d === 1 ? "" : "s"}). Renovalo para no quedar bloqueado.`, url: "/documents" });
+          await prisma.employeeProfile.update({ where: { userId: p.userId }, data: { notifiedFoodCourseExpiryAt: now } });
+          results.profilesNotified++;
+        }
+      }
+    }
+
     if (p.category === "DRIVER" && p.professionalLicenseExpiry) {
       const d = daysUntil(p.professionalLicenseExpiry);
       if (d !== null && d <= 30 && d >= 0) {
@@ -89,12 +102,14 @@ async function runExpiryCheck() {
     if (p.user.role !== "ADMIN") {
       const healthExpired =
         p.healthCardExpiry && p.healthCardExpiry.getFullYear() <= PLACEHOLDER_YEAR && (daysUntil(p.healthCardExpiry) ?? 1) < 0;
+      const foodExpired =
+        p.foodCourseExpiry && p.foodCourseExpiry.getFullYear() <= PLACEHOLDER_YEAR && (daysUntil(p.foodCourseExpiry) ?? 1) < 0;
       const licenseExpired =
         p.category === "DRIVER" && p.professionalLicenseExpiry && (daysUntil(p.professionalLicenseExpiry) ?? 1) < 0;
 
-      if (healthExpired || licenseExpired) {
-        const reason = licenseExpired ? "EXPIRED_LICENSE" : "EXPIRED_HEALTH_CARD";
-        const label = licenseExpired ? "carnet profesional" : "libreta sanitaria";
+      if (healthExpired || licenseExpired || foodExpired) {
+        const reason = licenseExpired ? "EXPIRED_LICENSE" : healthExpired ? "EXPIRED_HEALTH_CARD" : "EXPIRED_FOOD_COURSE";
+        const label = licenseExpired ? "carnet profesional" : healthExpired ? "libreta sanitaria" : "curso de manipulación de alimentos";
         await prisma.user.update({ where: { id: p.userId }, data: { status: "DISABLED", disabledReason: reason } });
         await notifyUser(p.userId, "account.disabled.expiry", {
           body: `Tu cuenta fue <strong>bloqueada</strong> porque venció tu ${label}. Presentá la documentación renovada al administrador para que te desbloquee.`,

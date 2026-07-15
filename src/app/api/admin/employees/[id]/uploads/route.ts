@@ -16,6 +16,8 @@ const KIND_TO_FIELD: Record<string, string> = {
   licenseBack: "licenseBackBlobUrl",
   healthFront: "healthCardFrontBlobUrl",
   healthBack: "healthCardBackBlobUrl",
+  foodFront: "foodCourseFrontBlobUrl",
+  foodBack: "foodCourseBackBlobUrl",
   face: "faceImageBlobUrl",
   signature: "signatureBlobUrl",
 };

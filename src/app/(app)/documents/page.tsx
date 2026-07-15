@@ -32,6 +32,11 @@ export default async function DocumentsPage() {
     front: fileUrl(profile?.healthCardFrontBlobUrl),
     back: fileUrl(profile?.healthCardBackBlobUrl),
   };
+  const food = {
+    date: profile?.foodCourseExpiry && profile.foodCourseExpiry.getFullYear() < 2099 ? iso(profile.foodCourseExpiry) : "",
+    front: fileUrl(profile?.foodCourseFrontBlobUrl),
+    back: fileUrl(profile?.foodCourseBackBlobUrl),
+  };
   const license = {
     date: iso(profile?.professionalLicenseExpiry),
     front: fileUrl(profile?.licenseFrontBlobUrl),
@@ -41,7 +46,7 @@ export default async function DocumentsPage() {
   return (
     <>
       <PageHeader eyebrow="documentación" title="Mis documentos" description="Tus vencimientos y documentos. Te avisamos 30 días antes de cada vencimiento." />
-      {profile && <DocsVencimientos category={profile.category} health={health} license={license} />}
+      {profile && <DocsVencimientos category={profile.category} health={health} food={food} license={license} />}
       <DocumentsClient documents={serializable} />
     </>
   );

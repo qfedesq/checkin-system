@@ -26,6 +26,7 @@ export default async function ProfilePage() {
         phone: profile.phone,
         professionalLicenseExpiry: profile.professionalLicenseExpiry?.toISOString().slice(0, 10) ?? "",
         healthCardExpiry: profile.healthCardExpiry.getTime() > new Date("2099-01-01").getTime() ? "" : profile.healthCardExpiry.toISOString().slice(0, 10),
+        foodCourseExpiry: profile.foodCourseExpiry.getTime() > new Date("2099-01-01").getTime() ? "" : profile.foodCourseExpiry.toISOString().slice(0, 10),
         shirtSize: profile.shirtSize,
         hoodieSize: profile.hoodieSize,
         jacketSize: profile.jacketSize,
@@ -42,6 +43,8 @@ export default async function ProfilePage() {
         faceImageBlobUrl: fileUrl(profile.faceImageBlobUrl),
         healthCardFrontBlobUrl: fileUrl(profile.healthCardFrontBlobUrl),
         healthCardBackBlobUrl: fileUrl(profile.healthCardBackBlobUrl),
+        foodCourseFrontBlobUrl: fileUrl(profile.foodCourseFrontBlobUrl),
+        foodCourseBackBlobUrl: fileUrl(profile.foodCourseBackBlobUrl),
         licenseFrontBlobUrl: fileUrl(profile.licenseFrontBlobUrl),
         licenseBackBlobUrl: fileUrl(profile.licenseBackBlobUrl),
         dniFrontBlobUrl: fileUrl(profile.dniFrontBlobUrl),
@@ -51,7 +54,7 @@ export default async function ProfilePage() {
 
   return (
     <>
-      <PageHeader eyebrow="mi perfil" title="Datos personales" description="Completá tus datos para operar en la plataforma. Los cambios los aprueba el administrador; los datos de identidad sólo los edita él." />
+      <PageHeader eyebrow="mi perfil" title="Datos personales" description="Completá tus datos para operar en la plataforma. Todos los campos son obligatorios. Los cambios los aprueba el administrador; los datos de identidad sólo los edita él." />
       <ProfileForm
         initial={initial}
         email={session.user.email}

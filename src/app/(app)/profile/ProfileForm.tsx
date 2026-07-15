@@ -13,6 +13,7 @@ const REQUIRED: [keyof Initial, string][] = [
   ["dob", "Fecha de nacimiento"],
   ["phone", "Teléfono de contacto"],
   ["healthCardExpiry", "Vencimiento de libreta sanitaria"],
+  ["foodCourseExpiry", "Vencimiento de curso de manipulación de alimentos"],
   ["shirtSize", "Talle de remera"],
   ["hoodieSize", "Talle de buzo"],
   ["jacketSize", "Talle de campera"],
@@ -42,6 +43,7 @@ type Initial = {
   phone: string;
   professionalLicenseExpiry: string;
   healthCardExpiry: string;
+  foodCourseExpiry: string;
   shirtSize: string;
   hoodieSize: string;
   jacketSize: string;
@@ -58,6 +60,8 @@ type Initial = {
   faceImageBlobUrl: string;
   healthCardFrontBlobUrl: string;
   healthCardBackBlobUrl: string;
+  foodCourseFrontBlobUrl: string;
+  foodCourseBackBlobUrl: string;
   licenseFrontBlobUrl: string;
   licenseBackBlobUrl: string;
   dniFrontBlobUrl: string;
@@ -66,11 +70,12 @@ type Initial = {
 
 const EMPTY: Initial = {
   legajo: "", hireDate: "", lastName: "", firstName: "", dob: "", cuil: "", category: "HELPER",
-  phone: "", professionalLicenseExpiry: "", healthCardExpiry: "",
+  phone: "", professionalLicenseExpiry: "", healthCardExpiry: "", foodCourseExpiry: "",
   shirtSize: "", hoodieSize: "", jacketSize: "", pantsSize: "", shoeSize: "",
   address: "", addressNumber: "", neighborhood: "", city: "", postalCode: "",
   emergencyContact: "", emergencyPhone: "", signatureBlobUrl: "", faceImageBlobUrl: "",
-  healthCardFrontBlobUrl: "", healthCardBackBlobUrl: "", licenseFrontBlobUrl: "", licenseBackBlobUrl: "",
+  healthCardFrontBlobUrl: "", healthCardBackBlobUrl: "", foodCourseFrontBlobUrl: "", foodCourseBackBlobUrl: "",
+  licenseFrontBlobUrl: "", licenseBackBlobUrl: "",
   dniFrontBlobUrl: "", dniBackBlobUrl: "",
 };
 
@@ -83,6 +88,9 @@ export function ProfileForm({ initial, email, pendingFields }: { initial: Initia
   const [data, setData] = useState<Initial>(initial ?? EMPTY);
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<{ kind: "ok" | "err"; text: string } | null>(null);
+  // No marcamos rojo hasta el primer intento de envío fallido.
+  const [attempted, setAttempted] = useState(false);
+  const isMissing = (k: keyof Initial) => attempted && !String(data[k] ?? "").trim();
 
   const isDriver = data.category === "DRIVER";
   // Solo-admin: CUIL (viene del alta de ARCA), legajo y fecha de ingreso (administrativos)
@@ -102,6 +110,7 @@ export function ProfileForm({ initial, email, pendingFields }: { initial: Initia
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
+    setAttempted(true);
 
     // Validación en JS (el form usa noValidate) para que SIEMPRE haya un aviso visible.
     const req = isDriver ? [...REQUIRED, ["professionalLicenseExpiry", "Vencimiento de carnet"] as [keyof Initial, string]] : REQUIRED;
@@ -159,9 +168,9 @@ export function ProfileForm({ initial, email, pendingFields }: { initial: Initia
         <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
           <Field label="Email"><input disabled className="surface-control" value={email} /></Field>
           <Field label="Legajo (asignado por admin)"><input disabled className="surface-control" value={data.legajo || "—"} /></Field>
-          <Field label="Apellido"><input className="surface-control" required value={data.lastName} onChange={(e) => set("lastName", e.target.value)} /></Field>
-          <Field label="Nombre"><input className="surface-control" required value={data.firstName} onChange={(e) => set("firstName", e.target.value)} /></Field>
-          <Field label="Fecha de nacimiento"><input type="date" className="surface-control max-w-[220px]" required value={data.dob} onChange={(e) => set("dob", e.target.value)} /></Field>
+          <Field label="Apellido" invalid={isMissing("lastName")}><input className="surface-control" required value={data.lastName} onChange={(e) => set("lastName", e.target.value)} /></Field>
+          <Field label="Nombre" invalid={isMissing("firstName")}><input className="surface-control" required value={data.firstName} onChange={(e) => set("firstName", e.target.value)} /></Field>
+          <Field label="Fecha de nacimiento" invalid={isMissing("dob")}><input type="date" className="surface-control max-w-[220px]" required value={data.dob} onChange={(e) => set("dob", e.target.value)} /></Field>
           <Field label="CUIL (lo carga el admin)"><input className="surface-control" required disabled={locked} value={data.cuil} onChange={(e) => set("cuil", e.target.value)} placeholder="20-12345678-9" /></Field>
           <Field label="Fecha de ingreso (asignada por admin)"><input disabled className="surface-control" value={data.hireDate ? formatCalendarDate(data.hireDate) : "—"} /></Field>
           <Field label="Categoría">
@@ -170,7 +179,7 @@ export function ProfileForm({ initial, email, pendingFields }: { initial: Initia
               <option value="DRIVER">Chofer</option>
             </select>
           </Field>
-          <Field label="Teléfono de contacto"><input className="surface-control" required value={data.phone} onChange={(e) => set("phone", e.target.value)} /></Field>
+          <Field label="Teléfono de contacto" invalid={isMissing("phone")}><input className="surface-control" required value={data.phone} onChange={(e) => set("phone", e.target.value)} /></Field>
         </div>
       </section>
 
@@ -179,16 +188,24 @@ export function ProfileForm({ initial, email, pendingFields }: { initial: Initia
         <p className="mt-1 text-sm text-muted-foreground">Cargá la fecha de vencimiento y adjuntá una foto de cada lado del documento.</p>
 
         <div className="mt-4">
-          <Field label="Libreta sanitaria · vence"><input type="date" className="surface-control max-w-[220px]" required value={data.healthCardExpiry} onChange={(e) => set("healthCardExpiry", e.target.value)} /></Field>
+          <Field label="Libreta sanitaria · vence" invalid={isMissing("healthCardExpiry")}><input type="date" className="surface-control max-w-[220px]" required value={data.healthCardExpiry} onChange={(e) => set("healthCardExpiry", e.target.value)} /></Field>
           <div className="mt-3 grid grid-cols-2 gap-4 sm:max-w-md">
             <ImageSlot label="Libreta (frente)" kind="healthFront" url={data.healthCardFrontBlobUrl} onUploaded={(u) => set("healthCardFrontBlobUrl", u)} onError={(t) => setMsg({ kind: "err", text: t })} onPending={(t) => setMsg({ kind: "ok", text: t })} />
             <ImageSlot label="Libreta (dorso)" kind="healthBack" url={data.healthCardBackBlobUrl} onUploaded={(u) => set("healthCardBackBlobUrl", u)} onError={(t) => setMsg({ kind: "err", text: t })} onPending={(t) => setMsg({ kind: "ok", text: t })} />
           </div>
         </div>
 
+        <div className="mt-6">
+          <Field label="Curso manip. alimentos · vence" invalid={isMissing("foodCourseExpiry")}><input type="date" className="surface-control max-w-[220px]" required value={data.foodCourseExpiry} onChange={(e) => set("foodCourseExpiry", e.target.value)} /></Field>
+          <div className="mt-3 grid grid-cols-2 gap-4 sm:max-w-md">
+            <ImageSlot label="Curso (frente)" kind="foodFront" url={data.foodCourseFrontBlobUrl} onUploaded={(u) => set("foodCourseFrontBlobUrl", u)} onError={(t) => setMsg({ kind: "err", text: t })} onPending={(t) => setMsg({ kind: "ok", text: t })} />
+            <ImageSlot label="Curso (dorso)" kind="foodBack" url={data.foodCourseBackBlobUrl} onUploaded={(u) => set("foodCourseBackBlobUrl", u)} onError={(t) => setMsg({ kind: "err", text: t })} onPending={(t) => setMsg({ kind: "ok", text: t })} />
+          </div>
+        </div>
+
         {isDriver && (
           <div className="mt-6">
-            <Field label="Carnet profesional · vence"><input type="date" className="surface-control max-w-[220px]" required value={data.professionalLicenseExpiry} onChange={(e) => set("professionalLicenseExpiry", e.target.value)} /></Field>
+            <Field label="Carnet profesional · vence" invalid={isMissing("professionalLicenseExpiry")}><input type="date" className="surface-control max-w-[220px]" required value={data.professionalLicenseExpiry} onChange={(e) => set("professionalLicenseExpiry", e.target.value)} /></Field>
             <div className="mt-3 grid grid-cols-2 gap-4 sm:max-w-md">
               <ImageSlot label="Carnet (frente)" kind="licenseFront" url={data.licenseFrontBlobUrl} onUploaded={(u) => set("licenseFrontBlobUrl", u)} onError={(t) => setMsg({ kind: "err", text: t })} onPending={(t) => setMsg({ kind: "ok", text: t })} />
               <ImageSlot label="Carnet (dorso)" kind="licenseBack" url={data.licenseBackBlobUrl} onUploaded={(u) => set("licenseBackBlobUrl", u)} onError={(t) => setMsg({ kind: "err", text: t })} onPending={(t) => setMsg({ kind: "ok", text: t })} />
@@ -200,55 +217,55 @@ export function ProfileForm({ initial, email, pendingFields }: { initial: Initia
       <section className="panel p-6">
         <h2 className="text-lg font-semibold">Indumentaria</h2>
         <div className="mt-4 grid grid-cols-2 gap-4 md:grid-cols-5">
-          <Field label="Remera"><SizeSelect required options={CLOTHING_SIZES} value={data.shirtSize} onChange={(v) => set("shirtSize", v)} /></Field>
-          <Field label="Buzo"><SizeSelect required options={CLOTHING_SIZES} value={data.hoodieSize} onChange={(v) => set("hoodieSize", v)} /></Field>
-          <Field label="Campera"><SizeSelect required options={CLOTHING_SIZES} value={data.jacketSize} onChange={(v) => set("jacketSize", v)} /></Field>
-          <Field label="Pantalón"><SizeSelect required options={PANTS_SIZES} value={data.pantsSize} onChange={(v) => set("pantsSize", v)} /></Field>
-          <Field label="Calzado"><SizeSelect required options={SHOE_SIZES} value={data.shoeSize} onChange={(v) => set("shoeSize", v)} /></Field>
+          <Field label="Remera" invalid={isMissing("shirtSize")}><SizeSelect required options={CLOTHING_SIZES} value={data.shirtSize} onChange={(v) => set("shirtSize", v)} /></Field>
+          <Field label="Buzo" invalid={isMissing("hoodieSize")}><SizeSelect required options={CLOTHING_SIZES} value={data.hoodieSize} onChange={(v) => set("hoodieSize", v)} /></Field>
+          <Field label="Campera" invalid={isMissing("jacketSize")}><SizeSelect required options={CLOTHING_SIZES} value={data.jacketSize} onChange={(v) => set("jacketSize", v)} /></Field>
+          <Field label="Pantalón" invalid={isMissing("pantsSize")}><SizeSelect required options={PANTS_SIZES} value={data.pantsSize} onChange={(v) => set("pantsSize", v)} /></Field>
+          <Field label="Calzado" invalid={isMissing("shoeSize")}><SizeSelect required options={SHOE_SIZES} value={data.shoeSize} onChange={(v) => set("shoeSize", v)} /></Field>
         </div>
       </section>
 
       <section className="panel p-6">
         <h2 className="text-lg font-semibold">Domicilio</h2>
         <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
-          <Field label="Dirección"><input className="surface-control" required value={data.address} onChange={(e) => set("address", e.target.value)} /></Field>
-          <Field label="Numeración"><input className="surface-control" required value={data.addressNumber} onChange={(e) => set("addressNumber", e.target.value)} /></Field>
-          <Field label="Barrio"><input className="surface-control" required value={data.neighborhood} onChange={(e) => set("neighborhood", e.target.value)} /></Field>
-          <Field label="Localidad"><input className="surface-control" required value={data.city} onChange={(e) => set("city", e.target.value)} /></Field>
-          <Field label="Código postal"><input className="surface-control" required value={data.postalCode} onChange={(e) => set("postalCode", e.target.value)} /></Field>
+          <Field label="Dirección" invalid={isMissing("address")}><input className="surface-control" required value={data.address} onChange={(e) => set("address", e.target.value)} /></Field>
+          <Field label="Numeración" invalid={isMissing("addressNumber")}><input className="surface-control" required value={data.addressNumber} onChange={(e) => set("addressNumber", e.target.value)} /></Field>
+          <Field label="Barrio" invalid={isMissing("neighborhood")}><input className="surface-control" required value={data.neighborhood} onChange={(e) => set("neighborhood", e.target.value)} /></Field>
+          <Field label="Localidad" invalid={isMissing("city")}><input className="surface-control" required value={data.city} onChange={(e) => set("city", e.target.value)} /></Field>
+          <Field label="Código postal" invalid={isMissing("postalCode")}><input className="surface-control" required value={data.postalCode} onChange={(e) => set("postalCode", e.target.value)} /></Field>
         </div>
       </section>
 
       <section className="panel p-6">
         <h2 className="text-lg font-semibold">Contacto de emergencia</h2>
         <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
-          <Field label="Nombre"><input className="surface-control" required value={data.emergencyContact} onChange={(e) => set("emergencyContact", e.target.value)} /></Field>
-          <Field label="Teléfono"><input className="surface-control" required value={data.emergencyPhone} onChange={(e) => set("emergencyPhone", e.target.value)} /></Field>
+          <Field label="Nombre" invalid={isMissing("emergencyContact")}><input className="surface-control" required value={data.emergencyContact} onChange={(e) => set("emergencyContact", e.target.value)} /></Field>
+          <Field label="Teléfono" invalid={isMissing("emergencyPhone")}><input className="surface-control" required value={data.emergencyPhone} onChange={(e) => set("emergencyPhone", e.target.value)} /></Field>
         </div>
       </section>
 
       <section className="panel p-6">
         <h2 className="text-lg font-semibold">Documento de identidad (DNI)</h2>
-        <p className="mt-1 text-sm text-muted-foreground">Subí una foto de cada lado de tu DNI. (obligatorio)</p>
+        <p className="mt-1 text-sm text-muted-foreground">Subí una foto de cada lado de tu DNI.</p>
         <div className="mt-4 grid grid-cols-2 gap-4 sm:max-w-md">
-          <ImageSlot label="DNI (frente)" kind="dniFront" url={data.dniFrontBlobUrl} onUploaded={(u) => set("dniFrontBlobUrl", u)} onError={(t) => setMsg({ kind: "err", text: t })} onPending={(t) => setMsg({ kind: "ok", text: t })} />
-          <ImageSlot label="DNI (dorso)" kind="dniBack" url={data.dniBackBlobUrl} onUploaded={(u) => set("dniBackBlobUrl", u)} onError={(t) => setMsg({ kind: "err", text: t })} onPending={(t) => setMsg({ kind: "ok", text: t })} />
+          <ImageSlot label="DNI (frente)" kind="dniFront" invalid={isMissing("dniFrontBlobUrl")} url={data.dniFrontBlobUrl} onUploaded={(u) => set("dniFrontBlobUrl", u)} onError={(t) => setMsg({ kind: "err", text: t })} onPending={(t) => setMsg({ kind: "ok", text: t })} />
+          <ImageSlot label="DNI (dorso)" kind="dniBack" invalid={isMissing("dniBackBlobUrl")} url={data.dniBackBlobUrl} onUploaded={(u) => set("dniBackBlobUrl", u)} onError={(t) => setMsg({ kind: "err", text: t })} onPending={(t) => setMsg({ kind: "ok", text: t })} />
         </div>
       </section>
 
       <section className="panel p-6">
         <h2 className="text-lg font-semibold">Foto de perfil</h2>
-        <p className="mt-1 text-sm text-muted-foreground">Subí una foto de frente de tu cara. (obligatorio)</p>
+        <p className="mt-1 text-sm text-muted-foreground">Subí una foto de frente de tu cara.</p>
         <div className="mt-4 w-40">
-          <ImageSlot label="Foto" kind="face" url={data.faceImageBlobUrl} onUploaded={(u) => { set("faceImageBlobUrl", u); setMsg({ kind: "ok", text: "Foto guardada." }); }} onError={(t) => setMsg({ kind: "err", text: t })} onPending={(t) => setMsg({ kind: "ok", text: t })} contain />
+          <ImageSlot label="Foto" kind="face" invalid={isMissing("faceImageBlobUrl")} url={data.faceImageBlobUrl} onUploaded={(u) => { set("faceImageBlobUrl", u); setMsg({ kind: "ok", text: "Foto guardada." }); }} onError={(t) => setMsg({ kind: "err", text: t })} onPending={(t) => setMsg({ kind: "ok", text: t })} contain />
         </div>
       </section>
 
       <section className="panel p-6">
         <h2 className="text-lg font-semibold">Firma digital</h2>
-        <p className="mt-1 text-sm text-muted-foreground">Firmá en el recuadro con el dedo. Se usa automáticamente cuando abrís recibos y documentos internos. (obligatorio)</p>
+        <p className="mt-1 text-sm text-muted-foreground">Firmá en el recuadro con el dedo. Se usa automáticamente cuando abrís recibos y documentos internos.</p>
         <div className="mt-4">
-          <SignaturePad url={data.signatureBlobUrl} onUploaded={(u) => { set("signatureBlobUrl", u); setMsg({ kind: "ok", text: "Firma guardada." }); }} onError={(t) => setMsg({ kind: "err", text: t })} onPending={(t) => setMsg({ kind: "ok", text: t })} />
+          <SignaturePad url={data.signatureBlobUrl} invalid={isMissing("signatureBlobUrl")} onUploaded={(u) => { set("signatureBlobUrl", u); setMsg({ kind: "ok", text: "Firma guardada." }); }} onError={(t) => setMsg({ kind: "err", text: t })} onPending={(t) => setMsg({ kind: "ok", text: t })} />
         </div>
       </section>
 
@@ -265,11 +282,11 @@ export function ProfileForm({ initial, email, pendingFields }: { initial: Initia
   );
 }
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+function Field({ label, children, invalid }: { label: string; children: React.ReactNode; invalid?: boolean }) {
   return (
     <label className="block">
       <span className="eyebrow">{label}</span>
-      <div className="mt-1">{children}</div>
+      <div className={`mt-1 ${invalid ? "[&_.surface-control]:border-destructive [&_.surface-select]:border-destructive" : ""}`}>{children}</div>
     </label>
   );
 }
@@ -283,7 +300,7 @@ function SizeSelect({ options, value, onChange, required }: { options: string[];
   );
 }
 
-function ImageSlot({ label, kind, url, onUploaded, onError, onPending, contain }: {
+function ImageSlot({ label, kind, url, onUploaded, onError, onPending, contain, invalid }: {
   label: string;
   kind: string;
   url: string;
@@ -291,6 +308,7 @@ function ImageSlot({ label, kind, url, onUploaded, onError, onPending, contain }
   onError: (text: string) => void;
   onPending?: (text: string) => void;
   contain?: boolean;
+  invalid?: boolean;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
@@ -320,7 +338,7 @@ function ImageSlot({ label, kind, url, onUploaded, onError, onPending, contain }
       <span className="eyebrow">{label}</span>
       <button
         type="button"
-        className="mt-1 grid aspect-[4/3] w-full place-items-center overflow-hidden rounded-lg border border-dashed border-border/80 bg-secondary/40 transition hover:border-primary/50"
+        className={`mt-1 grid aspect-[4/3] w-full place-items-center overflow-hidden rounded-lg border border-dashed ${invalid ? "border-destructive" : "border-border/80"} bg-secondary/40 transition hover:border-primary/50`}
         onClick={() => inputRef.current?.click()}
         disabled={busy}
       >

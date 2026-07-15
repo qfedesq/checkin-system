@@ -44,6 +44,7 @@ type Profile = {
   phone: string;
   professionalLicenseExpiry: string;
   healthCardExpiry: string;
+  foodCourseExpiry: string;
   shirtSize: string;
   hoodieSize: string;
   jacketSize: string;
@@ -69,6 +70,8 @@ type Profile = {
   licenseBackBlobUrl: string | null;
   healthCardFrontBlobUrl: string | null;
   healthCardBackBlobUrl: string | null;
+  foodCourseFrontBlobUrl: string | null;
+  foodCourseBackBlobUrl: string | null;
   faceImageBlobUrl: string | null;
   signatureBlobUrl: string | null;
 };
@@ -187,6 +190,7 @@ export function EmployeeDetailClient({ initial }: {
         phone: p.phone,
         professionalLicenseExpiry: p.professionalLicenseExpiry || null,
         healthCardExpiry: p.healthCardExpiry,
+        foodCourseExpiry: p.foodCourseExpiry,
         shirtSize: p.shirtSize,
         hoodieSize: p.hoodieSize,
         jacketSize: p.jacketSize,
@@ -267,6 +271,7 @@ export function EmployeeDetailClient({ initial }: {
               <Field label="Venc. carnet profesional"><input type="date" className="surface-control" value={p.professionalLicenseExpiry} onChange={set("professionalLicenseExpiry")} /></Field>
             )}
             <Field label="Venc. libreta sanitaria"><input type="date" className="surface-control" value={p.healthCardExpiry} onChange={set("healthCardExpiry")} /></Field>
+            <Field label="Venc. curso manip. alimentos"><input type="date" className="surface-control" value={p.foodCourseExpiry} onChange={set("foodCourseExpiry")} /></Field>
           </div>
         </section>
 
@@ -419,6 +424,8 @@ export function EmployeeDetailClient({ initial }: {
             )}
             <ImageSlot userId={initial.id} kind="healthFront" label="Libreta sanitaria (frente)" url={p.healthCardFrontBlobUrl} onUploaded={(url) => setP((x) => ({ ...x, healthCardFrontBlobUrl: url }))} />
             <ImageSlot userId={initial.id} kind="healthBack" label="Libreta sanitaria (dorso)" url={p.healthCardBackBlobUrl} onUploaded={(url) => setP((x) => ({ ...x, healthCardBackBlobUrl: url }))} />
+            <ImageSlot userId={initial.id} kind="foodFront" label="Curso manip. alimentos (frente)" url={p.foodCourseFrontBlobUrl} onUploaded={(url) => setP((x) => ({ ...x, foodCourseFrontBlobUrl: url }))} />
+            <ImageSlot userId={initial.id} kind="foodBack" label="Curso manip. alimentos (dorso)" url={p.foodCourseBackBlobUrl} onUploaded={(url) => setP((x) => ({ ...x, foodCourseBackBlobUrl: url }))} />
           </div>
         </section>
 

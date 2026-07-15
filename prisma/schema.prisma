@@ -88,6 +88,7 @@ enum DisableReason {
   MANUAL
   EXPIRED_LICENSE
   EXPIRED_HEALTH_CARD
+  EXPIRED_FOOD_COURSE
 }
 
 model ProfileChangeRequest {
@@ -144,6 +145,7 @@ model EmployeeProfile {
   phone                     String
   professionalLicenseExpiry DateTime?
   healthCardExpiry          DateTime
+  foodCourseExpiry          DateTime
   shirtSize                 String
   hoodieSize                String
   jacketSize                String
@@ -164,10 +166,13 @@ model EmployeeProfile {
   licenseBackBlobUrl        String?
   healthCardFrontBlobUrl    String?
   healthCardBackBlobUrl     String?
+  foodCourseFrontBlobUrl    String?
+  foodCourseBackBlobUrl     String?
   faceImageBlobUrl          String?
   vacationWeeksPerYear      Int       @default(2)
   notifiedLicenseExpiryAt   DateTime?
   notifiedHealthExpiryAt    DateTime?
+  notifiedFoodCourseExpiryAt DateTime?
   // Geocerca de check-in: si checkinLat/Lng están seteados, el empleado sólo puede
   // fichar dentro de checkinRadiusM metros de ese punto. Sin zona seteada, se permite
   // desde cualquier lado (compatibilidad con perfiles existentes).

@@ -6,7 +6,7 @@ import { recordAudit } from "@/lib/audit";
 import { notifyUser } from "@/lib/notify";
 import { route } from "@/lib/route";
 
-const DATE_FIELDS = ["dob", "professionalLicenseExpiry", "healthCardExpiry"];
+const DATE_FIELDS = ["dob", "professionalLicenseExpiry", "healthCardExpiry", "foodCourseExpiry"];
 
 const FIELD_LABELS: Record<string, string> = {
   lastName: "Apellido",
@@ -16,6 +16,7 @@ const FIELD_LABELS: Record<string, string> = {
   phone: "Teléfono",
   professionalLicenseExpiry: "Venc. carnet profesional",
   healthCardExpiry: "Venc. libreta sanitaria",
+  foodCourseExpiry: "Venc. curso manip. alimentos",
   shirtSize: "Talle remera",
   hoodieSize: "Talle buzo",
   jacketSize: "Talle campera",
@@ -37,6 +38,8 @@ const FIELD_LABELS: Record<string, string> = {
   licenseBackBlobUrl: "Carnet (dorso)",
   healthCardFrontBlobUrl: "Libreta (frente)",
   healthCardBackBlobUrl: "Libreta (dorso)",
+  foodCourseFrontBlobUrl: "Curso manip. alimentos (frente)",
+  foodCourseBackBlobUrl: "Curso manip. alimentos (dorso)",
 };
 
 function labelsOf(fields: string[]): string {

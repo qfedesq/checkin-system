@@ -6,7 +6,7 @@ import { Upload } from "lucide-react";
 import { compressImage } from "@/lib/image-compress";
 
 type Doc = {
-  key: "health" | "license";
+  key: "health" | "food" | "license";
   label: string;
   date: string;
   front: string;
@@ -15,13 +15,15 @@ type Doc = {
   backKind: string;
 };
 
-export function DocsVencimientos({ category, health, license }: {
+export function DocsVencimientos({ category, health, food, license }: {
   category: "DRIVER" | "HELPER";
   health: { date: string; front: string; back: string };
+  food: { date: string; front: string; back: string };
   license: { date: string; front: string; back: string };
 }) {
   const docs: Doc[] = [
     { key: "health", label: "Libreta sanitaria", date: health.date, front: health.front, back: health.back, frontKind: "healthFront", backKind: "healthBack" },
+    { key: "food", label: "Curso de manipulación de alimentos", date: food.date, front: food.front, back: food.back, frontKind: "foodFront", backKind: "foodBack" },
   ];
   if (category === "DRIVER") {
     docs.push({ key: "license", label: "Carnet profesional", date: license.date, front: license.front, back: license.back, frontKind: "licenseFront", backKind: "licenseBack" });

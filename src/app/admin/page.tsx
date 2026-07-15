@@ -39,7 +39,7 @@ export default async function AdminHome() {
     prisma.leaveRequest.findMany({ where: { status: "APPROVED", startDate: { lte: todayCal }, endDate: { gte: todayCal } }, select: { userId: true } }),
     prisma.employeeProfile.findMany({
       where: { user: { status: "ACTIVE", role: "EMPLOYEE" } },
-      select: { userId: true, firstName: true, lastName: true, category: true, professionalLicenseExpiry: true, healthCardExpiry: true },
+      select: { userId: true, firstName: true, lastName: true, category: true, professionalLicenseExpiry: true, healthCardExpiry: true, foodCourseExpiry: true },
     }),
     prisma.leaveRequest.findMany({
       where: { status: "APPROVED", endDate: { gte: monthStart } },
@@ -85,6 +85,9 @@ export default async function AdminHome() {
     }
     if (p.healthCardExpiry && p.healthCardExpiry.getFullYear() <= PLACEHOLDER_YEAR) {
       expiries.push({ name, userId: p.userId, label: "Libreta sanitaria", date: p.healthCardExpiry });
+    }
+    if (p.foodCourseExpiry && p.foodCourseExpiry.getFullYear() <= PLACEHOLDER_YEAR) {
+      expiries.push({ name, userId: p.userId, label: "Curso manip. alimentos", date: p.foodCourseExpiry });
     }
   }
   // professionalLicenseExpiry/healthCardExpiry son fechas-calendario (medianoche UTC), no timestamps:

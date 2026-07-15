@@ -25,6 +25,10 @@ export default async function EmployeeDashboard() {
     const d = daysUntil(profile.healthCardExpiry);
     if (d !== null && d <= 30) warnings.push({ label: "Libreta sanitaria", days: d });
   }
+  if (profile?.foodCourseExpiry) {
+    const d = daysUntil(profile.foodCourseExpiry);
+    if (d !== null && d <= 30) warnings.push({ label: "Curso manip. alimentos", days: d });
+  }
   if (profile?.category === "DRIVER" && profile?.professionalLicenseExpiry) {
     const d = daysUntil(profile.professionalLicenseExpiry);
     if (d !== null && d <= 30) warnings.push({ label: "Carnet profesional", days: d });
@@ -87,6 +91,9 @@ export default async function EmployeeDashboard() {
           <div className="mt-1 text-sm">
             {profile?.healthCardExpiry ? `Libreta sanitaria · ${formatCalendarDate(profile.healthCardExpiry)}` : "—"}
           </div>
+          {profile?.foodCourseExpiry && profile.foodCourseExpiry.getFullYear() < 2099 && (
+            <div className="mt-1 text-xs text-muted-foreground">Curso manip. alimentos · {formatCalendarDate(profile.foodCourseExpiry)}</div>
+          )}
           {profile?.professionalLicenseExpiry && (
             <div className="mt-1 text-xs text-muted-foreground">Carnet · {formatCalendarDate(profile.professionalLicenseExpiry)}</div>
           )}

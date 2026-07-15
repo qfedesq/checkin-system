@@ -44,6 +44,7 @@ async function main() {
       category: "HELPER",
       phone: "",
       healthCardExpiry: new Date("2099-12-31"),
+      foodCourseExpiry: new Date("2099-12-31"),
       shirtSize: "",
       hoodieSize: "",
       jacketSize: "",
