@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { requireActiveUser } from "@/lib/session-guard";
 import { verifyFileToken } from "@/lib/file-token";
 import { route } from "@/lib/route";
 
@@ -7,8 +7,9 @@ import { route } from "@/lib/route";
 // foto de cara, firma, documentos). El cliente nunca recibe la URL real del blob: sólo un
 // token de corta vida que este endpoint valida y luego streamea el contenido.
 export const GET = route("files.get", async (req: NextRequest) => {
-  const session = await auth();
-  if (!session?.user) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+  // Revalida contra la DB: un usuario deshabilitado con JWT vivo no debe poder leer PII.
+  const { error } = await requireActiveUser();
+  if (error) return error;
 
   const token = req.nextUrl.searchParams.get("t") ?? "";
   const blobUrl = verifyFileToken(token);

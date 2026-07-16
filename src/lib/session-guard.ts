@@ -45,3 +45,40 @@ export async function requireActiveUser() {
 
   return { session, user, error: null as never };
 }
+
+/**
+ * Como requireActiveUser pero SÓLO bloquea cuentas DISABLED (permite ACTIVE con
+ * mustChangePassword y PENDING). Para endpoints del flujo de login/reset donde un usuario con
+ * contraseña temporal todavía necesita operar —cambiar su clave, verificar su biometría al
+ * loguearse—: requireActiveUser los rechazaría por `mustChangePassword` y los dejaría sin poder
+ * completar el login. Cierra la ventana del JWT stale (deshabilitado con token vivo) sin romper
+ * ese flujo.
+ */
+export async function requireNotDisabled() {
+  const session = await auth();
+  if (!session?.user) {
+    return {
+      error: NextResponse.json({ error: "No autorizado" }, { status: 401 }),
+      session: null as never,
+      user: null as never,
+    };
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { status: true, role: true, mustChangePassword: true },
+  });
+
+  if (!user || user.status === "DISABLED") {
+    return {
+      error: NextResponse.json(
+        { error: "Tu cuenta está deshabilitada. Contactá al administrador." },
+        { status: 403 }
+      ),
+      session: null as never,
+      user: null as never,
+    };
+  }
+
+  return { session, user, error: null as never };
+}

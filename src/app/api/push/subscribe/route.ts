@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
+import { requireActiveUser } from "@/lib/session-guard";
 import { prisma } from "@/lib/prisma";
 import { route } from "@/lib/route";
 
@@ -10,8 +11,8 @@ const body = z.object({
 });
 
 export const POST = route("push.subscribe", async (req: NextRequest) => {
-  const session = await auth();
-  if (!session?.user?.id) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+  const { error, session } = await requireActiveUser();
+  if (error) return error;
 
   const parsed = body.safeParse(await req.json().catch(() => ({})));
   if (!parsed.success) return NextResponse.json({ error: "Datos inválidos" }, { status: 400 });

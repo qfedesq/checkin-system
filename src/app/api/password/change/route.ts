@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
-import { auth } from "@/lib/auth";
+import { requireNotDisabled } from "@/lib/session-guard";
 import { recordAudit } from "@/lib/audit";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { route } from "@/lib/route";
@@ -10,8 +10,10 @@ import { route } from "@/lib/route";
 const body = z.object({ current: z.string().min(1), next: z.string().min(8) });
 
 export const POST = route("password.change", async (req: NextRequest) => {
-  const session = await auth();
-  if (!session?.user) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+  // requireNotDisabled (no requireActiveUser): este endpoint es justamente donde el usuario con
+  // contraseña temporal (mustChangePassword) la cambia; sólo bloqueamos cuentas DISABLED.
+  const { error, session } = await requireNotDisabled();
+  if (error) return error;
 
   // Best-effort: frena intentos repetidos de adivinar la contraseña actual.
   // Ver src/lib/rate-limit.ts sobre la limitación en serverless multi-instancia.

@@ -1,13 +1,15 @@
 import { NextResponse } from "next/server";
 import { generateRegistrationOptions } from "@simplewebauthn/server";
-import { auth } from "@/lib/auth";
+import { requireActiveUser } from "@/lib/session-guard";
 import { prisma } from "@/lib/prisma";
 import { rpID, rpName } from "@/lib/webauthn";
 import { route } from "@/lib/route";
 
 export const POST = route("webauthn.register.options", async () => {
-  const session = await auth();
-  if (!session?.user) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+  // Enrolar dispositivo (setup-biometrics): el middleware ya obliga a resetear la clave temporal
+  // antes de llegar acá, así que requireActiveUser no interfiere con el alta.
+  const { error, session } = await requireActiveUser();
+  if (error) return error;
 
   const existing = await prisma.webAuthnCredential.findMany({ where: { userId: session.user.id } });
 

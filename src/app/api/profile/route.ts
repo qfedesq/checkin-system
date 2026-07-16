@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
-import { auth } from "@/lib/auth";
+import { requireActiveUser } from "@/lib/session-guard";
 import { recordAudit } from "@/lib/audit";
 import { notifyAdmins } from "@/lib/notify";
 import { isEmployeeProfileComplete } from "@/lib/profile";
@@ -77,8 +77,10 @@ function isoDay(d: Date | null | undefined): string {
 }
 
 export const PUT = route("profile.put", async (req: NextRequest) => {
-  const session = await auth();
-  if (!session?.user) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+  // El onboarding ocurre con mustChangePassword=false (el middleware fuerza el reset antes),
+  // así que requireActiveUser no rompe la primera carga del perfil.
+  const { error, session } = await requireActiveUser();
+  if (error) return error;
 
   const raw = await req.json().catch(() => ({}));
   const existing = await prisma.employeeProfile.findUnique({ where: { userId: session.user.id } });

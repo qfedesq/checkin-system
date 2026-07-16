@@ -2,6 +2,12 @@
 
 Cada release sube la versión en `+0.01`. El número visible abajo a la izquierda en la app coincide con este archivo.
 
+## v0.51 — 2026-07-16
+
+**Seguridad: una cuenta bloqueada queda realmente bloqueada también en las APIs.**
+
+- Un usuario **deshabilitado** cuya sesión seguía viva (token) todavía podía llamar directamente a algunas APIs (ver/editar su perfil y documentos, subir imágenes, leer sus archivos, suscribirse a notificaciones). Ahora **todas esas rutas revalidan el estado de la cuenta contra la base** y rechazan a los usuarios bloqueados. El flujo de login con clave temporal y el alta de datos (onboarding) siguen funcionando igual.
+
 ## v0.50 — 2026-07-16
 
 **Feedback: pantalla clara para cuentas bloqueadas y vencimientos vencidos visibles en el panel.**

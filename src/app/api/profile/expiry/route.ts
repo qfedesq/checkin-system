@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { auth } from "@/lib/auth";
+import { requireActiveUser } from "@/lib/session-guard";
 import { prisma } from "@/lib/prisma";
 import { recordAudit } from "@/lib/audit";
 import { notifyAdmins } from "@/lib/notify";
@@ -12,8 +12,8 @@ import { route } from "@/lib/route";
 const body = z.object({ kind: z.enum(["health", "license", "food"]), date: z.string().min(1) });
 
 export const POST = route("profile.expiry", async (req: NextRequest) => {
-  const session = await auth();
-  if (!session?.user) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+  const { error, session } = await requireActiveUser();
+  if (error) return error;
 
   const parsed = body.safeParse(await req.json().catch(() => ({})));
   if (!parsed.success) return NextResponse.json({ error: "Datos inválidos" }, { status: 400 });

@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { requireActiveUser } from "@/lib/session-guard";
 import { prisma } from "@/lib/prisma";
 import { yearBounds, vacationBalance } from "@/lib/leaves";
 import { route } from "@/lib/route";
 
 export const GET = route("calendar.availability", async (req: NextRequest) => {
-  const session = await auth();
-  if (!session?.user) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+  const { error, session } = await requireActiveUser();
+  if (error) return error;
 
   const from = req.nextUrl.searchParams.get("from");
   const to = req.nextUrl.searchParams.get("to");

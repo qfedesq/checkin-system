@@ -1,14 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifyAuthenticationResponse } from "@simplewebauthn/server";
-import { auth } from "@/lib/auth";
+import { requireNotDisabled } from "@/lib/session-guard";
 import { prisma } from "@/lib/prisma";
 import { origin, rpID, deviceHashFromCredentialId } from "@/lib/webauthn";
 import { recordAudit } from "@/lib/audit";
 import { route } from "@/lib/route";
 
 export const POST = route("webauthn.authenticate.verify", async (req: NextRequest) => {
-  const session = await auth();
-  if (!session?.user) return NextResponse.json({ ok: false, error: "No autorizado" }, { status: 401 });
+  // requireNotDisabled (no requireActiveUser): este paso es parte del login y puede correr con un
+  // usuario mustChangePassword (clave temporal); sólo bloqueamos cuentas DISABLED.
+  const { error, session } = await requireNotDisabled();
+  if (error) return error;
 
   const { assertion } = await req.json();
   const credentialIdBuf = Buffer.from(assertion.id, "base64url");

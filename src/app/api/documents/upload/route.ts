@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { requireActiveUser } from "@/lib/session-guard";
 import { prisma } from "@/lib/prisma";
 import { uploadBlob } from "@/lib/blob";
 import { recordAudit } from "@/lib/audit";
@@ -10,8 +10,8 @@ import { matchesDeclaredType } from "@/lib/file-validate";
 const ALLOWED = ["application/pdf", "image/png", "image/jpeg"];
 
 export const POST = route("documents.upload", async (req: NextRequest) => {
-  const session = await auth();
-  if (!session?.user) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+  const { error, session } = await requireActiveUser();
+  if (error) return error;
 
   const form = await req.formData();
   const file = form.get("file");

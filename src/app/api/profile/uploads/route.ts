@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { requireActiveUser } from "@/lib/session-guard";
 import { prisma } from "@/lib/prisma";
 import { uploadBlob } from "@/lib/blob";
 import { recordAudit } from "@/lib/audit";
@@ -39,8 +39,8 @@ const FIELD_LABELS: Record<string, string> = {
 };
 
 export const POST = route("profile.uploads", async (req: NextRequest) => {
-  const session = await auth();
-  if (!session?.user?.id) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+  const { error, session } = await requireActiveUser();
+  if (error) return error;
 
   const profile = await prisma.employeeProfile.findUnique({ where: { userId: session.user.id } });
   if (!profile) return NextResponse.json({ error: "Guardá tus datos primero." }, { status: 404 });
