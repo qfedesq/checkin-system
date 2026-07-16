@@ -70,11 +70,11 @@ export default auth((req) => {
     return NextResponse.redirect(url);
   }
 
-  if (pathname.startsWith("/admin") && session.user.role !== "ADMIN") {
-    const url = req.nextUrl.clone();
-    url.pathname = "/dashboard";
-    return NextResponse.redirect(url);
-  }
+  // El acceso a /admin lo decide la DB, NO el rol del JWT: admin/layout.tsx revalida contra la
+  // base (no-admin → /dashboard) y requireAdmin protege /api/admin/*. Antes el middleware
+  // redirigía /admin→/dashboard usando el rol STALE del JWT, lo que producía un LOOP infinito al
+  // cambiar el rol de un usuario logueado (el layout lo mandaba a /admin por DB y el middleware lo
+  // rebotaba a /dashboard por JWT viejo). Al sacar ese chequeo, el layout —fuente de verdad— manda.
 
   return NextResponse.next();
 });

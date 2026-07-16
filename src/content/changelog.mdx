@@ -2,6 +2,12 @@
 
 Cada release sube la versión en `+0.01`. El número visible abajo a la izquierda en la app coincide con este archivo.
 
+## v0.52 — 2026-07-16
+
+**Fix: cambiar el rol de un usuario conectado ya no lo deja en pantalla en blanco.**
+
+- Si un administrador cambiaba el rol de un usuario que tenía la sesión abierta (de empleado a administrador o al revés), ese usuario podía quedar atrapado en una **pantalla en blanco** (un bucle de redirección) hasta cerrar sesión. Ahora la app resuelve el rol correcto y lo lleva a su pantalla (panel de administración o inicio de empleado) **sin quedar trabado**. El control de acceso sigue igual de estricto (lo valida el servidor contra la base).
+
 ## v0.51 — 2026-07-16
 
 **Seguridad: una cuenta bloqueada queda realmente bloqueada también en las APIs.**
