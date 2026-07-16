@@ -36,7 +36,22 @@ export default auth((req) => {
     return NextResponse.next();
   }
 
-  if (session.user.mustChangePassword && pathname !== "/reset-password" && !pathname.startsWith("/api/")) {
+  // Cuenta deshabilitada: la app entera queda vedada; se muestra /blocked con opción de cerrar sesión.
+  // (Sólo aplica si el propio JWT ya trae status DISABLED; el caso más común —quedar bloqueado con un
+  // token viejo que todavía dice ACTIVE— lo atrapan los layouts revalidando contra la DB → /blocked.)
+  if (session.user.status === "DISABLED") {
+    if (pathname.startsWith("/api/")) {
+      return NextResponse.json({ error: "Tu cuenta está deshabilitada." }, { status: 403 });
+    }
+    if (pathname !== "/blocked") {
+      const url = req.nextUrl.clone();
+      url.pathname = "/blocked";
+      return NextResponse.redirect(url);
+    }
+    return NextResponse.next();
+  }
+
+  if (session.user.mustChangePassword && pathname !== "/reset-password" && pathname !== "/blocked" && !pathname.startsWith("/api/")) {
     const url = req.nextUrl.clone();
     url.pathname = "/reset-password";
     return NextResponse.redirect(url);
@@ -47,7 +62,8 @@ export default auth((req) => {
     !session.user.hasWebauthn &&
     !pathname.startsWith("/setup-biometrics") &&
     !pathname.startsWith("/api/") &&
-    pathname !== "/reset-password"
+    pathname !== "/reset-password" &&
+    pathname !== "/blocked"
   ) {
     const url = req.nextUrl.clone();
     url.pathname = "/setup-biometrics";

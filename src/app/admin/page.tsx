@@ -92,8 +92,10 @@ export default async function AdminHome() {
   }
   // professionalLicenseExpiry/healthCardExpiry son fechas-calendario (medianoche UTC), no timestamps:
   // se comparan contra todayCal (mismo criterio que las licencias), no contra todayStart.
+  // Incluye los ya vencidos (quedan primero por orden de fecha asc). Antes se filtraban con
+  // `e.date >= todayCal`, así que el admin veía el contador "N vencido" pero NO cuál documento
+  // era ni de qué empleado.
   const upcoming = expiries
-    .filter((e) => e.date >= todayCal)
     .sort((a, b) => a.date.getTime() - b.date.getTime())
     .slice(0, 5);
   const expired = expiries.filter((e) => e.date < todayCal).length;
@@ -170,7 +172,7 @@ export default async function AdminHome() {
       <div className="mt-6 grid grid-cols-1 gap-4 xl:grid-cols-2">
         <section className="panel p-6">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold">Próximos 5 vencimientos</h2>
+            <h2 className="text-lg font-semibold">Vencimientos</h2>
             {expired > 0 && (
               <span className="badge-danger flex items-center gap-1"><AlertTriangle className="h-3.5 w-3.5" /> {expired} vencido{expired === 1 ? "" : "s"}</span>
             )}
@@ -179,7 +181,8 @@ export default async function AdminHome() {
             {upcoming.length === 0 && <li className="text-sm text-muted-foreground">Sin vencimientos cargados.</li>}
             {upcoming.map((e, i) => {
               const days = daysUntil(e.date) ?? 0;
-              const urgent = days <= 30;
+              const isExpired = e.date < todayCal;
+              const urgent = isExpired || days <= 30;
               return (
                 <li key={i} className="surface-card flex items-center justify-between gap-3 p-3">
                   <div className="min-w-0">
@@ -188,7 +191,7 @@ export default async function AdminHome() {
                   </div>
                   <div className="shrink-0 text-right">
                     <div className={`text-sm font-semibold ${urgent ? "text-destructive" : ""}`}>{formatCalendarDate(e.date)}</div>
-                    <div className={`text-xs ${urgent ? "text-destructive" : "text-muted-foreground"}`}>en {days} día{days === 1 ? "" : "s"}</div>
+                    <div className={`text-xs ${urgent ? "text-destructive" : "text-muted-foreground"}`}>{isExpired ? "Vencido" : `en ${days} día${days === 1 ? "" : "s"}`}</div>
                   </div>
                 </li>
               );

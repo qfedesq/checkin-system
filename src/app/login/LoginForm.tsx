@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { signIn, signOut } from "next-auth/react";
 import { startAuthentication } from "@simplewebauthn/browser";
+import { loginStatus } from "./actions";
 
 export function LoginForm({ from, error }: { from?: string; error?: string }) {
   const router = useRouter();
@@ -25,7 +26,13 @@ export function LoginForm({ from, error }: { from?: string; error?: string }) {
     });
 
     if (!res || res.error) {
-      setErr("Credenciales inválidas.");
+      // Distinguir cuenta bloqueada de credenciales inválidas (sólo en el camino de error).
+      const status = await loginStatus({ email: email.trim().toLowerCase(), password });
+      setErr(
+        status === "disabled"
+          ? "Tu cuenta está bloqueada. Contactá al administrador."
+          : "Credenciales inválidas.",
+      );
       setBusy(false);
       return;
     }

@@ -2,6 +2,13 @@
 
 Cada release sube la versión en `+0.01`. El número visible abajo a la izquierda en la app coincide con este archivo.
 
+## v0.50 — 2026-07-16
+
+**Feedback: pantalla clara para cuentas bloqueadas y vencimientos vencidos visibles en el panel.**
+
+- **Cuenta bloqueada**: cuando un usuario deshabilitado intenta entrar, antes quedaba en una **pantalla en blanco** (un bucle de redirección). Ahora ve una pantalla clara **"Cuenta bloqueada"** con la opción de cerrar sesión, y si intenta iniciar sesión el aviso dice **"Tu cuenta está bloqueada. Contactá al administrador."** (antes decía genéricamente "Credenciales inválidas").
+- **Vencimientos vencidos en el panel (admin)**: el recuadro de vencimientos mostraba el contador "1 vencido" pero **no listaba** cuál documento estaba vencido ni de qué empleado. Ahora los **vencidos aparecen primero en la lista, marcados en rojo con la etiqueta "Vencido"**, así se ve al instante cuál es y de quién.
+
 ## v0.49 — 2026-07-15
 
 **Feedback: Curso de Manipulación de Alimentos en el perfil, campos obligatorios en rojo y textos.**

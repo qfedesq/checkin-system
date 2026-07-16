@@ -9,7 +9,11 @@ export default async function EmployeeLayout({ children }: { children: React.Rea
 
   // El JWT no se revoca al deshabilitar la cuenta o cambiar el rol: se revalida contra la DB en cada carga.
   const currentUser = await prisma.user.findUnique({ where: { id: session.user.id }, select: { status: true, role: true } });
-  if (!currentUser || currentUser.status !== "ACTIVE") redirect("/login");
+  if (!currentUser) redirect("/login");
+  // Cuenta no activa (deshabilitada): a /blocked, NO a /login — /login rebotaría al usuario con
+  // sesión todavía válida de vuelta a la app → loop de redirección (pantalla en blanco). El caso
+  // PENDING con JWT vivo lo intercepta el middleware antes de llegar acá.
+  if (currentUser.status !== "ACTIVE") redirect("/blocked");
   if (currentUser.role === "ADMIN") redirect("/admin");
 
   // Badge de "Recibidos": documentos que el empleado todavía no vio en la bandeja. "Visto"
