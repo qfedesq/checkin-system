@@ -2,6 +2,12 @@
 
 Cada release sube la versión en `+0.01`. El número visible abajo a la izquierda en la app coincide con este archivo.
 
+## v0.54 — 2026-07-17
+
+**Guía de alta: se agregaron los permisos del teléfono (biometría, notificaciones, ubicación).**
+
+- La guía de **`/guia`** ahora tiene **9 pasos** e incluye pantallas claras de cómo **aceptar cada permiso** que pide el teléfono: **biometría** (Face ID / huella → Aceptar), **notificaciones** (→ Permitir; en iPhone, agregar antes la app a inicio) y **ubicación** al fichar (→ Permitir). Cada una muestra el aviso con el botón correcto resaltado, para evitar la confusión típica de la primera vez.
+
 ## v0.53 — 2026-07-17
 
 **Guía de alta para el empleado (onboarding paso a paso), dentro de la app.**

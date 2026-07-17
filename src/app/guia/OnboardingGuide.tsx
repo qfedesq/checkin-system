@@ -163,7 +163,21 @@ const STYLES = `
 .og-root .now b{color:var(--fg); font-family:var(--round)}
 .og-root .foot{width:100%; max-width:var(--stage-max); color:var(--faint); font-size:11.5px; text-align:center; margin-top:6px; line-height:1.5}
 
-@media (prefers-reduced-motion:reduce){ .og-root .screen{transition:none} .og-root .field .caret{animation:none} }
+/* ── Prompts de permisos (biometría / notificaciones / ubicación) ── */
+.og-root .prompt{width:100%; max-width:252px; margin:2px auto 0; background:#1b2733; border:1px solid var(--line-2); border-radius:16px; padding:16px 15px; text-align:center; box-shadow:0 24px 60px -22px rgba(0,0,0,.85)}
+.og-root .prompt .pi{width:46px;height:46px;border-radius:13px; margin:0 auto 10px; display:grid;place-items:center; background:var(--accent-soft); color:var(--accent)}
+.og-root .prompt .pi svg{width:24px;height:24px}
+.og-root .prompt .pt{font-family:var(--round); font-weight:700; font-size:14px; margin-bottom:5px}
+.og-root .prompt .pd{font-size:11.5px; color:var(--muted); line-height:1.4; margin-bottom:14px}
+.og-root .prompt .pbtns{display:flex; flex-direction:column; gap:8px}
+.og-root .pbtn{height:38px; border-radius:10px; display:flex;align-items:center;justify-content:center; font-weight:650; font-size:12.5px; font-family:var(--round)}
+.og-root .pbtn.allow{background:var(--blue); color:var(--blue-ink); animation:og-pulse 1.9s ease-out infinite}
+.og-root .pbtn.deny{background:transparent; color:var(--muted); border:1px solid var(--line-2)}
+.og-root .hint{margin-top:13px; font-size:11px; color:var(--muted); line-height:1.4; max-width:252px; text-align:center}
+.og-root .hint b{color:var(--fg)}
+@keyframes og-pulse{0%{box-shadow:0 0 0 0 rgba(59,130,246,.55)}70%{box-shadow:0 0 0 12px rgba(59,130,246,0)}100%{box-shadow:0 0 0 0 rgba(59,130,246,0)}}
+
+@media (prefers-reduced-motion:reduce){ .og-root .screen{transition:none} .og-root .field .caret{animation:none} .og-root .pbtn.allow{animation:none} }
 `;
 
 /* ── Markup del recorrido, idéntico al HTML validado ──────────────────────
@@ -176,7 +190,7 @@ const MARKUP = `
       <svg class="logo" viewBox="0 0 32 32" aria-hidden="true"><g fill="currentColor"><path d="M7 5h21l-4.4 5.2H2.6z"/><path d="M7 13.4h16.5l-4.4 5.2H2.6z"/><path d="M7 21.8h21l-4.4 5.2H2.6z"/></g></svg>
       <div><b>Emmalva</b><small>Guía de alta para empleados</small></div>
     </div>
-    <span class="kicker">Instructivo · 7 pasos</span>
+    <span class="kicker">Instructivo · 9 pasos</span>
   </header>
 
   <div class="stage">
@@ -193,7 +207,7 @@ const MARKUP = `
             <svg class="big" viewBox="0 0 32 32" aria-hidden="true"><g fill="currentColor"><path d="M7 5h21l-4.4 5.2H2.6z"/><path d="M7 13.4h16.5l-4.4 5.2H2.6z"/><path d="M7 21.8h21l-4.4 5.2H2.6z"/></g></svg>
             <h2>Tu alta en Emmalva, paso a paso</h2>
             <p>Todo desde tu teléfono, en unos minutos. Tocá reproducir y seguí el recorrido.</p>
-            <span class="badge ok pill">▶ 7 pasos · ~1 min</span>
+            <span class="badge ok pill">▶ 9 pasos · ~1 min</span>
           </div>
 
           <!-- 1 · Cuenta creada -->
@@ -233,17 +247,39 @@ const MARKUP = `
             <div class="btn pri">Guardar contraseña</div>
           </div>
 
-          <!-- 4 · Biometría -->
+          <!-- 4 · Permiso biometría -->
           <div class="screen center">
-            <div class="ring"><svg viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="1.6" stroke-linecap="round"><path d="M12 11c0 3-.4 5.5-1.2 7.5"/><path d="M8.5 6.8A6 6 0 0 1 18 12c0 1.2 0 2.4-.2 3.5"/><path d="M6 9.5A6 6 0 0 0 6 12c0 2.5-.5 4.8-1.4 6.8"/><path d="M12 8a4 4 0 0 1 4 4c0 2.7-.3 5-1 7"/><path d="M9 18.5c.6-2 .9-4.2.9-6.5a2 2 0 0 1 4 0"/></svg></div>
-            <div class="eyebrow">Dispositivo</div>
-            <div class="h1" style="margin-bottom:8px">Registrá tu biometría</div>
-            <p class="lead" style="text-align:center;max-width:230px">Guardás tu Face ID o huella. Se usa para <b style="color:var(--fg)">fichar</b> tu entrada y salida.</p>
-            <div class="btn pri" style="width:100%">Registrar este dispositivo</div>
-            <div style="margin-top:14px"><span class="badge warn">⏳ Pendiente de aprobación del admin</span></div>
+            <div class="eyebrow">Permiso · Biometría</div>
+            <div class="h1" style="margin-bottom:12px">Registrá tu biometría</div>
+            <div class="prompt">
+              <div class="pi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M12 11c0 3-.4 5.5-1.2 7.5"/><path d="M8.5 6.8A6 6 0 0 1 18 12c0 1.2 0 2.4-.2 3.5"/><path d="M6 9.5A6 6 0 0 0 6 12c0 2.5-.5 4.8-1.4 6.8"/><path d="M12 8a4 4 0 0 1 4 4c0 2.7-.3 5-1 7"/><path d="M9 18.5c.6-2 .9-4.2.9-6.5a2 2 0 0 1 4 0"/></svg></div>
+              <div class="pt">Usar Face ID o tu huella</div>
+              <div class="pd">El teléfono te lo pide para poder fichar tu entrada y salida.</div>
+              <div class="pbtns">
+                <div class="pbtn allow">Aceptar</div>
+                <div class="pbtn deny">Ahora no</div>
+              </div>
+            </div>
+            <div class="hint">Tocá <b>Aceptar</b>. Después el <b>administrador aprueba</b> tu dispositivo y te avisa.</div>
           </div>
 
-          <!-- 5 · Completar perfil -->
+          <!-- 5 · Permiso notificaciones -->
+          <div class="screen center">
+            <div class="eyebrow">Permiso · Notificaciones</div>
+            <div class="h1" style="margin-bottom:12px">Activá las notificaciones</div>
+            <div class="prompt">
+              <div class="pi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 1 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M10.5 21a2 2 0 0 0 3 0"/></svg></div>
+              <div class="pt">Emmalva quiere enviarte avisos</div>
+              <div class="pd">Aprobaciones, documentos nuevos y recordatorios de vencimiento.</div>
+              <div class="pbtns">
+                <div class="pbtn allow">Permitir</div>
+                <div class="pbtn deny">Bloquear</div>
+              </div>
+            </div>
+            <div class="hint"><b>En iPhone:</b> primero agregá la app a inicio (Compartir → Agregar a inicio) y abrila desde ahí.</div>
+          </div>
+
+          <!-- 6 · Completar perfil -->
           <div class="screen">
             <div class="apphead"><div class="l"><svg class="logo" viewBox="0 0 32 32"><g fill="currentColor"><path d="M7 5h21l-4.4 5.2H2.6z"/><path d="M7 13.4h16.5l-4.4 5.2H2.6z"/><path d="M7 21.8h21l-4.4 5.2H2.6z"/></g></svg><b>Emmalva</b></div></div>
             <div class="eyebrow">Mi perfil</div>
@@ -263,7 +299,7 @@ const MARKUP = `
             <div class="btn pri" style="margin-top:12px">Enviar</div>
           </div>
 
-          <!-- 6 · Aprobación del admin -->
+          <!-- 7 · Aprobación del admin -->
           <div class="screen center">
             <div class="ring cy"><svg viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 1 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M10.5 21a2 2 0 0 0 3 0"/></svg></div>
             <div class="eyebrow">Notificación</div>
@@ -274,7 +310,23 @@ const MARKUP = `
             </div>
           </div>
 
-          <!-- 7 · Listo, a fichar -->
+          <!-- 8 · Permiso ubicación -->
+          <div class="screen center">
+            <div class="eyebrow">Permiso · Ubicación</div>
+            <div class="h1" style="margin-bottom:12px">Permití la ubicación</div>
+            <div class="prompt">
+              <div class="pi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-5.5-7-11a7 7 0 0 1 14 0c0 5.5-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg></div>
+              <div class="pt">Emmalva quiere tu ubicación</div>
+              <div class="pd">Sólo al fichar, para registrar desde dónde marcás entrada y salida.</div>
+              <div class="pbtns">
+                <div class="pbtn allow">Permitir al usar la app</div>
+                <div class="pbtn deny">No permitir</div>
+              </div>
+            </div>
+            <div class="hint">La primera vez que fiches, tocá <b>Permitir</b>.</div>
+          </div>
+
+          <!-- 9 · Listo, a fichar -->
           <div class="screen center">
             <div class="eyebrow">Check-in</div>
             <div class="h1" style="margin-bottom:2px">¡Todo listo!</div>
@@ -318,14 +370,16 @@ const MARKUP = `
 type Tell = { k: string; n: number; t: string; p: string };
 
 const TELL: Tell[] = [
-  { k: "Bienvenida", n: 0, t: "Cómo darte de alta", p: "Este recorrido muestra los <b>7 pasos</b> para empezar a usar Emmalva. Reproducilo entero o avanzá a tu ritmo con las flechas." },
-  { k: "Paso 1 de 7", n: 1, t: "El administrador crea tu cuenta", p: "No te registrás solo: el administrador te da de alta y te pasa tu email y una clave temporal, <span class='code'>Emmalva01</span>." },
-  { k: "Paso 2 de 7", n: 2, t: "Iniciá sesión", p: "Entrá con tu <b>email</b> y la clave temporal <span class='code'>Emmalva01</span>. El ingreso a la cuenta siempre es con email y contraseña." },
-  { k: "Paso 3 de 7", n: 3, t: "Elegí tu contraseña", p: "En el primer ingreso, Emmalva te obliga a <b>cambiar la clave temporal</b> por una tuya. Guardala en un lugar seguro." },
-  { k: "Paso 4 de 7", n: 4, t: "Registrá tu biometría", p: "Guardás tu <b>Face ID o huella</b>: se usa para fichar la entrada y la salida. El dispositivo queda <b>pendiente de aprobación</b> del administrador." },
-  { k: "Paso 5 de 7", n: 5, t: "Completá tu perfil", p: "Cargá <b>todos</b> tus datos: categoría, vencimientos con fotos, talles, domicilio, foto de frente y firma. Los campos que falten quedan <b style='color:var(--bad)'>en rojo</b>." },
-  { k: "Paso 6 de 7", n: 6, t: "El administrador te habilita", p: "La primera carga se guarda directo; después, cada cambio lo aprueba el admin. Cuando <b>aprueba tu dispositivo</b>, te llega una notificación." },
-  { k: "Paso 7 de 7", n: 7, t: "¡Listo! Ya podés fichar", p: "Hacé <b>check-in / check-out</b>, pedí vacaciones o francos y recibí tus recibos de sueldo firmados automáticamente." },
+  { k: "Bienvenida", n: 0, t: "Cómo darte de alta", p: "Este recorrido muestra los <b>9 pasos</b> para empezar a usar Emmalva —incluidos los permisos que el teléfono te va a pedir. Reproducilo entero o avanzá con las flechas." },
+  { k: "Paso 1 de 9", n: 1, t: "El administrador crea tu cuenta", p: "No te registrás solo: el administrador te da de alta y te pasa tu email y una clave temporal, <span class='code'>Emmalva01</span>." },
+  { k: "Paso 2 de 9", n: 2, t: "Iniciá sesión", p: "Entrá con tu <b>email</b> y la clave temporal <span class='code'>Emmalva01</span>. El ingreso a la cuenta siempre es con email y contraseña." },
+  { k: "Paso 3 de 9", n: 3, t: "Elegí tu contraseña", p: "En el primer ingreso, Emmalva te obliga a <b>cambiar la clave temporal</b> por una tuya. Guardala en un lugar seguro." },
+  { k: "Paso 4 de 9", n: 4, t: "Permití tu biometría", p: "El teléfono te va a pedir <b>Face ID o tu huella</b>: tocá <b>Aceptar</b>. Es lo que después usás para fichar; el dispositivo queda pendiente de aprobación del admin." },
+  { k: "Paso 5 de 9", n: 5, t: "Permití las notificaciones", p: "Cuando aparezca el aviso, tocá <b>Permitir</b> para recibir aprobaciones, documentos y recordatorios. <b>En iPhone</b> agregá antes la app a la pantalla de inicio." },
+  { k: "Paso 6 de 9", n: 6, t: "Completá tu perfil", p: "Cargá <b>todos</b> tus datos: categoría, vencimientos con fotos, talles, domicilio, foto de frente y firma. Los campos que falten quedan <b style='color:var(--bad)'>en rojo</b>." },
+  { k: "Paso 7 de 9", n: 7, t: "El administrador te habilita", p: "La primera carga se guarda directo; después, cada cambio lo aprueba el admin. Cuando <b>aprueba tu dispositivo</b>, te llega una notificación." },
+  { k: "Paso 8 de 9", n: 8, t: "Permití la ubicación", p: "La primera vez que fiches, el teléfono te pide la <b>ubicación</b>: tocá <b>Permitir</b>. Sirve para registrar desde dónde marcás entrada y salida." },
+  { k: "Paso 9 de 9", n: 9, t: "¡Listo! Ya podés fichar", p: "Hacé <b>check-in / check-out</b>, pedí vacaciones o francos y recibí tus recibos de sueldo firmados automáticamente." },
 ];
 
 const STEP_MS = 6200;
@@ -364,7 +418,7 @@ export function OnboardingGuide() {
       tell!.innerHTML =
         '<div class="step"><span class="n">' + d.k + "</span></div>" +
         "<h3>" + d.t + "</h3><p>" + d.p + "</p>";
-      nowN!.textContent = d.n === 0 ? "Portada" : "Paso " + d.n + " / 7";
+      nowN!.textContent = d.n === 0 ? "Portada" : "Paso " + d.n + " / 9";
     }
 
     function paintSegs(i: number, frac: number) {
