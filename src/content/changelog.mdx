@@ -2,6 +2,13 @@
 
 Cada release sube la versión en `+0.01`. El número visible abajo a la izquierda en la app coincide con este archivo.
 
+## v0.53 — 2026-07-17
+
+**Guía de alta para el empleado (onboarding paso a paso), dentro de la app.**
+
+- Nueva página **Guía de alta** en **`/guia`** (link compartible, no necesita iniciar sesión): un recorrido animado tipo video que muestra los **7 pasos** para darse de alta — el administrador crea la cuenta con la clave `Emmalva01`, iniciar sesión, elegir contraseña, registrar la biometría, completar el perfil, la aprobación del administrador y a fichar. Se reproduce solo, con controles y avance por pasos.
+- Desde la pantalla de **inicio de sesión** ahora hay un enlace **"¿Primera vez? Mirá cómo darte de alta"** que abre la guía. Ideal para pasarle el link a un empleado nuevo por WhatsApp.
+
 ## v0.52 — 2026-07-16
 
 **Fix: cambiar el rol de un usuario conectado ya no lo deja en pantalla en blanco.**
