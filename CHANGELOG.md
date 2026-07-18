@@ -2,6 +2,13 @@
 
 Cada release sube la versión en `+0.01`. El número visible abajo a la izquierda en la app coincide con este archivo.
 
+## v0.55 — 2026-07-18
+
+**Feedback: el desbloqueo del admin queda firme, y el admin puede fichar la salida del empleado.**
+
+- **Bloqueo por vencimiento que volvía**: cuando un empleado quedaba bloqueado por un documento vencido y el administrador lo desbloqueaba, al otro día el sistema lo volvía a bloquear. Ahora el **desbloqueo queda firme**: la cuenta sigue habilitada hasta que **venza otro documento** (o una renovación vuelva a vencer) o hasta que el **administrador la bloquee manualmente**.
+- **Check-out por el administrador**: en **Jornadas**, cuando un empleado se olvidó de fichar la salida, el admin puede tocar **"Marcar salida"** y registrar el check-out **indicando la hora real** (o la actual). Antes sólo se podía cerrar con la hora del momento.
+
 ## v0.54 — 2026-07-17
 
 **Guía de alta: se agregaron los permisos del teléfono (biometría, notificaciones, ubicación).**

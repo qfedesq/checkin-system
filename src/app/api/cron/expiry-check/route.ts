@@ -52,7 +52,7 @@ async function runExpiryCheck() {
 
   // Perfiles con vencimientos próximos
   const profiles = await prisma.employeeProfile.findMany({
-    include: { user: { select: { email: true, status: true, role: true } } },
+    include: { user: { select: { email: true, status: true, role: true, expiryBlockClearedAt: true } } },
   });
 
   await processInBatches(profiles, async (p) => {
@@ -98,14 +98,17 @@ async function runExpiryCheck() {
       }
     }
 
-    // Bloqueo automático: al día siguiente del vencimiento, sólo el admin puede desbloquear
+    // Bloqueo automático: al día siguiente del vencimiento, sólo el admin puede desbloquear.
+    // Si el admin ya desbloqueó (expiryBlockClearedAt), NO se re-bloquea por un vencimiento
+    // anterior a esa marca: sólo por uno que venza DESPUÉS (documento distinto o renovación
+    // que volvió a vencer). Así el desbloqueo del admin queda firme hasta un vencimiento nuevo.
     if (p.user.role !== "ADMIN") {
-      const healthExpired =
-        p.healthCardExpiry && p.healthCardExpiry.getFullYear() <= PLACEHOLDER_YEAR && (daysUntil(p.healthCardExpiry) ?? 1) < 0;
-      const foodExpired =
-        p.foodCourseExpiry && p.foodCourseExpiry.getFullYear() <= PLACEHOLDER_YEAR && (daysUntil(p.foodCourseExpiry) ?? 1) < 0;
-      const licenseExpired =
-        p.category === "DRIVER" && p.professionalLicenseExpiry && (daysUntil(p.professionalLicenseExpiry) ?? 1) < 0;
+      const cleared = p.user.expiryBlockClearedAt;
+      const blocks = (exp: Date | null) =>
+        !!exp && exp.getFullYear() <= PLACEHOLDER_YEAR && (daysUntil(exp) ?? 1) < 0 && (!cleared || exp.getTime() > cleared.getTime());
+      const healthExpired = blocks(p.healthCardExpiry);
+      const foodExpired = blocks(p.foodCourseExpiry);
+      const licenseExpired = p.category === "DRIVER" && blocks(p.professionalLicenseExpiry);
 
       if (healthExpired || licenseExpired || foodExpired) {
         const reason = licenseExpired ? "EXPIRED_LICENSE" : healthExpired ? "EXPIRED_HEALTH_CARD" : "EXPIRED_FOOD_COURSE";

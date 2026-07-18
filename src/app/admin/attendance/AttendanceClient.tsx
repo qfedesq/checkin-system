@@ -4,12 +4,22 @@ import { useRouter } from "next/navigation";
 import { Download, ArrowUp, ArrowDown } from "lucide-react";
 import { formatDate, formatDateTime, minutesToHhmm } from "@/lib/utils";
 
-async function closeAttendance(id: string) {
-  const res = await fetch(`/api/admin/attendance/${id}/close`, { method: "POST" });
+async function closeAttendance(id: string, checkOutAt?: string) {
+  const res = await fetch(`/api/admin/attendance/${id}/close`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(checkOutAt ? { checkOutAt } : {}),
+  });
   if (!res.ok) {
     const data = await res.json().catch(() => ({}));
-    throw new Error(data.error || "No se pudo cerrar la jornada");
+    throw new Error(data.error || "No se pudo registrar la salida");
   }
+}
+
+function nowLocalInput() {
+  const d = new Date();
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
 type Row = {
@@ -49,7 +59,9 @@ export function AttendanceClient({ initial, employees, rows }: {
   const [from, setFrom] = useState(initial.from);
   const [to, setTo] = useState(initial.to);
   const [userId, setUserId] = useState(initial.userId);
-  const [closingId, setClosingId] = useState<string | null>(null);
+  const [checkoutRow, setCheckoutRow] = useState<string | null>(null);
+  const [checkoutVal, setCheckoutVal] = useState("");
+  const [busy, setBusy] = useState(false);
   const [sortKey, setSortKey] = useState<SortKey>("employee");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
 
@@ -79,16 +91,22 @@ export function AttendanceClient({ initial, employees, rows }: {
     return list;
   }, [rows, sortKey, sortDir]);
 
-  async function handleClose(id: string) {
-    if (!confirm("¿Cerrar esta jornada huérfana? Se registrará el check-out con la hora actual.")) return;
-    setClosingId(id);
+  function openCheckout(id: string) {
+    setCheckoutVal(nowLocalInput());
+    setCheckoutRow(id);
+  }
+  async function confirmCheckout(id: string) {
+    setBusy(true);
     try {
-      await closeAttendance(id);
+      // checkoutVal es hora local del navegador (ART); toISOString la pasa a UTC para el server.
+      const iso = checkoutVal ? new Date(checkoutVal).toISOString() : undefined;
+      await closeAttendance(id, iso);
+      setCheckoutRow(null);
       router.refresh();
     } catch (e) {
-      alert(e instanceof Error ? e.message : "No se pudo cerrar la jornada");
+      alert(e instanceof Error ? e.message : "No se pudo registrar la salida");
     } finally {
-      setClosingId(null);
+      setBusy(false);
     }
   }
 
@@ -177,13 +195,24 @@ export function AttendanceClient({ initial, employees, rows }: {
                 <td className="px-3 py-3 mono text-[11px] text-muted-foreground">{r.checkOutLat !== null && r.checkOutLng !== null ? `${r.checkOutLat.toFixed(4)}, ${r.checkOutLng.toFixed(4)}` : "—"}</td>
                 <td className="px-3 py-3">
                   {!r.checkOutAt && (
-                    <button
-                      className="btn-ghost text-xs"
-                      disabled={closingId === r.id}
-                      onClick={() => handleClose(r.id)}
-                    >
-                      {closingId === r.id ? "Cerrando…" : "Cerrar jornada"}
-                    </button>
+                    checkoutRow === r.id ? (
+                      <div className="flex flex-wrap items-center gap-2">
+                        <input
+                          type="datetime-local"
+                          className="surface-control text-xs"
+                          style={{ width: "auto", height: 38 }}
+                          value={checkoutVal}
+                          max={nowLocalInput()}
+                          onChange={(e) => setCheckoutVal(e.target.value)}
+                        />
+                        <button className="btn-primary text-xs" disabled={busy} onClick={() => confirmCheckout(r.id)}>
+                          {busy ? "Guardando…" : "Confirmar salida"}
+                        </button>
+                        <button className="btn-ghost text-xs" disabled={busy} onClick={() => setCheckoutRow(null)}>Cancelar</button>
+                      </div>
+                    ) : (
+                      <button className="btn-ghost text-xs" onClick={() => openCheckout(r.id)}>Marcar salida</button>
+                    )
                   )}
                 </td>
               </tr>

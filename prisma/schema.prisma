@@ -66,6 +66,9 @@ model User {
   createdAt           DateTime             @default(now())
   approvedAt          DateTime?
   approvedById        String?
+  // Cuando el admin desbloquea, se marca el instante: el cron NO vuelve a bloquear por un
+  // vencimiento anterior a esta marca (sólo por uno posterior, o por bloqueo manual del admin).
+  expiryBlockClearedAt DateTime?
   webauthnCredentials WebAuthnCredential[]
   profile             EmployeeProfile?
   leaves              LeaveRequest[]
