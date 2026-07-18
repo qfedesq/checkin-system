@@ -2,6 +2,12 @@
 
 Cada release sube la versión en `+0.01`. El número visible abajo a la izquierda en la app coincide con este archivo.
 
+## v0.56 — 2026-07-18
+
+**Panel: marcar la salida del empleado desde "Check-in de hoy".**
+
+- En el panel de inicio, al tocar la tarjeta **"Check-in de hoy"** (jornadas en curso), cada empleado muestra a qué hora entró y un botón **"Marcar salida"** para hacerle el check-out en el momento, eligiendo la hora real — sin tener que ir hasta Jornadas.
+
 ## v0.55 — 2026-07-18
 
 **Feedback: el desbloqueo del admin queda firme, y el admin puede fichar la salida del empleado.**

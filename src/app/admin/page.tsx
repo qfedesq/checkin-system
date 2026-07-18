@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { TodayCards } from "./TodayCards";
 import { AdminMiniCalendar } from "./AdminMiniCalendar";
-import { formatCalendarDate, daysUntil } from "@/lib/utils";
+import { formatCalendarDate, formatDateTime, daysUntil } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -35,7 +35,7 @@ export default async function AdminHome() {
     prisma.profileChangeRequest.count({ where: { status: "PENDING" } }),
     prisma.attendance.count({ where: { checkOutAt: null } }),
     prisma.user.findMany({ where: { role: "EMPLOYEE", status: "ACTIVE" }, select: { id: true } }),
-    prisma.attendance.findMany({ where: { checkInAt: { gte: todayStart, lt: todayEnd } }, select: { userId: true, checkOutAt: true } }),
+    prisma.attendance.findMany({ where: { checkInAt: { gte: todayStart, lt: todayEnd } }, select: { id: true, userId: true, checkInAt: true, checkOutAt: true } }),
     prisma.leaveRequest.findMany({ where: { status: "APPROVED", startDate: { lte: todayCal }, endDate: { gte: todayCal } }, select: { userId: true } }),
     prisma.employeeProfile.findMany({
       where: { user: { status: "ACTIVE", role: "EMPLOYEE" } },
@@ -65,7 +65,11 @@ export default async function AdminHome() {
   // Listados de empleados por categoría (para las tarjetas clickeables del panel), sin duplicados.
   const nameByUser = new Map(profiles.map((p) => [p.userId, `${p.lastName}, ${p.firstName}`.trim() || "Empleado"]));
   const nameFor = (id: string) => nameByUser.get(id) ?? "Empleado";
-  const checkinPeople = [...stillInUsers].map((id) => ({ name: nameFor(id) }));      // jornada en curso
+  // Jornada en curso: incluye el id de la jornada abierta para que el admin pueda hacerle el
+  // check-out desde el propio listado del panel (una jornada abierta por usuario — índice único).
+  const checkinPeople = todayAttendances
+    .filter((a) => !a.checkOutAt)
+    .map((a) => ({ name: nameFor(a.userId), detail: `Entró ${formatDateTime(a.checkInAt)}`, attendanceId: a.id }));
   const checkoutPeople = [...checkedOutUsers].map((id) => ({ name: nameFor(id) }));  // terminaron
   const absentPeople = activeEmployees
     .filter((u) => !checkedInUsers.has(u.id) && !onLeaveToday.has(u.id))
