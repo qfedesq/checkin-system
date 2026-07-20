@@ -512,7 +512,9 @@ export function EmployeeDetailClient({ initial }: {
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label className="block">
-      <span className="eyebrow">{label}</span>
+      {/* min-h para 2 líneas: así una etiqueta que ocupa dos renglones (p.ej. "Semanas de
+          vacaciones / año") no empuja su input hacia abajo y toda la fila queda alineada. */}
+      <span className="eyebrow block leading-[1.3] min-h-[26px]">{label}</span>
       <div className="mt-1">{children}</div>
     </label>
   );

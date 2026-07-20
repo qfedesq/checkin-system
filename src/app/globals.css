@@ -246,7 +246,7 @@
   }
 
   .surface-select {
-    @apply surface-control appearance-none pr-10;
+    @apply surface-control appearance-none pr-10 uppercase;
     background-image:
       linear-gradient(45deg, transparent 50%, hsl(var(--muted-foreground)) 50%),
       linear-gradient(135deg, hsl(var(--muted-foreground)) 50%, transparent 50%);
@@ -279,7 +279,7 @@
   }
 
   .btn {
-    @apply inline-flex h-10 items-center justify-center gap-2 rounded-xl border px-4 text-sm font-semibold transition;
+    @apply inline-flex h-10 items-center justify-center gap-2 rounded-xl border px-4 text-sm font-semibold uppercase tracking-wide transition;
     border-color: hsl(var(--panel-border));
   }
   .btn-primary {

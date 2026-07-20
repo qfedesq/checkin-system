@@ -2,6 +2,13 @@
 
 Cada release sube la versión en `+0.01`. El número visible abajo a la izquierda en la app coincide con este archivo.
 
+## v0.60 — 2026-07-19
+
+**Estética: botones/menús en mayúsculas y alineación del formulario.**
+
+- **Botones, menú de navegación y desplegables** ahora se muestran en **MAYÚSCULAS**, en línea con los títulos.
+- Se corrigió la **alineación** del campo "Semanas de vacaciones / año" en la ficha del empleado: cuando la etiqueta ocupa dos renglones ya no baja el campo respecto del resto de la fila.
+
 ## v0.59 — 2026-07-19
 
 **Estética: títulos en mayúsculas y panel más limpio.**

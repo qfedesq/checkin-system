@@ -138,7 +138,7 @@ export function AppShell({
                       )}
                     >
                       <Icon className="h-4 w-4" />
-                      <span className="flex-1">{item.label}</span>
+                      <span className="flex-1 uppercase">{item.label}</span>
                       {count > 0 && (
                         <span className="grid h-5 min-w-[20px] place-items-center rounded-full bg-primary px-1.5 text-[10px] font-bold text-primary-foreground">{count > 99 ? "99+" : count}</span>
                       )}
@@ -198,7 +198,7 @@ export function AppShell({
                       <span className="absolute -right-2 -top-1 grid h-4 min-w-[16px] place-items-center rounded-full bg-primary px-1 text-[9px] font-bold text-primary-foreground">{count > 9 ? "9+" : count}</span>
                     )}
                   </span>
-                  {item.label}
+                  <span className="uppercase">{item.label}</span>
                 </Link>
               </li>
             );
@@ -243,7 +243,7 @@ export function AppShell({
                         )}
                       >
                         <Icon className="h-5 w-5" />
-                        <span className="flex-1">{item.label}</span>
+                        <span className="flex-1 uppercase">{item.label}</span>
                         {count > 0 && (
                           <span className="grid h-5 min-w-[20px] place-items-center rounded-full bg-primary px-1.5 text-[10px] font-bold text-primary-foreground">{count > 99 ? "99+" : count}</span>
                         )}
