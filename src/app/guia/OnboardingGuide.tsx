@@ -144,6 +144,9 @@ const STYLES = `
 .og-root .tell p{color:var(--muted); font-size:15px; line-height:1.6; margin:0}
 .og-root .tell p b{color:var(--fg); font-weight:650}
 .og-root .tell .code{font-family:var(--mono); color:var(--accent); background:var(--accent-soft); padding:1px 7px; border-radius:6px; font-size:.92em}
+.og-root .finish-cta{display:inline-flex; align-items:center; gap:8px; margin-top:20px; padding:12px 20px; border-radius:12px; background:var(--accent); color:#04211f; font-family:var(--round); font-weight:700; font-size:14px; text-decoration:none; box-shadow:0 10px 24px -12px rgba(36,211,212,.8)}
+.og-root .finish-cta:hover{filter:brightness(1.06)}
+.og-root .finish-cta:focus-visible{outline:2px solid var(--accent); outline-offset:3px}
 @media (max-width:760px){ .og-root .tell{max-width:520px; text-align:center} .og-root .tell .step{justify-content:center} }
 
 /* ── Controles tipo reproductor ── */
@@ -415,9 +418,12 @@ export function OnboardingGuide() {
 
     function renderTell(i: number) {
       const d = TELL[i];
-      tell!.innerHTML =
+      let html =
         '<div class="step"><span class="n">' + d.k + "</span></div>" +
         "<h3>" + d.t + "</h3><p>" + d.p + "</p>";
+      // En el último paso, CTA para ir a iniciar sesión (la guía es pública / pre-login).
+      if (i === N - 1) html += '<a class="finish-cta" href="/login">Ir a iniciar sesión →</a>';
+      tell!.innerHTML = html;
       nowN!.textContent = d.n === 0 ? "Portada" : "Paso " + d.n + " / 9";
     }
 
@@ -429,7 +435,9 @@ export function OnboardingGuide() {
           fill.style.width = "100%";
         } else if (j === i) {
           segs[j].classList.remove("done");
-          fill.style.width = (playing ? frac * 100 : 0) + "%";
+          // Reproduciendo: se llena de a poco (efecto video). Parado / último paso: lleno
+          // (el paso actual ya fue "alcanzado"), para que la barra no quede a medias.
+          fill.style.width = (playing ? frac * 100 : 100) + "%";
         } else {
           segs[j].classList.remove("done");
           fill.style.width = "0%";

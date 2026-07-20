@@ -2,6 +2,13 @@
 
 Cada release sube la versión en `+0.01`. El número visible abajo a la izquierda en la app coincide con este archivo.
 
+## v0.58 — 2026-07-18
+
+**Guía /guia: barra de progreso completa y botón para ir a iniciar sesión.**
+
+- La **barra de progreso** ahora se completa también en el **último paso** (antes el tramo final quedaba vacío al detenerse).
+- En el **último paso** aparece un botón **"Ir a iniciar sesión →"** para pasar directo al login desde la guía.
+
 ## v0.57 — 2026-07-18
 
 **Geocerca: margen ampliado a 1 km.**
