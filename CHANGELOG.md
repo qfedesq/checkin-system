@@ -2,6 +2,13 @@
 
 Cada release sube la versión en `+0.01`. El número visible abajo a la izquierda en la app coincide con este archivo.
 
+## v0.63 — 2026-07-20
+
+**Ajustes estéticos.**
+
+- **Filtros que se cortaban**: los botones de filtro (Todas/Vacaciones/Francos en Calendario y Todos/Recibos/Notificaciones en Recibidos) ahora **bajan de línea** en pantallas angostas en vez de cortarse en el borde.
+- **Documentación**: en cada vencimiento, el campo de fecha y el botón **"Guardar fecha"** dejaron de quedar pegados/encimados — ahora la fecha se ve completa y con separación clara del botón.
+
 ## v0.62 — 2026-07-20
 
 **Usuarios (admin): tabla más prolija y ordenada.**

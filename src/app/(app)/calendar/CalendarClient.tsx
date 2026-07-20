@@ -108,7 +108,7 @@ export function CalendarClient() {
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_380px]">
       <section className="panel p-6">
-        <div className="mb-4 flex items-center gap-2">
+        <div className="mb-4 flex flex-wrap items-center gap-2">
           <button aria-pressed={tab === "VACATION"} className={tab === "VACATION" ? "btn-primary" : "btn-ghost"} onClick={() => { setTab("VACATION"); setSelected(undefined); setMsg(null); }}>Vacaciones</button>
           <button aria-pressed={tab === "DAY_OFF"} className={tab === "DAY_OFF" ? "btn-primary" : "btn-ghost"} onClick={() => { setTab("DAY_OFF"); setSelected(undefined); setMsg(null); }}>Franco</button>
         </div>
@@ -197,7 +197,7 @@ export function CalendarClient() {
 
       <section className="panel p-6">
         <h2 className="text-lg font-semibold">Mis solicitudes</h2>
-        <div className="mt-3 flex items-center gap-2">
+        <div className="mt-3 flex flex-wrap items-center gap-2">
           <button aria-pressed={myLeavesFilter === "ALL"} className={myLeavesFilter === "ALL" ? "btn-primary" : "btn-ghost"} onClick={() => setMyLeavesFilter("ALL")}>Todas</button>
           <button aria-pressed={myLeavesFilter === "VACATION"} className={myLeavesFilter === "VACATION" ? "btn-primary" : "btn-ghost"} onClick={() => setMyLeavesFilter("VACATION")}>Vacaciones</button>
           <button aria-pressed={myLeavesFilter === "DAY_OFF"} className={myLeavesFilter === "DAY_OFF" ? "btn-primary" : "btn-ghost"} onClick={() => setMyLeavesFilter("DAY_OFF")}>Francos</button>
