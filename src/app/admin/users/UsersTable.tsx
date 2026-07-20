@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { CheckCircle2, KeyRound, Smartphone, XCircle, UserPlus, ShieldCheck, ShieldX, UserCog, ArrowUp, ArrowDown } from "lucide-react";
+import { CheckCircle2, KeyRound, Smartphone, XCircle, UserPlus, ShieldCheck, ShieldX, UserCog, ArrowUp, ArrowDown, RotateCcw } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 import { Modal } from "@/components/ui/Modal";
 
@@ -34,6 +34,34 @@ function SortHeader({ label, sortKey, active, dir, onClick }: { label: string; s
         {isActive && (dir === "asc" ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />)}
       </button>
     </th>
+  );
+}
+
+// Botón de acción uniforme (ícono cuadrado, mismo tamaño en todas las filas) para que la
+// columna Acciones quede prolija y alineada. El texto va en el tooltip (title/aria-label).
+function IconBtn({ title, onClick, disabled, variant = "ghost", children }: {
+  title: string;
+  onClick: () => void;
+  disabled?: boolean;
+  variant?: "ghost" | "success" | "danger";
+  children: React.ReactNode;
+}) {
+  const styles = {
+    ghost: "border-border/70 text-muted-foreground hover:bg-secondary hover:text-foreground",
+    success: "border-[hsl(var(--success))]/30 bg-[hsl(var(--success))]/10 text-[hsl(var(--success-text))] hover:bg-[hsl(var(--success))]/20",
+    danger: "border-destructive/30 bg-destructive/10 text-destructive hover:bg-destructive/20",
+  } as const;
+  return (
+    <button
+      type="button"
+      title={title}
+      aria-label={title}
+      onClick={onClick}
+      disabled={disabled}
+      className={`inline-flex h-9 w-9 flex-none items-center justify-center rounded-lg border transition disabled:opacity-40 ${styles[variant]}`}
+    >
+      {children}
+    </button>
   );
 }
 
@@ -124,7 +152,7 @@ export function UsersTable({ users, currentUserId }: { users: Row[]; currentUser
         </thead>
         <tbody>
           {sortedUsers.map((u) => (
-            <tr key={u.id} className="border-b border-border/60 last:border-0">
+            <tr key={u.id} className="border-b border-border/60 align-top last:border-0">
               <td className="px-5 py-3">
                 <div className="font-medium">{u.firstName || u.lastName ? `${u.lastName}, ${u.firstName}` : "—"}</div>
                 <div className="text-xs text-muted-foreground">{u.email}</div>
@@ -132,40 +160,36 @@ export function UsersTable({ users, currentUserId }: { users: Row[]; currentUser
               </td>
               <td className="px-3 py-3 mono text-xs">{u.legajo ?? "—"}</td>
               <td className="px-3 py-3">
-                {u.status === "PENDING_APPROVAL" && <span className="badge-warning">pendiente</span>}
-                {u.status === "ACTIVE" && <span className="badge-success">activo</span>}
-                {u.status === "DISABLED" && <span className="badge-danger">deshabilitado</span>}
-                {u.mustChangePassword && <span className="badge-primary ml-1">clave temporal</span>}
+                <div className="flex flex-col items-start gap-1">
+                  {u.status === "PENDING_APPROVAL" && <span className="badge-warning">pendiente</span>}
+                  {u.status === "ACTIVE" && <span className="badge-success">activo</span>}
+                  {u.status === "DISABLED" && <span className="badge-danger">deshabilitado</span>}
+                  {u.mustChangePassword && <span className="badge-primary">clave temporal</span>}
+                </div>
               </td>
               <td className="px-3 py-3">
                 {u.hasDevice ? (
-                  u.devicePending ? <span className="badge-warning">pendiente de aprobación</span> : <span className="badge-primary">aprobado</span>
+                  u.devicePending ? <span className="badge-warning">pendiente</span> : <span className="badge-primary">aprobado</span>
                 ) : (
                   <span className="badge">sin dispositivo</span>
                 )}
               </td>
               <td className="px-3 py-3 text-xs text-muted-foreground">{formatDate(u.createdAt)}</td>
-              <td className="px-5 py-3 text-right">
-                <div className="inline-flex gap-2">
+              <td className="px-5 py-3">
+                <div className="flex items-center justify-end gap-1.5">
                   {u.status === "PENDING_APPROVAL" && (
-                    <button className="btn-success" onClick={() => setOpenApprove(u)} disabled={busy !== null}>
-                      <CheckCircle2 className="h-4 w-4" /> Aprobar
-                    </button>
+                    <IconBtn title="Aprobar alta" variant="success" disabled={busy !== null} onClick={() => setOpenApprove(u)}>
+                      <CheckCircle2 className="h-4 w-4" />
+                    </IconBtn>
                   )}
                   {u.status === "ACTIVE" && (
                     <>
                       {u.devicePending && (
                         <>
-                          <button
-                            className="btn-success"
-                            title="Aprobar dispositivo"
-                            disabled={busy !== null}
-                            onClick={() => post(`/api/admin/users/${u.id}/approve-device`)}
-                          >
-                            <ShieldCheck className="h-4 w-4" /> Aprobar disp.
-                          </button>
-                          <button
-                            className="btn-ghost"
+                          <IconBtn title="Aprobar dispositivo" variant="success" disabled={busy !== null} onClick={() => post(`/api/admin/users/${u.id}/approve-device`)}>
+                            <ShieldCheck className="h-4 w-4" />
+                          </IconBtn>
+                          <IconBtn
                             title="Rechazar dispositivo (borra la credencial)"
                             disabled={busy !== null}
                             onClick={() => {
@@ -175,11 +199,10 @@ export function UsersTable({ users, currentUserId }: { users: Row[]; currentUser
                             }}
                           >
                             <ShieldX className="h-4 w-4" />
-                          </button>
+                          </IconBtn>
                         </>
                       )}
-                      <button
-                        className="btn-ghost"
+                      <IconBtn
                         title="Resetear contraseña"
                         disabled={busy !== null}
                         onClick={async () => {
@@ -191,10 +214,9 @@ export function UsersTable({ users, currentUserId }: { users: Row[]; currentUser
                         }}
                       >
                         <KeyRound className="h-4 w-4" />
-                      </button>
+                      </IconBtn>
                       {u.hasDevice && (
-                        <button
-                          className="btn-ghost"
+                        <IconBtn
                           title="Resetear dispositivo"
                           disabled={busy !== null}
                           onClick={() => {
@@ -204,11 +226,10 @@ export function UsersTable({ users, currentUserId }: { users: Row[]; currentUser
                           }}
                         >
                           <Smartphone className="h-4 w-4" />
-                        </button>
+                        </IconBtn>
                       )}
                       {u.id !== currentUserId && (
-                        <button
-                          className="btn-ghost"
+                        <IconBtn
                           title={u.role === "ADMIN" ? "Convertir en empleado" : "Convertir en administrador"}
                           disabled={busy !== null}
                           onClick={() => {
@@ -221,12 +242,12 @@ export function UsersTable({ users, currentUserId }: { users: Row[]; currentUser
                             }
                           }}
                         >
-                          <UserCog className="h-4 w-4" /> {u.role === "ADMIN" ? "Hacer empleado" : "Hacer admin"}
-                        </button>
+                          <UserCog className="h-4 w-4" />
+                        </IconBtn>
                       )}
-                      <button
-                        className="btn-danger"
+                      <IconBtn
                         title="Deshabilitar"
+                        variant="danger"
                         disabled={busy !== null}
                         onClick={() => {
                           if (confirm("¿Seguro que querés deshabilitar a este usuario? No va a poder ingresar hasta que lo reactives.")) {
@@ -235,13 +256,13 @@ export function UsersTable({ users, currentUserId }: { users: Row[]; currentUser
                         }}
                       >
                         <XCircle className="h-4 w-4" />
-                      </button>
+                      </IconBtn>
                     </>
                   )}
                   {u.status === "DISABLED" && (
-                    <button className="btn-success" disabled={busy !== null} onClick={() => post(`/api/admin/users/${u.id}/enable`)}>
-                      Reactivar
-                    </button>
+                    <IconBtn title="Reactivar usuario" variant="success" disabled={busy !== null} onClick={() => post(`/api/admin/users/${u.id}/enable`)}>
+                      <RotateCcw className="h-4 w-4" />
+                    </IconBtn>
                   )}
                 </div>
               </td>

@@ -2,6 +2,13 @@
 
 Cada release sube la versión en `+0.01`. El número visible abajo a la izquierda en la app coincide con este archivo.
 
+## v0.62 — 2026-07-20
+
+**Usuarios (admin): tabla más prolija y ordenada.**
+
+- Las **acciones** de cada usuario (resetear contraseña, resetear dispositivo, hacer admin/empleado, aprobar, deshabilitar/reactivar) pasaron a ser **botones-ícono uniformes** alineados a la derecha, con su descripción al pasar el mouse. Antes eran botones de texto de distinto ancho que se partían en dos líneas y desordenaban la fila.
+- Los **estados** (activo / clave temporal, etc.) quedan apilados y alineados, y la columna **Dispositivo** muestra un único badge corto. Todas las columnas quedan alineadas.
+
 ## v0.61 — 2026-07-19
 
 **Cambios de perfil: columnas alineadas.**
