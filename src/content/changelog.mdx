@@ -2,6 +2,12 @@
 
 Cada release sube la versión en `+0.01`. El número visible abajo a la izquierda en la app coincide con este archivo.
 
+## v0.57 — 2026-07-18
+
+**Geocerca: margen ampliado a 1 km.**
+
+- El **radio permitido para fichar** (check-in y check-out) pasó de **100 m a 1 km** por defecto, y se actualizó en todos los empleados existentes. Así se evita el rechazo "estás fuera de la zona" cuando el empleado está a unos cientos de metros. El administrador puede ajustar un radio menor por empleado desde la ficha (mínimo 20 m) si necesita más precisión en algún caso.
+
 ## v0.56 — 2026-07-18
 
 **Panel: marcar la salida del empleado desde "Check-in de hoy".**

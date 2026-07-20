@@ -155,10 +155,10 @@ export const PUT = route("admin.employees.put", async (req: NextRequest, ctx: { 
     vacationWeeksPerYear: d.vacationWeeksPerYear,
     checkinLat: d.checkinLat ?? null,
     checkinLng: d.checkinLng ?? null,
-    checkinRadiusM: d.checkinRadiusM ?? 100,
+    checkinRadiusM: d.checkinRadiusM ?? 1000,
     checkoutLat: d.checkoutLat ?? null,
     checkoutLng: d.checkoutLng ?? null,
-    checkoutRadiusM: d.checkoutRadiusM ?? 100,
+    checkoutRadiusM: d.checkoutRadiusM ?? 1000,
   };
 
   try {

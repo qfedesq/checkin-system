@@ -206,10 +206,10 @@ export function EmployeeDetailClient({ initial }: {
         vacationWeeksPerYear: Number(p.vacationWeeksPerYear),
         checkinLat: p.checkinLat,
         checkinLng: p.checkinLng,
-        checkinRadiusM: Number(p.checkinRadiusM) || 100,
+        checkinRadiusM: Number(p.checkinRadiusM) || 1000,
         checkoutLat: p.checkoutLat,
         checkoutLng: p.checkoutLng,
-        checkoutRadiusM: Number(p.checkoutRadiusM) || 100,
+        checkoutRadiusM: Number(p.checkoutRadiusM) || 1000,
       }),
     });
     const out = await res.json();
