@@ -145,10 +145,18 @@ export function ProfileChangesClient({ rows }: { rows: Row[] }) {
             <p className="mt-2 text-xs text-muted-foreground">Tildá los campos que querés aprobar. Los destildados se rechazan al aplicar la decisión.</p>
           )}
           <div className="mt-3 overflow-x-auto">
-            <table className="w-full min-w-[480px] text-sm">
+            {/* table-fixed + colgroup: columnas de ancho fijo iguales en TODAS las tarjetas,
+                así Actual/Propuesto quedan siempre alineadas. El checkbox de aprobación
+                (sólo PENDING) va inline dentro de "Campo", para no agregar una columna extra
+                que corra el resto. */}
+            <table className="w-full min-w-[480px] text-sm table-fixed">
+              <colgroup>
+                <col className="w-[34%]" />
+                <col />
+                <col />
+              </colgroup>
               <thead>
                 <tr className="border-b border-border/60 text-left mono text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
-                  {r.status === "PENDING" && <th className="py-2 pr-3">Aprobar</th>}
                   <th className="py-2 pr-3">Campo</th>
                   <th className="py-2 pr-3">Actual</th>
                   <th className="py-2">Propuesto</th>
@@ -156,23 +164,27 @@ export function ProfileChangesClient({ rows }: { rows: Row[] }) {
               </thead>
               <tbody>
                 {Object.entries(r.changes).map(([field, c]) => (
-                  <tr key={field} className="border-b border-border/40 last:border-0">
-                    {r.status === "PENDING" && (
-                      <td className="py-2 pr-3">
-                        <input
-                          type="checkbox"
-                          className="h-4 w-4"
-                          checked={fieldsFor(r)[field] ?? true}
-                          onChange={() => toggleField(r, field)}
-                          aria-label={`Aprobar ${FIELD_LABELS[field] ?? field}`}
-                        />
-                      </td>
-                    )}
-                    <td className="py-2 pr-3 font-medium">{FIELD_LABELS[field] ?? field}</td>
-                    <td className="py-2 pr-3 text-muted-foreground">
+                  <tr key={field} className="border-b border-border/40 last:border-0 align-top">
+                    <td className="py-2 pr-3 font-medium">
+                      {r.status === "PENDING" ? (
+                        <label className="inline-flex items-start gap-2 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            className="mt-0.5 h-4 w-4 shrink-0"
+                            checked={fieldsFor(r)[field] ?? true}
+                            onChange={() => toggleField(r, field)}
+                            aria-label={`Aprobar ${FIELD_LABELS[field] ?? field}`}
+                          />
+                          <span>{FIELD_LABELS[field] ?? field}</span>
+                        </label>
+                      ) : (
+                        FIELD_LABELS[field] ?? field
+                      )}
+                    </td>
+                    <td className="py-2 pr-3 text-muted-foreground break-words">
                       {c.type === "image" ? <Thumb url={c.from} alt="imagen actual" /> : c.from || "—"}
                     </td>
-                    <td className="py-2 text-[hsl(var(--primary-text))]">
+                    <td className="py-2 text-[hsl(var(--primary-text))] break-words">
                       {c.type === "image" ? <Thumb url={c.to} alt="imagen propuesta" /> : c.to || "—"}
                     </td>
                   </tr>

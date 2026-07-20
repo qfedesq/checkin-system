@@ -2,6 +2,12 @@
 
 Cada release sube la versión en `+0.01`. El número visible abajo a la izquierda en la app coincide con este archivo.
 
+## v0.61 — 2026-07-19
+
+**Cambios de perfil: columnas alineadas.**
+
+- En **Cambios de perfil** (admin), las columnas **Actual** y **Propuesto** ahora quedan **alineadas** en todas las tarjetas (antes cada una se acomodaba distinto según el contenido). El casillero para aprobar un campo pasó a estar junto al nombre del campo, sin correr las columnas.
+
 ## v0.60 — 2026-07-19
 
 **Estética: botones/menús en mayúsculas y alineación del formulario.**
