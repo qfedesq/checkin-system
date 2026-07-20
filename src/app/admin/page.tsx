@@ -130,7 +130,7 @@ export default async function AdminHome() {
 
   return (
     <>
-      <PageHeader eyebrow="panel admin" title="Resumen" description="El estado del día y todo lo que espera tu revisión." />
+      <PageHeader eyebrow="panel admin" title="Resumen" />
 
       {/* Tortas del día — clickeables: abren el listado de empleados de cada categoría */}
       <TodayCards

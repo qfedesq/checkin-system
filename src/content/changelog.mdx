@@ -2,6 +2,13 @@
 
 Cada release sube la versión en `+0.01`. El número visible abajo a la izquierda en la app coincide con este archivo.
 
+## v0.59 — 2026-07-19
+
+**Estética: títulos en mayúsculas y panel más limpio.**
+
+- Todos los **títulos** de la aplicación ahora se muestran en **MAYÚSCULAS** (títulos de página y de cada sección/tarjeta), para una estética más uniforme.
+- Se quitó el subtítulo "El estado del día y todo lo que espera tu revisión." del **panel de administración**.
+
 ## v0.58 — 2026-07-18
 
 **Guía /guia: barra de progreso completa y botón para ir a iniciar sesión.**

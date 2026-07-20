@@ -20,7 +20,7 @@ export function AuthShell({ title, subtitle, children, footer }: {
           </div>
         </div>
         <div className="panel p-6 sm:p-8">
-          <h1 className="text-2xl font-bold tracking-tight">{title}</h1>
+          <h1 className="text-2xl font-bold uppercase tracking-tight">{title}</h1>
           {subtitle && <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p>}
           <div className="mt-6">{children}</div>
         </div>

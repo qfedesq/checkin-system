@@ -190,6 +190,13 @@
   .eyebrow { @apply font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground; }
   .mono { font-family: "IBM Plex Mono", monospace; }
 
+  /* Títulos de la app en MAYÚSCULAS (pedido del cliente): títulos de sección y de modales
+     (h2/h3 con text-lg font-semibold). Los títulos de página van por PageHeader/AuthShell
+     (clase uppercase directa). No afecta al div de valores del dashboard, al MDX de manuales
+     ni a la guía /guia (usan otras clases). */
+  h2.text-lg.font-semibold,
+  h3.text-lg.font-semibold { text-transform: uppercase; }
+
   .surface-card {
     @apply rounded-[20px] border transition;
     border-color: hsl(var(--panel-border));
