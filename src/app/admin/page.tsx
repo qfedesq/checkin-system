@@ -28,12 +28,12 @@ export default async function AdminHome() {
   // veían al navegar. Las licencias aprobadas futuras están acotadas en la práctica.
   const monthStart = new Date(Date.UTC(y, m - 1, 1));
 
-  const [pendingUsers, pendingLeaves, pendingDocs, pendingProfileChanges, openAttendance, activeEmployees, todayAttendances, todayLeaves, profiles, monthLeaves] = await Promise.all([
+  const [pendingUsers, pendingLeaves, pendingDocs, pendingProfileChanges, openAttendances, activeEmployees, todayAttendances, todayLeaves, profiles, monthLeaves] = await Promise.all([
     prisma.user.count({ where: { status: "PENDING_APPROVAL" } }),
     prisma.leaveRequest.count({ where: { status: "PENDING" } }),
     prisma.documentUpload.count({ where: { status: "PENDING_REVIEW" } }),
     prisma.profileChangeRequest.count({ where: { status: "PENDING" } }),
-    prisma.attendance.count({ where: { checkOutAt: null } }),
+    prisma.attendance.findMany({ where: { checkOutAt: null }, select: { id: true, userId: true, checkInAt: true }, orderBy: { checkInAt: "asc" } }),
     prisma.user.findMany({ where: { role: "EMPLOYEE", status: "ACTIVE" }, select: { id: true } }),
     prisma.attendance.findMany({ where: { checkInAt: { gte: todayStart, lt: todayEnd } }, select: { id: true, userId: true, checkInAt: true, checkOutAt: true } }),
     prisma.leaveRequest.findMany({ where: { status: "APPROVED", startDate: { lte: todayCal }, endDate: { gte: todayCal } }, select: { userId: true } }),
@@ -51,28 +51,29 @@ export default async function AdminHome() {
   // --- Tortas del día ---
   const checkedInUsers = new Set(todayAttendances.map((a) => a.userId));
   const checkedOutUsers = new Set(todayAttendances.filter((a) => a.checkOutAt).map((a) => a.userId));
-  // "En curso" = entró y todavía NO hizo check-out (jornada vigente). Distinto de "check-in":
-  // alguien que entró y ya se fue va en check-out (terminó), no en la tarjeta de en-curso.
-  const stillInUsers = new Set(todayAttendances.filter((a) => !a.checkOutAt).map((a) => a.userId));
+  // "En curso" = CUALQUIER jornada abierta (checkOutAt null), sin importar el día del check-in.
+  // Antes se limitaba a los check-ins de HOY, así que una jornada que quedó abierta de ayer no
+  // aparecía en el panel (el empleado figuraba inactivo aunque nunca hubiera hecho check-out).
+  const stillInUsers = new Set(openAttendances.map((a) => a.userId));
+  const openAttendance = openAttendances.length;
   const onLeaveToday = new Set(todayLeaves.map((l) => l.userId));
   const totalActive = activeEmployees.length;
   const stillIn = stillInUsers.size;      // jornada en curso (tarjeta "Check-in de hoy")
   const checkedOut = checkedOutUsers.size; // terminaron (tarjeta "Check-out de hoy")
   const checkedIn = checkedInUsers.size;   // total que vino hoy (para "presentes"/ausentes)
   // Ausente: activo, sin check-in hoy y sin licencia aprobada hoy
-  const absent = activeEmployees.filter((u) => !checkedInUsers.has(u.id) && !onLeaveToday.has(u.id)).length;
+  const absent = activeEmployees.filter((u) => !checkedInUsers.has(u.id) && !stillInUsers.has(u.id) && !onLeaveToday.has(u.id)).length;
 
   // Listados de empleados por categoría (para las tarjetas clickeables del panel), sin duplicados.
   const nameByUser = new Map(profiles.map((p) => [p.userId, `${p.lastName}, ${p.firstName}`.trim() || "Empleado"]));
   const nameFor = (id: string) => nameByUser.get(id) ?? "Empleado";
   // Jornada en curso: incluye el id de la jornada abierta para que el admin pueda hacerle el
   // check-out desde el propio listado del panel (una jornada abierta por usuario — índice único).
-  const checkinPeople = todayAttendances
-    .filter((a) => !a.checkOutAt)
+  const checkinPeople = openAttendances
     .map((a) => ({ name: nameFor(a.userId), detail: `Entró ${formatDateTime(a.checkInAt)}`, attendanceId: a.id }));
   const checkoutPeople = [...checkedOutUsers].map((id) => ({ name: nameFor(id) }));  // terminaron
   const absentPeople = activeEmployees
-    .filter((u) => !checkedInUsers.has(u.id) && !onLeaveToday.has(u.id))
+    .filter((u) => !checkedInUsers.has(u.id) && !stillInUsers.has(u.id) && !onLeaveToday.has(u.id))
     .map((u) => ({ name: nameFor(u.id) }));
 
   const cyan = "hsl(199 76% 52%)";
@@ -136,7 +137,7 @@ export default async function AdminHome() {
       <TodayCards
         cards={[
           {
-            title: "Check-in de hoy",
+            title: "Jornada en curso",
             centerLabel: `${stillIn}`,
             segments: [
               { value: stillIn, color: cyan, label: "Jornada en curso" },

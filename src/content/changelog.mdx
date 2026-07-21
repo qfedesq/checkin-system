@@ -2,6 +2,12 @@
 
 Cada release sube la versión en `+0.01`. El número visible abajo a la izquierda en la app coincide con este archivo.
 
+## v0.64 — 2026-07-21
+
+**Fix: el panel ahora muestra las jornadas abiertas de días anteriores.**
+
+- Si un empleado hacía check-in y dejaba la jornada **abierta de un día para el otro** (sin check-out), el panel de administración mostraba "0" en curso y no lo veía activo. Ahora la tarjeta **"Jornada en curso"** cuenta **cualquier jornada abierta**, sin importar el día del check-in, y muestra desde cuándo está abierta (con el botón "Marcar salida" para cerrarla). También se corrigió el conteo de ausentes para no marcar como ausente a quien tiene una jornada abierta.
+
 ## v0.63 — 2026-07-20
 
 **Ajustes estéticos.**
