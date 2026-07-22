@@ -7,12 +7,13 @@ import "react-day-picker/style.css";
 import { useRouter } from "next/navigation";
 import { formatCalendarDate, isoToCalendarDate, toCalendarISODate } from "@/lib/utils";
 
+const MAX_DAY_OFF_DAYS = 30;
+
 type Availability = {
   myLeaves: { id: string; type: "VACATION" | "DAY_OFF"; startDate: string; endDate: string; status: "PENDING" | "APPROVED" | "REJECTED"; days: number }[];
-  takenDayOffs: { date: string; byMe: boolean }[];
+  takenDayOffs: { from: string; to: string; byMe: boolean }[];
   categoryTakenRanges: { from: string; to: string }[];
   vacation: { weeksPerYear: number; totalDays: number; usedDays: number; leftDays: number };
-  myDayOffMonths: string[];
 };
 
 export function CalendarClient() {
@@ -20,6 +21,7 @@ export function CalendarClient() {
   const [tab, setTab] = useState<"VACATION" | "DAY_OFF">("VACATION");
   const [selected, setSelected] = useState<Date | undefined>();
   const [duration, setDuration] = useState<7 | 14>(7);
+  const [dayOffDays, setDayOffDays] = useState(1);
   const [data, setData] = useState<Availability | null>(null);
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<{ kind: "ok" | "err"; text: string } | null>(null);
@@ -50,6 +52,14 @@ export function CalendarClient() {
     if (leftDays < 14 && duration === 14) setDuration(7);
   }, [leftDays, duration]);
 
+  // Fin del rango de franco (inicio + días - 1).
+  const dayOffEndISO = useMemo(() => {
+    if (!selected) return "";
+    const end = new Date(selected);
+    end.setDate(end.getDate() + dayOffDays - 1);
+    return toCalendarISODate(end);
+  }, [selected, dayOffDays]);
+
   const disabledDays = useMemo(() => {
     if (!data) return [];
     if (tab === "VACATION") {
@@ -65,12 +75,12 @@ export function CalendarClient() {
         },
       ];
     }
-    // Franco: deshabilitar fechas con franco aprobado por otros y meses donde ya tengo uno
-    const takenByOthers = data.takenDayOffs.filter((t) => !t.byMe).map((t) => isoToCalendarDate(t.date));
+    // Franco: deshabilitar sólo el pasado y los días con franco aprobado de otro compañero
+    // (un ausente por día). Ya no hay límite mensual: se puede pedir cuando se necesite.
+    const takenRanges = data.takenDayOffs.filter((t) => !t.byMe).map((t) => ({ from: isoToCalendarDate(t.from), to: isoToCalendarDate(t.to) }));
     return [
       { before: new Date() },
-      (d: Date) => data.myDayOffMonths.includes(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`),
-      ...takenByOthers,
+      (d: Date) => takenRanges.some((r) => d >= r.from && d <= r.to),
     ];
   }, [tab, data, duration]);
 
@@ -91,7 +101,7 @@ export function CalendarClient() {
     setMsg(null);
     const iso = toCalendarISODate(selected);
     const body: { type: "VACATION" | "DAY_OFF"; startDate: string; days?: number } = { type: tab, startDate: iso };
-    if (tab === "VACATION") body.days = duration;
+    body.days = tab === "VACATION" ? duration : dayOffDays;
     const res = await fetch("/api/leaves", {
       method: "POST",
       headers: { "content-type": "application/json" },
@@ -110,7 +120,7 @@ export function CalendarClient() {
       <section className="panel p-6">
         <div className="mb-4 flex flex-wrap items-center gap-2">
           <button aria-pressed={tab === "VACATION"} className={tab === "VACATION" ? "btn-primary" : "btn-ghost"} onClick={() => { setTab("VACATION"); setSelected(undefined); setMsg(null); }}>Vacaciones</button>
-          <button aria-pressed={tab === "DAY_OFF"} className={tab === "DAY_OFF" ? "btn-primary" : "btn-ghost"} onClick={() => { setTab("DAY_OFF"); setSelected(undefined); setMsg(null); }}>Franco</button>
+          <button aria-pressed={tab === "DAY_OFF"} className={tab === "DAY_OFF" ? "btn-primary" : "btn-ghost"} onClick={() => { setTab("DAY_OFF"); setSelected(undefined); setMsg(null); setDayOffDays(1); }}>Franco</button>
         </div>
 
         {data && tab === "VACATION" && (
@@ -128,7 +138,7 @@ export function CalendarClient() {
         )}
         {data && tab === "DAY_OFF" && (
           <div className="mb-4 rounded-xl border border-border/60 bg-secondary/40 px-4 py-3 text-sm">
-            Podés pedir <strong>un franco por mes</strong>. Los meses donde ya tenés uno aparecen deshabilitados.
+            Elegí el día de inicio y cuántos <strong>días seguidos</strong> necesitás (por ejemplo, para un curso de renovación). Toda solicitud queda sujeta a la aprobación del administrador. Los días con franco ya aprobado de otro compañero aparecen deshabilitados.
           </div>
         )}
 
@@ -142,7 +152,7 @@ export function CalendarClient() {
           modifiers={{
             mineApproved: mineByRange.filter((m) => m.status === "APPROVED").map((m) => ({ from: m.from, to: m.to })),
             minePending: mineByRange.filter((m) => m.status === "PENDING").map((m) => ({ from: m.from, to: m.to })),
-            takenByOthers: data?.takenDayOffs.filter((t) => !t.byMe).map((t) => isoToCalendarDate(t.date)) ?? [],
+            takenByOthers: data?.takenDayOffs.filter((t) => !t.byMe).map((t) => ({ from: isoToCalendarDate(t.from), to: isoToCalendarDate(t.to) })) ?? [],
           }}
           modifiersClassNames={{
             mineApproved: "cal-day-approved",
@@ -167,10 +177,23 @@ export function CalendarClient() {
           </div>
         )}
 
+        {tab === "DAY_OFF" && (
+          <div className="mt-4 flex items-center gap-3">
+            <span className="eyebrow">Días seguidos</span>
+            <div className="inline-flex items-center gap-2">
+              <button className="btn-ghost" onClick={() => setDayOffDays((d) => Math.max(1, d - 1))} disabled={dayOffDays <= 1} aria-label="Menos días">−</button>
+              <span className="min-w-[2ch] text-center text-sm font-semibold tabular-nums">{dayOffDays}</span>
+              <button className="btn-ghost" onClick={() => setDayOffDays((d) => Math.min(MAX_DAY_OFF_DAYS, d + 1))} disabled={dayOffDays >= MAX_DAY_OFF_DAYS} aria-label="Más días">+</button>
+            </div>
+          </div>
+        )}
+
         {selected && (
           <p className="mt-4 text-sm text-muted-foreground">
             {tab === "VACATION" ? (
               <>Vas a pedir del <strong className="text-foreground">lunes {formatCalendarDate(toCalendarISODate(selected))}</strong> al <strong className="text-foreground">domingo {formatCalendarDate(vacationEndISO)}</strong> ({duration} días de corrido).</>
+            ) : dayOffDays > 1 ? (
+              <>Vas a pedir franco del <strong className="text-foreground">{formatCalendarDate(toCalendarISODate(selected))}</strong> al <strong className="text-foreground">{formatCalendarDate(dayOffEndISO)}</strong> ({dayOffDays} días seguidos).</>
             ) : (
               <>Vas a pedir un franco el <strong className="text-foreground">{formatCalendarDate(toCalendarISODate(selected))}</strong>.</>
             )}
@@ -208,7 +231,7 @@ export function CalendarClient() {
             <li key={l.id} className="surface-card p-3">
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="text-sm font-medium">{l.type === "VACATION" ? `Vacaciones · ${l.days}d` : "Franco"}</div>
+                  <div className="text-sm font-medium">{l.type === "VACATION" ? `Vacaciones · ${l.days}d` : l.days > 1 ? `Franco · ${l.days}d` : "Franco"}</div>
                   <div className="text-xs text-muted-foreground">
                     {formatCalendarDate(l.startDate)}{l.days > 1 ? ` → ${formatCalendarDate(l.endDate)}` : ""}
                   </div>

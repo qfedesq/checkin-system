@@ -28,8 +28,8 @@ export const GET = route("calendar.availability", async (req: NextRequest) => {
         userId: session.user.id,
         // Incluye REJECTED para que el empleado vea el historial completo en "Mis
         // solicitudes". El coloreado del calendario (modifiers en CalendarClient)
-        // y myDayOffMonths filtran explícitamente por status más abajo, así que
-        // esto no habilita coloreado ni bloquea meses por una solicitud rechazada.
+        // filtra explícitamente por status, así que una solicitud rechazada no
+        // habilita coloreado.
         status: { in: ["PENDING", "APPROVED", "REJECTED"] },
         endDate: { gte: fromDate },
       },
@@ -40,9 +40,10 @@ export const GET = route("calendar.availability", async (req: NextRequest) => {
       where: {
         type: "DAY_OFF",
         status: "APPROVED",
-        startDate: { gte: fromDate, lte: toDate },
+        endDate: { gte: fromDate },
+        startDate: { lte: toDate },
       },
-      select: { startDate: true, userId: true },
+      select: { startDate: true, endDate: true, userId: true },
     }),
     prisma.leaveRequest.findMany({
       where: { userId: session.user.id, type: "VACATION", status: { in: ["PENDING", "APPROVED"] }, startDate: { gte: yStart, lte: yEnd } },
@@ -70,7 +71,8 @@ export const GET = route("calendar.availability", async (req: NextRequest) => {
 
   return NextResponse.json({
     myLeaves: myLeaves.map((l) => ({ ...l, startDate: l.startDate.toISOString(), endDate: l.endDate.toISOString() })),
-    takenDayOffs: francosAprobados.map((l) => ({ date: l.startDate.toISOString(), byMe: l.userId === session.user.id })),
+    // Francos aprobados como rangos (from/to): un franco puede abarcar varios días corridos.
+    takenDayOffs: francosAprobados.map((l) => ({ from: l.startDate.toISOString(), to: l.endDate.toISOString(), byMe: l.userId === session.user.id })),
     categoryTakenRanges: categoryTaken.map((r) => ({ from: r.startDate.toISOString(), to: r.endDate.toISOString() })),
     vacation: {
       weeksPerYear: profile?.vacationWeeksPerYear ?? 0,
@@ -78,14 +80,5 @@ export const GET = route("calendar.availability", async (req: NextRequest) => {
       usedDays: balance.usedDays,
       leftDays: balance.leftDays,
     },
-    // Meses (YYYY-MM) donde ya tengo franco pedido/aprobado (excluye rechazados:
-    // una solicitud rechazada no debe bloquear pedir franco de nuevo ese mes).
-    myDayOffMonths: Array.from(
-      new Set(
-        myLeaves
-          .filter((l) => l.type === "DAY_OFF" && l.status !== "REJECTED")
-          .map((l) => l.startDate.toISOString().slice(0, 7)),
-      ),
-    ),
   });
 });

@@ -115,11 +115,14 @@ export default async function AdminHome() {
     }));
   const dayOffs = monthLeaves
     .filter((l) => l.type === "DAY_OFF")
-    .map((l) => ({
-      from: l.startDate.toISOString(),
-      to: l.endDate.toISOString(),
-      label: `${l.user.profile ? `${l.user.profile.lastName}, ${l.user.profile.firstName}` : l.user.email}: franco el ${formatCalendarDate(l.startDate)}`,
-    }));
+    .map((l) => {
+      const who = l.user.profile ? `${l.user.profile.lastName}, ${l.user.profile.firstName}` : l.user.email;
+      const when =
+        l.startDate.getTime() === l.endDate.getTime()
+          ? `franco el ${formatCalendarDate(l.startDate)}`
+          : `franco ${formatCalendarDate(l.startDate)} → ${formatCalendarDate(l.endDate)}`;
+      return { from: l.startDate.toISOString(), to: l.endDate.toISOString(), label: `${who}: ${when}` };
+    });
 
   const kpis = [
     { href: "/admin/users", icon: Users, label: "Usuarios pendientes", value: pendingUsers },

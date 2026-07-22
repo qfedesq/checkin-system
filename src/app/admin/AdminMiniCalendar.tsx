@@ -34,7 +34,7 @@ export function AdminMiniCalendar({ vacations, dayOffs }: { vacations: Range[]; 
         onSelect={() => {}}
         modifiers={{
           vacations: vacations.map((v) => ({ from: isoToCalendarDate(v.from), to: isoToCalendarDate(v.to) })),
-          dayOffs: dayOffs.map((d) => isoToCalendarDate(d.from)),
+          dayOffs: dayOffs.map((d) => ({ from: isoToCalendarDate(d.from), to: isoToCalendarDate(d.to) })),
         }}
         modifiersClassNames={{
           vacations: "cal-day-approved",

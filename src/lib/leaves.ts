@@ -33,6 +33,24 @@ export function isPastCalendarDate(date: Date): boolean {
   return date.getTime() < artTodayCalendarDate().getTime();
 }
 
+/** Tope superior de días para un franco. El admin igual aprueba cada solicitud; es solo
+ *  una barrera contra input patológico (no un límite de política de negocio). */
+export const MAX_DAY_OFF_DAYS = 30;
+
+/** Valida un franco de 1..MAX_DAY_OFF_DAYS días corridos a partir de una fecha.
+ *  A diferencia de las vacaciones, no exige empezar un lunes ni una duración fija:
+ *  el empleado puede pedir 1, 2, 3… días seguidos (p. ej. cursos de renovación). */
+export function validateDayOffRange(startISO: string, days: number): { ok: true; start: Date; end: Date; days: number } | { ok: false; error: string } {
+  const start = parseLocalDate(startISO);
+  if (!start) return { ok: false, error: "Fecha inválida" };
+  if (!Number.isInteger(days) || days < 1 || days > MAX_DAY_OFF_DAYS) {
+    return { ok: false, error: `El franco debe ser de 1 a ${MAX_DAY_OFF_DAYS} días corridos` };
+  }
+  if (isPastCalendarDate(start)) return { ok: false, error: "La fecha de inicio no puede ser en el pasado" };
+  const end = addDays(start, days - 1);
+  return { ok: true, start, end, days };
+}
+
 export function validateVacationRange(startISO: string, days: 7 | 14): { ok: true; start: Date; end: Date } | { ok: false; error: string } {
   const start = parseLocalDate(startISO);
   if (!start) return { ok: false, error: "Fecha inicial inválida" };

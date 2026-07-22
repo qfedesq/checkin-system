@@ -26,10 +26,19 @@ export const POST = route("admin.leaves.approve", async (_req: Request, ctx: { p
       if (current.status !== "PENDING") return { kind: "conflict" as const };
 
       if (current.type === "DAY_OFF") {
+        // Un solo ausente por día: rechazar si otro empleado ya tiene un franco APROBADO
+        // que se solape con el rango de esta solicitud.
         const collision = await tx.leaveRequest.findFirst({
-          where: { type: "DAY_OFF", status: "APPROVED", startDate: current.startDate, id: { not: id } },
+          where: {
+            type: "DAY_OFF",
+            status: "APPROVED",
+            id: { not: id },
+            userId: { not: current.userId },
+            startDate: { lte: current.endDate },
+            endDate: { gte: current.startDate },
+          },
         });
-        if (collision) throw new ApprovalConflictError("Ya hay un franco aprobado para ese día");
+        if (collision) throw new ApprovalConflictError("Ya hay un franco aprobado de otro empleado en esas fechas");
       } else {
         const profile = await tx.employeeProfile.findUnique({ where: { userId: current.userId } });
         if (!profile) throw new ApprovalConflictError("El empleado no tiene perfil completo");
@@ -76,7 +85,12 @@ export const POST = route("admin.leaves.approve", async (_req: Request, ctx: { p
   const leave = outcome.leave!;
   await recordAudit({ actorId: session.user.id, action: "leave.approve", subjectId: id });
 
-  const label = leave.type === "VACATION" ? `Vacaciones (${leave.days} días desde ${formatCalendarDate(leave.startDate)})` : `Franco del ${formatCalendarDate(leave.startDate)}`;
+  const label =
+    leave.type === "VACATION"
+      ? `Vacaciones (${leave.days} días desde ${formatCalendarDate(leave.startDate)})`
+      : leave.days > 1
+        ? `Franco (${leave.days} días desde ${formatCalendarDate(leave.startDate)})`
+        : `Franco del ${formatCalendarDate(leave.startDate)}`;
   notifyUser(leave.userId, "leave.approved", { body: `Tu solicitud de <strong>${label}</strong> fue aprobada.` }).catch((e) => console.error("[notify] leave.approve", e));
 
   return NextResponse.json({ ok: true });

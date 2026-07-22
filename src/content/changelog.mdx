@@ -2,6 +2,15 @@
 
 Cada release sube la versión en `+0.01`. El número visible abajo a la izquierda en la app coincide con este archivo.
 
+## v0.65 — 2026-07-22
+
+**Francos: se quitó el tope de uno por mes y ahora pueden ser de varios días seguidos.**
+
+- Antes el sistema sólo permitía **un franco por mes** por empleado y de **un solo día**, lo que impedía, por ejemplo, pedir los **dos días seguidos** que requieren los cursos de renovación de carnet o libreta sanitaria.
+- Ahora el empleado elige el **día de inicio** y con el selector **"Días seguidos"** indica cuántos días corridos necesita (de 1 a 30). **No hay límite mensual**: puede pedir franco cuando lo necesite, siempre **sujeto a la aprobación del administrador**.
+- Se mantiene la regla de **un solo empleado ausente por día**: si otro compañero ya tiene un franco aprobado que se superpone con esas fechas, quedan bloqueadas.
+- La tabla de solicitudes, el calendario del empleado y el del panel admin muestran el franco como **rango completo** (inicio → fin), no sólo el primer día.
+
 ## v0.64 — 2026-07-21
 
 **Fix: el panel ahora muestra las jornadas abiertas de días anteriores.**

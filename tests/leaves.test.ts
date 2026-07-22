@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { validateVacationRange, isMonday, addDays, checkVacationApprovable } from "../src/lib/leaves";
+import { validateVacationRange, validateDayOffRange, MAX_DAY_OFF_DAYS, isMonday, addDays, checkVacationApprovable } from "../src/lib/leaves";
 
 // Doble en memoria de las dos únicas queries que usa checkVacationApprovable, para poder
 // probar la regla de negocio (saldo anual + cupo semanal por categoría) sin una DB real.
@@ -77,6 +77,41 @@ test("validateVacationRange: duración inválida rechazada", () => {
 
 test("validateVacationRange: fecha de inicio en el pasado rechazada", () => {
   const r = validateVacationRange("2020-01-06", 7); // 2020-01-06 es lunes, pero muy en el pasado
+  assert.equal(r.ok, false);
+  if (!r.ok) assert.match(r.error, /no puede ser en el pasado/);
+});
+
+test("validateDayOffRange: un día (caso base)", () => {
+  const r = validateDayOffRange("2026-08-03", 1);
+  assert.equal(r.ok, true);
+  if (r.ok) {
+    assert.equal(r.days, 1);
+    assert.equal(r.start.getTime(), r.end.getTime());
+  }
+});
+
+test("validateDayOffRange: varios días corridos (fin = inicio + días - 1)", () => {
+  const r = validateDayOffRange("2026-08-03", 3);
+  assert.equal(r.ok, true);
+  if (r.ok) {
+    assert.equal(r.days, 3);
+    assert.equal(r.start.getUTCDate(), 3);
+    assert.equal(r.end.getUTCDate(), 5); // 3,4,5 = 3 días
+  }
+});
+
+test("validateDayOffRange: 0 días rechazado", () => {
+  const r = validateDayOffRange("2026-08-03", 0);
+  assert.equal(r.ok, false);
+});
+
+test("validateDayOffRange: más del máximo rechazado", () => {
+  const r = validateDayOffRange("2026-08-03", MAX_DAY_OFF_DAYS + 1);
+  assert.equal(r.ok, false);
+});
+
+test("validateDayOffRange: fecha de inicio en el pasado rechazada", () => {
+  const r = validateDayOffRange("2020-01-06", 2);
   assert.equal(r.ok, false);
   if (!r.ok) assert.match(r.error, /no puede ser en el pasado/);
 });

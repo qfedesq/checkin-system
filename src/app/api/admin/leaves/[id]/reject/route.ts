@@ -24,7 +24,12 @@ export const POST = route("admin.leaves.reject", async (_req: Request, ctx: { pa
 
   await recordAudit({ actorId: session.user.id, action: "leave.reject", subjectId: id });
 
-  const label = leave.type === "VACATION" ? `Vacaciones (${leave.days} días desde ${formatCalendarDate(leave.startDate)})` : `Franco del ${formatCalendarDate(leave.startDate)}`;
+  const label =
+    leave.type === "VACATION"
+      ? `Vacaciones (${leave.days} días desde ${formatCalendarDate(leave.startDate)})`
+      : leave.days > 1
+        ? `Franco (${leave.days} días desde ${formatCalendarDate(leave.startDate)})`
+        : `Franco del ${formatCalendarDate(leave.startDate)}`;
   notifyUser(leave.userId, "leave.rejected", { body: `Tu solicitud de <strong>${label}</strong> fue rechazada. Consultá con el administrador.` }).catch((e) => console.error("[notify] leave.reject", e));
 
   return NextResponse.json({ ok: true });

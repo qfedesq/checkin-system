@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { requireActiveUser } from "@/lib/session-guard";
 import { prisma } from "@/lib/prisma";
-import { parseLocalDate, validateVacationRange, monthBounds, checkVacationApprovable, isPastCalendarDate } from "@/lib/leaves";
+import { validateVacationRange, validateDayOffRange, checkVacationApprovable } from "@/lib/leaves";
 import { recordAudit } from "@/lib/audit";
 import { notifyAdmins } from "@/lib/notify";
 import { formatCalendarDate } from "@/lib/utils";
@@ -57,43 +57,50 @@ export const POST = route("leaves.create", async (req: NextRequest) => {
     });
     if (!check.ok) return NextResponse.json({ error: check.error }, { status: 409 });
   } else {
-    const local = parseLocalDate(parsed.data.startDate);
-    if (!local) return NextResponse.json({ error: "Fecha inválida" }, { status: 400 });
-    if (isPastCalendarDate(local)) return NextResponse.json({ error: "La fecha de inicio no puede ser en el pasado" }, { status: 400 });
-    startDate = local;
-    endDate = local;
-    daysInt = 1;
+    // Franco: rango de 1..N días corridos (sin tope mensual). El empleado puede pedir uno o
+    // varios días seguidos (p. ej. cursos para renovar carnet/libreta); el admin aprueba.
+    const v = validateDayOffRange(parsed.data.startDate, parsed.data.days ?? 1);
+    if (!v.ok) return NextResponse.json({ error: v.error }, { status: 400 });
+    startDate = v.start;
+    endDate = v.end;
+    daysInt = v.days;
 
-    // Franco: un único empleado por día (aprobados bloquean; pendientes no bloquean)
+    // Un solo empleado ausente por día: un franco YA APROBADO de OTRO empleado que se solape
+    // con el rango bloquea (los pendientes no bloquean; el admin arbitra al aprobar).
     const taken = await prisma.leaveRequest.findFirst({
-      where: { type: "DAY_OFF", status: "APPROVED", startDate: local },
+      where: {
+        type: "DAY_OFF",
+        status: "APPROVED",
+        userId: { not: session.user.id },
+        startDate: { lte: endDate },
+        endDate: { gte: startDate },
+      },
     });
-    if (taken) return NextResponse.json({ error: "Ya hay un franco aprobado para ese día" }, { status: 409 });
+    if (taken) return NextResponse.json({ error: "Ya hay un franco aprobado de otro empleado en esas fechas" }, { status: 409 });
 
-    // No pedir franco un día que ya cae dentro de vacaciones propias (PENDING o APPROVED):
-    // sin este chequeo, un empleado podía tener vacaciones y franco superpuestos el mismo día.
+    // No pedir franco dentro de vacaciones propias (PENDING o APPROVED).
     const ownVacationOverlap = await prisma.leaveRequest.findFirst({
       where: {
         userId: session.user.id,
         type: "VACATION",
         status: { in: ["PENDING", "APPROVED"] },
-        startDate: { lte: local },
-        endDate: { gte: local },
+        startDate: { lte: endDate },
+        endDate: { gte: startDate },
       },
     });
-    if (ownVacationOverlap) return NextResponse.json({ error: "Ese día ya está dentro de tu período de vacaciones" }, { status: 409 });
+    if (ownVacationOverlap) return NextResponse.json({ error: "Esas fechas ya están dentro de tu período de vacaciones" }, { status: 409 });
 
+    // No solapar con otro franco propio vigente (evita duplicados o rangos encimados).
     const mine = await prisma.leaveRequest.findFirst({
-      where: { userId: session.user.id, type: "DAY_OFF", startDate: local, status: { in: ["PENDING", "APPROVED"] } },
+      where: {
+        userId: session.user.id,
+        type: "DAY_OFF",
+        status: { in: ["PENDING", "APPROVED"] },
+        startDate: { lte: endDate },
+        endDate: { gte: startDate },
+      },
     });
-    if (mine) return NextResponse.json({ error: "Ya pediste franco ese día" }, { status: 409 });
-
-    // Máximo un franco por mes por empleado
-    const { start: mStart, end: mEnd } = monthBounds(local);
-    const monthly = await prisma.leaveRequest.findFirst({
-      where: { userId: session.user.id, type: "DAY_OFF", status: { in: ["PENDING", "APPROVED"] }, startDate: { gte: mStart, lte: mEnd } },
-    });
-    if (monthly) return NextResponse.json({ error: "Ya tenés un franco pedido este mes (máximo uno por mes)" }, { status: 409 });
+    if (mine) return NextResponse.json({ error: "Ya tenés un franco pedido que se superpone con esas fechas" }, { status: 409 });
   }
 
   const leave = await prisma.leaveRequest.create({
@@ -102,7 +109,12 @@ export const POST = route("leaves.create", async (req: NextRequest) => {
 
   await recordAudit({ actorId: session.user.id, action: "leave.request", subjectId: leave.id, metadata: { type: parsed.data.type, days: daysInt } });
 
-  const label = parsed.data.type === "VACATION" ? `Vacaciones ${daysInt} días desde ${formatCalendarDate(startDate)}` : `Franco el ${formatCalendarDate(startDate)}`;
+  const label =
+    parsed.data.type === "VACATION"
+      ? `Vacaciones ${daysInt} días desde ${formatCalendarDate(startDate)}`
+      : daysInt > 1
+        ? `Franco ${daysInt} días desde ${formatCalendarDate(startDate)}`
+        : `Franco el ${formatCalendarDate(startDate)}`;
   notifyAdmins("leave.created", {
     actorEmail: session.user.email,
     actorName: session.user.name,
