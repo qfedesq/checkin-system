@@ -2,6 +2,12 @@
 
 Cada release sube la versión en `+0.01`. El número visible abajo a la izquierda en la app coincide con este archivo.
 
+## v0.66 — 2026-07-22
+
+**Panel admin: el día de hoy se resalta en el calendario.**
+
+- En el **calendario del mes** del panel de administración, el **día de hoy** ahora se marca con un **anillo del color de la marca** (y el número en negrita) para ubicarlo de un vistazo. Se ve claro incluso cuando ese día también tiene una vacación o franco aprobado.
+
 ## v0.65 — 2026-07-22
 
 **Francos: se quitó el tope de uno por mes y ahora pueden ser de varios días seguidos.**

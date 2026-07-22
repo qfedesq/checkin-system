@@ -39,6 +39,7 @@ export function AdminMiniCalendar({ vacations, dayOffs }: { vacations: Range[]; 
         modifiersClassNames={{
           vacations: "cal-day-approved",
           dayOffs: "cal-day-dayoff",
+          today: "cal-day-today",
         }}
         styles={{
           caption: { color: "hsl(var(--foreground))" },
